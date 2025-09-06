@@ -25,13 +25,15 @@ class CRMBackendTester:
             "accounts": {"passed": 0, "failed": 0, "errors": []},
             "products": {"passed": 0, "failed": 0, "errors": []},
             "calendar": {"passed": 0, "failed": 0, "errors": []},
+            "invoices": {"passed": 0, "failed": 0, "errors": []},
             "dashboard": {"passed": 0, "failed": 0, "errors": []}
         }
         self.created_entities = {
             "contacts": [],
             "accounts": [],
             "products": [],
-            "events": []
+            "events": [],
+            "invoices": []
         }
 
     def log_result(self, category, test_name, success, error_msg=None):
