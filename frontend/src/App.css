@@ -264,6 +264,68 @@ button, a, .transition-colors {
   }
 }
 
+/* Global centered text utilities */
+.crm-page-header {
+  @apply text-center;
+}
+
+.crm-search-input {
+  @apply text-center;
+}
+
+.crm-stats-card {
+  @apply text-center;
+}
+
+.crm-modal-header {
+  @apply text-center;
+}
+
+/* Ensure consistent text alignment */
+.text-center-force {
+  text-align: center !important;
+}
+
+/* Form element centering */
+input[type="text"], 
+input[type="email"], 
+input[type="tel"], 
+input[type="url"], 
+input[type="number"], 
+input[type="password"], 
+input[type="search"], 
+select, 
+textarea {
+  text-align: center;
+}
+
+input[type="text"]:focus, 
+input[type="email"]:focus, 
+input[type="tel"]:focus, 
+input[type="url"]:focus, 
+input[type="number"]:focus, 
+input[type="password"]:focus, 
+input[type="search"]:focus, 
+select:focus, 
+textarea:focus {
+  text-align: center;
+}
+
+/* Override for form labels to remain left-aligned for readability */
+label {
+  text-align: left;
+}
+
+/* But center the modal titles and section headers */
+h1, h2, h3, h4, h5, h6 {
+  text-align: center;
+}
+
+/* Exception for form field labels */
+.form-label {
+  text-align: left !important;
+}
+
 /* Error states */
 .error-input {
   @apply border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500;
