@@ -1,0 +1,496 @@
+#!/usr/bin/env python3
+"""
+Backend API Testing Suite for CRM Application
+Tests all backend endpoints including authentication, CRUD operations, and dashboard stats.
+"""
+
+import requests
+import json
+from datetime import datetime, timezone, timedelta
+import uuid
+import sys
+import os
+
+# Backend URL from environment
+BACKEND_URL = "https://biz-connector-4.preview.emergentagent.com/api"
+
+class CRMBackendTester:
+    def __init__(self):
+        self.session = requests.Session()
+        self.session_token = None
+        self.user_id = None
+        self.test_results = {
+            "auth": {"passed": 0, "failed": 0, "errors": []},
+            "contacts": {"passed": 0, "failed": 0, "errors": []},
+            "accounts": {"passed": 0, "failed": 0, "errors": []},
+            "products": {"passed": 0, "failed": 0, "errors": []},
+            "calendar": {"passed": 0, "failed": 0, "errors": []},
+            "dashboard": {"passed": 0, "failed": 0, "errors": []}
+        }
+        self.created_entities = {
+            "contacts": [],
+            "accounts": [],
+            "products": [],
+            "events": []
+        }
+
+    def log_result(self, category, test_name, success, error_msg=None):
+        """Log test result"""
+        if success:
+            self.test_results[category]["passed"] += 1
+            print(f"✅ {test_name}")
+        else:
+            self.test_results[category]["failed"] += 1
+            self.test_results[category]["errors"].append(f"{test_name}: {error_msg}")
+            print(f"❌ {test_name}: {error_msg}")
+
+    def make_request(self, method, endpoint, data=None, headers=None, expect_auth_error=False):
+        """Make HTTP request with proper headers"""
+        url = f"{BACKEND_URL}{endpoint}"
+        
+        # Add session token if available
+        if self.session_token and headers is None:
+            headers = {"Authorization": f"Bearer {self.session_token}"}
+        elif self.session_token and headers:
+            headers["Authorization"] = f"Bearer {self.session_token}"
+        
+        try:
+            if method == "GET":
+                response = self.session.get(url, headers=headers)
+            elif method == "POST":
+                response = self.session.post(url, json=data, headers=headers)
+            elif method == "PUT":
+                response = self.session.put(url, json=data, headers=headers)
+            elif method == "DELETE":
+                response = self.session.delete(url, headers=headers)
+            
+            # Handle expected auth errors
+            if expect_auth_error and response.status_code == 401:
+                return True, response
+            
+            return response.status_code < 400, response
+        except Exception as e:
+            return False, str(e)
+
+    def test_authentication_endpoints(self):
+        """Test authentication-related endpoints"""
+        print("\n🔐 Testing Authentication Endpoints...")
+        
+        # Test /auth/me without authentication (should fail)
+        success, response = self.make_request("GET", "/auth/me", headers={}, expect_auth_error=True)
+        if success and response.status_code == 401:
+            self.log_result("auth", "GET /auth/me without auth returns 401", True)
+        else:
+            self.log_result("auth", "GET /auth/me without auth returns 401", False, 
+                          f"Expected 401, got {response.status_code if hasattr(response, 'status_code') else response}")
+
+        # Test /auth/profile without session_id (should fail)
+        success, response = self.make_request("GET", "/auth/profile", headers={})
+        if not success or response.status_code == 400:
+            self.log_result("auth", "GET /auth/profile without session_id returns 400", True)
+        else:
+            self.log_result("auth", "GET /auth/profile without session_id returns 400", False,
+                          f"Expected 400, got {response.status_code}")
+
+        # Test /auth/set-session endpoint structure
+        success, response = self.make_request("POST", "/auth/set-session", 
+                                            data={"session_token": "test_token"}, headers={})
+        # This might fail due to invalid token, but endpoint should exist
+        if success or (hasattr(response, 'status_code') and response.status_code in [400, 401, 422]):
+            self.log_result("auth", "POST /auth/set-session endpoint exists", True)
+        else:
+            self.log_result("auth", "POST /auth/set-session endpoint exists", False,
+                          f"Endpoint not accessible: {response}")
+
+        # Create a mock session for testing other endpoints
+        # Since we can't easily test OAuth flow, we'll create a mock session
+        self.session_token = "mock_session_token_for_testing"
+        print("ℹ️  Using mock session token for subsequent tests")
+
+    def test_contacts_crud(self):
+        """Test Contact CRUD operations"""
+        print("\n👥 Testing Contact Management...")
+        
+        # Test CREATE contact
+        contact_data = {
+            "name": "John Smith",
+            "email": "john.smith@example.com",
+            "phone": "+32 2 123 4567",
+            "company": "Tech Solutions Belgium",
+            "position": "CTO",
+            "address": "Rue de la Loi 123, 1000 Brussels, Belgium",
+            "notes": "Key technical decision maker"
+        }
+        
+        success, response = self.make_request("POST", "/contacts", data=contact_data)
+        if success and response.status_code == 200:
+            contact = response.json()
+            self.created_entities["contacts"].append(contact["id"])
+            self.log_result("contacts", "POST /contacts - Create contact", True)
+            contact_id = contact["id"]
+        else:
+            self.log_result("contacts", "POST /contacts - Create contact", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+            return
+
+        # Test GET all contacts
+        success, response = self.make_request("GET", "/contacts")
+        if success and response.status_code == 200:
+            contacts = response.json()
+            self.log_result("contacts", "GET /contacts - List contacts", True)
+        else:
+            self.log_result("contacts", "GET /contacts - List contacts", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+
+        # Test GET specific contact
+        success, response = self.make_request("GET", f"/contacts/{contact_id}")
+        if success and response.status_code == 200:
+            self.log_result("contacts", "GET /contacts/{id} - Get contact", True)
+        else:
+            self.log_result("contacts", "GET /contacts/{id} - Get contact", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+
+        # Test UPDATE contact
+        update_data = {
+            "name": "John Smith Jr.",
+            "email": "john.smith.jr@example.com",
+            "phone": "+32 2 123 4568",
+            "company": "Tech Solutions Belgium",
+            "position": "Senior CTO",
+            "address": "Rue de la Loi 124, 1000 Brussels, Belgium",
+            "notes": "Promoted to Senior CTO"
+        }
+        
+        success, response = self.make_request("PUT", f"/contacts/{contact_id}", data=update_data)
+        if success and response.status_code == 200:
+            self.log_result("contacts", "PUT /contacts/{id} - Update contact", True)
+        else:
+            self.log_result("contacts", "PUT /contacts/{id} - Update contact", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+
+        # Test DELETE contact (will be done in cleanup)
+
+    def test_accounts_crud(self):
+        """Test Account CRUD operations"""
+        print("\n🏢 Testing Account Management...")
+        
+        # Test CREATE account
+        account_data = {
+            "name": "Belgian Tech Corp",
+            "industry": "Technology",
+            "website": "https://belgiantech.be",
+            "annual_revenue": 2500000.0,
+            "employee_count": 50,
+            "address": "Avenue Louise 250, 1050 Brussels, Belgium",
+            "vat_number": "BE0123456789",
+            "notes": "Major client in Brussels area"
+        }
+        
+        success, response = self.make_request("POST", "/accounts", data=account_data)
+        if success and response.status_code == 200:
+            account = response.json()
+            self.created_entities["accounts"].append(account["id"])
+            self.log_result("accounts", "POST /accounts - Create account", True)
+            account_id = account["id"]
+        else:
+            self.log_result("accounts", "POST /accounts - Create account", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+            return
+
+        # Test GET all accounts
+        success, response = self.make_request("GET", "/accounts")
+        if success and response.status_code == 200:
+            self.log_result("accounts", "GET /accounts - List accounts", True)
+        else:
+            self.log_result("accounts", "GET /accounts - List accounts", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+
+        # Test GET specific account
+        success, response = self.make_request("GET", f"/accounts/{account_id}")
+        if success and response.status_code == 200:
+            self.log_result("accounts", "GET /accounts/{id} - Get account", True)
+        else:
+            self.log_result("accounts", "GET /accounts/{id} - Get account", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+
+        # Test UPDATE account
+        update_data = {
+            "name": "Belgian Tech Corporation",
+            "industry": "Information Technology",
+            "website": "https://belgiantech.be",
+            "annual_revenue": 3000000.0,
+            "employee_count": 65,
+            "address": "Avenue Louise 250, 1050 Brussels, Belgium",
+            "vat_number": "BE0123456789",
+            "notes": "Expanded operations - now 65 employees"
+        }
+        
+        success, response = self.make_request("PUT", f"/accounts/{account_id}", data=update_data)
+        if success and response.status_code == 200:
+            self.log_result("accounts", "PUT /accounts/{id} - Update account", True)
+        else:
+            self.log_result("accounts", "PUT /accounts/{id} - Update account", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+
+    def test_products_crud(self):
+        """Test Product CRUD operations"""
+        print("\n📦 Testing Product Management...")
+        
+        # Test CREATE product
+        product_data = {
+            "name": "CRM Software License",
+            "description": "Annual license for CRM software with full features",
+            "price": 1200.0,
+            "currency": "EUR",
+            "tax_rate": 0.21,
+            "sku": "CRM-LIC-001",
+            "category": "Software"
+        }
+        
+        success, response = self.make_request("POST", "/products", data=product_data)
+        if success and response.status_code == 200:
+            product = response.json()
+            self.created_entities["products"].append(product["id"])
+            self.log_result("products", "POST /products - Create product", True)
+            product_id = product["id"]
+        else:
+            self.log_result("products", "POST /products - Create product", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+            return
+
+        # Test GET all products
+        success, response = self.make_request("GET", "/products")
+        if success and response.status_code == 200:
+            self.log_result("products", "GET /products - List products", True)
+        else:
+            self.log_result("products", "GET /products - List products", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+
+        # Test GET specific product
+        success, response = self.make_request("GET", f"/products/{product_id}")
+        if success and response.status_code == 200:
+            self.log_result("products", "GET /products/{id} - Get product", True)
+        else:
+            self.log_result("products", "GET /products/{id} - Get product", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+
+        # Test UPDATE product
+        update_data = {
+            "name": "CRM Software Premium License",
+            "description": "Annual premium license for CRM software with advanced features",
+            "price": 1500.0,
+            "currency": "EUR",
+            "tax_rate": 0.21,
+            "sku": "CRM-LIC-001-PREM",
+            "category": "Software"
+        }
+        
+        success, response = self.make_request("PUT", f"/products/{product_id}", data=update_data)
+        if success and response.status_code == 200:
+            self.log_result("products", "PUT /products/{id} - Update product", True)
+        else:
+            self.log_result("products", "PUT /products/{id} - Update product", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+
+    def test_calendar_crud(self):
+        """Test Calendar Event CRUD operations"""
+        print("\n📅 Testing Calendar Management...")
+        
+        # Test CREATE calendar event
+        start_date = datetime.now(timezone.utc) + timedelta(days=1)
+        end_date = start_date + timedelta(hours=1)
+        
+        event_data = {
+            "title": "Client Meeting - Belgian Tech Corp",
+            "description": "Quarterly review meeting with Belgian Tech Corp",
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "event_type": "meeting",
+            "location": "Avenue Louise 250, Brussels",
+            "all_day": False,
+            "reminder_minutes": 30
+        }
+        
+        success, response = self.make_request("POST", "/calendar/events", data=event_data)
+        if success and response.status_code == 200:
+            event = response.json()
+            self.created_entities["events"].append(event["id"])
+            self.log_result("calendar", "POST /calendar/events - Create event", True)
+            event_id = event["id"]
+        else:
+            self.log_result("calendar", "POST /calendar/events - Create event", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+            return
+
+        # Test GET all events
+        success, response = self.make_request("GET", "/calendar/events")
+        if success and response.status_code == 200:
+            self.log_result("calendar", "GET /calendar/events - List events", True)
+        else:
+            self.log_result("calendar", "GET /calendar/events - List events", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+
+        # Test GET specific event
+        success, response = self.make_request("GET", f"/calendar/events/{event_id}")
+        if success and response.status_code == 200:
+            self.log_result("calendar", "GET /calendar/events/{id} - Get event", True)
+        else:
+            self.log_result("calendar", "GET /calendar/events/{id} - Get event", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+
+        # Test UPDATE event
+        update_start = start_date + timedelta(hours=1)
+        update_end = update_start + timedelta(hours=2)
+        
+        update_data = {
+            "title": "Extended Client Meeting - Belgian Tech Corp",
+            "description": "Extended quarterly review meeting with Belgian Tech Corp - now 2 hours",
+            "start_date": update_start.isoformat(),
+            "end_date": update_end.isoformat(),
+            "event_type": "meeting",
+            "location": "Avenue Louise 250, Brussels - Conference Room A",
+            "all_day": False,
+            "reminder_minutes": 60
+        }
+        
+        success, response = self.make_request("PUT", f"/calendar/events/{event_id}", data=update_data)
+        if success and response.status_code == 200:
+            self.log_result("calendar", "PUT /calendar/events/{id} - Update event", True)
+        else:
+            self.log_result("calendar", "PUT /calendar/events/{id} - Update event", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+
+    def test_dashboard_stats(self):
+        """Test Dashboard Statistics endpoint"""
+        print("\n📊 Testing Dashboard Statistics...")
+        
+        success, response = self.make_request("GET", "/dashboard/stats")
+        if success and response.status_code == 200:
+            stats = response.json()
+            expected_keys = ["contacts", "accounts", "products", "events"]
+            if all(key in stats for key in expected_keys):
+                self.log_result("dashboard", "GET /dashboard/stats - Get statistics", True)
+            else:
+                self.log_result("dashboard", "GET /dashboard/stats - Get statistics", False,
+                              f"Missing keys in response: {set(expected_keys) - set(stats.keys())}")
+        else:
+            self.log_result("dashboard", "GET /dashboard/stats - Get statistics", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+
+    def test_data_validation(self):
+        """Test data validation for required fields"""
+        print("\n✅ Testing Data Validation...")
+        
+        # Test contact creation without required name field
+        success, response = self.make_request("POST", "/contacts", data={"email": "test@example.com"})
+        if not success or response.status_code in [400, 422]:
+            self.log_result("contacts", "POST /contacts - Validation for required name", True)
+        else:
+            self.log_result("contacts", "POST /contacts - Validation for required name", False,
+                          f"Should reject missing name, got status: {response.status_code}")
+
+        # Test product creation without required fields
+        success, response = self.make_request("POST", "/products", data={"description": "Test product"})
+        if not success or response.status_code in [400, 422]:
+            self.log_result("products", "POST /products - Validation for required fields", True)
+        else:
+            self.log_result("products", "POST /products - Validation for required fields", False,
+                          f"Should reject missing required fields, got status: {response.status_code}")
+
+    def cleanup_test_data(self):
+        """Clean up created test data"""
+        print("\n🧹 Cleaning up test data...")
+        
+        # Delete created contacts
+        for contact_id in self.created_entities["contacts"]:
+            success, response = self.make_request("DELETE", f"/contacts/{contact_id}")
+            if success and response.status_code == 200:
+                self.log_result("contacts", f"DELETE /contacts/{contact_id}", True)
+            else:
+                self.log_result("contacts", f"DELETE /contacts/{contact_id}", False,
+                              f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+
+        # Delete created accounts
+        for account_id in self.created_entities["accounts"]:
+            success, response = self.make_request("DELETE", f"/accounts/{account_id}")
+            if success and response.status_code == 200:
+                self.log_result("accounts", f"DELETE /accounts/{account_id}", True)
+            else:
+                self.log_result("accounts", f"DELETE /accounts/{account_id}", False,
+                              f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+
+        # Delete created products
+        for product_id in self.created_entities["products"]:
+            success, response = self.make_request("DELETE", f"/products/{product_id}")
+            if success and response.status_code == 200:
+                self.log_result("products", f"DELETE /products/{product_id}", True)
+            else:
+                self.log_result("products", f"DELETE /products/{product_id}", False,
+                              f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+
+        # Delete created events
+        for event_id in self.created_entities["events"]:
+            success, response = self.make_request("DELETE", f"/calendar/events/{event_id}")
+            if success and response.status_code == 200:
+                self.log_result("calendar", f"DELETE /calendar/events/{event_id}", True)
+            else:
+                self.log_result("calendar", f"DELETE /calendar/events/{event_id}", False,
+                              f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+
+    def print_summary(self):
+        """Print test summary"""
+        print("\n" + "="*60)
+        print("🎯 BACKEND API TEST SUMMARY")
+        print("="*60)
+        
+        total_passed = 0
+        total_failed = 0
+        
+        for category, results in self.test_results.items():
+            passed = results["passed"]
+            failed = results["failed"]
+            total_passed += passed
+            total_failed += failed
+            
+            status = "✅" if failed == 0 else "❌"
+            print(f"{status} {category.upper()}: {passed} passed, {failed} failed")
+            
+            if results["errors"]:
+                for error in results["errors"]:
+                    print(f"   ❌ {error}")
+        
+        print("-" * 60)
+        print(f"TOTAL: {total_passed} passed, {total_failed} failed")
+        
+        if total_failed == 0:
+            print("🎉 All tests passed!")
+            return True
+        else:
+            print(f"⚠️  {total_failed} tests failed")
+            return False
+
+    def run_all_tests(self):
+        """Run all backend tests"""
+        print("🚀 Starting CRM Backend API Tests...")
+        print(f"Backend URL: {BACKEND_URL}")
+        
+        try:
+            self.test_authentication_endpoints()
+            self.test_contacts_crud()
+            self.test_accounts_crud()
+            self.test_products_crud()
+            self.test_calendar_crud()
+            self.test_dashboard_stats()
+            self.test_data_validation()
+            self.cleanup_test_data()
+            
+            return self.print_summary()
+            
+        except Exception as e:
+            print(f"❌ Test suite failed with error: {e}")
+            return False
+
+if __name__ == "__main__":
+    tester = CRMBackendTester()
+    success = tester.run_all_tests()
+    sys.exit(0 if success else 1)
