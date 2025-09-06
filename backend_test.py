@@ -620,6 +620,15 @@ class CRMBackendTester:
                 self.log_result("calendar", f"DELETE /calendar/events/{event_id}", False,
                               f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
 
+        # Delete created invoices
+        for invoice_id in self.created_entities["invoices"]:
+            success, response = self.make_request("DELETE", f"/invoices/{invoice_id}")
+            if success and response.status_code == 200:
+                self.log_result("invoices", f"DELETE /invoices/{invoice_id}", True)
+            else:
+                self.log_result("invoices", f"DELETE /invoices/{invoice_id}", False,
+                              f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+
     def print_summary(self):
         """Print test summary"""
         print("\n" + "="*60)
