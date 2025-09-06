@@ -80,6 +80,62 @@ button, a, .transition-colors {
   .nav-mobile {
     @apply flex flex-col space-y-2;
   }
+
+  /* Sidebar adjustments for mobile */
+  .sidebar-mobile {
+    @apply fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out;
+  }
+}
+
+/* Sidebar specific styles */
+.sidebar-nav-item:hover .sidebar-description {
+  @apply text-gray-600;
+}
+
+.sidebar-nav-item.active {
+  @apply bg-blue-50 text-blue-700;
+  border-right: 4px solid #2563eb;
+}
+
+.sidebar-nav-item.active .sidebar-description {
+  @apply text-blue-600;
+}
+
+/* Sidebar animations */
+.sidebar-enter {
+  transform: translateX(-100%);
+}
+
+.sidebar-enter-active {
+  transform: translateX(0);
+  transition: transform 300ms ease-in-out;
+}
+
+.sidebar-exit {
+  transform: translateX(0);
+}
+
+.sidebar-exit-active {
+  transform: translateX(-100%);
+  transition: transform 300ms ease-in-out;
+}
+
+/* Better scrollbar for sidebar */
+.sidebar-nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 2px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
 }
 
 /* Print styles for invoices */
