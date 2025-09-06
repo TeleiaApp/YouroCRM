@@ -220,10 +220,12 @@ const Layout = ({ children }) => {
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
           <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
-            <Link to="/dashboard" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">YC</span>
-              </div>
+            <Link to="/dashboard" className="flex items-center space-x-3">
+              <img 
+                src="https://customer-assets.emergentagent.com/job_biz-connector-4/artifacts/la9nytru_YouroCRM_logo.svg" 
+                alt="YouroCRM Logo" 
+                className="h-8 w-auto"
+              />
               <span className="text-lg font-bold text-gray-900">yourocrm.com</span>
             </Link>
             <button
