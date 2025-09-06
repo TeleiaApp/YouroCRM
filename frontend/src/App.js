@@ -149,7 +149,7 @@ const LoginPage = () => {
             <img 
               src="https://customer-assets.emergentagent.com/job_biz-connector-4/artifacts/tgh8glfj_image.png"
               alt="YouroCRM Logo"
-              className="h-32 sm:h-40 md:h-48 w-auto mb-4 transform hover:scale-105 transition-transform shadow-lg rounded-lg"
+              className="yourocrm-logo-main h-32 sm:h-40 md:h-48 w-auto mb-4 transform hover:scale-105 transition-transform shadow-lg rounded-lg"
             />
             <p className="text-gray-600 text-center text-lg sm:text-xl">Professional CRM & Peppol Invoicing Platform</p>
           </div>
