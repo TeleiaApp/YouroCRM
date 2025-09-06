@@ -625,9 +625,80 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600">Welcome to yourocrm.com</p>
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600">Welcome to yourocrm.com</p>
+        </div>
+        
+        {/* Global Search */}
+        <div className="w-full lg:flex-1 lg:max-w-2xl">
+          <GlobalSearch />
+        </div>
+      </div>
+
+      {/* Quick Create Actions */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <span className="text-2xl mr-2">⚡</span>
+          Quick Actions
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <Link
+            to="/contacts?new=true"
+            className="flex flex-col items-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors group"
+          >
+            <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+              <span className="text-white text-xl font-bold">+</span>
+            </div>
+            <span className="text-sm font-medium text-gray-900">Add Contact</span>
+            <span className="text-xs text-gray-600">New customer</span>
+          </Link>
+
+          <Link
+            to="/accounts?new=true"
+            className="flex flex-col items-center p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors group"
+          >
+            <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+              <span className="text-white text-xl font-bold">+</span>
+            </div>
+            <span className="text-sm font-medium text-gray-900">Add Account</span>
+            <span className="text-xs text-gray-600">New company</span>
+          </Link>
+
+          <Link
+            to="/products?new=true"
+            className="flex flex-col items-center p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors group"
+          >
+            <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+              <span className="text-white text-xl font-bold">+</span>
+            </div>
+            <span className="text-sm font-medium text-gray-900">Add Product</span>
+            <span className="text-xs text-gray-600">New service</span>
+          </Link>
+
+          <Link
+            to="/invoices?new=true"
+            className="flex flex-col items-center p-4 bg-red-50 hover:bg-red-100 rounded-lg transition-colors group"
+          >
+            <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+              <span className="text-white text-xl font-bold">+</span>
+            </div>
+            <span className="text-sm font-medium text-gray-900">Create Invoice</span>
+            <span className="text-xs text-gray-600">Bill customer</span>
+          </Link>
+
+          <Link
+            to="/calendar?new=true"
+            className="flex flex-col items-center p-4 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors group"
+          >
+            <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+              <span className="text-white text-xl font-bold">+</span>
+            </div>
+            <span className="text-sm font-medium text-gray-900">Add Event</span>
+            <span className="text-xs text-gray-600">Schedule meeting</span>
+          </Link>
+        </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
