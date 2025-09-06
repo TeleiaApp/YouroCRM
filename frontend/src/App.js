@@ -146,7 +146,7 @@ const LoginPage = () => {
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
         <div className="text-center mb-8">
           <div className="flex flex-col items-center mb-2">
-            <div className="flex items-center justify-center w-24 h-24 bg-gradient-to-br from-blue-500 via-blue-600 to-purple-700 rounded-2xl shadow-2xl mb-4 border-4 border-white transform hover:scale-105 transition-transform">
+            <div className="yourocrm-main-logo flex items-center justify-center transform hover:scale-105 transition-transform">
               <span className="text-4xl font-black text-white tracking-wider">YC</span>
             </div>
             <div className="text-center">
