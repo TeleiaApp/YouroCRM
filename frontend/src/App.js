@@ -198,11 +198,11 @@ const Layout = ({ children }) => {
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: '📊' },
+    { name: 'Calendar', href: '/calendar', icon: '📅' },
     { name: 'Contacts', href: '/contacts', icon: '👥' },
     { name: 'Accounts', href: '/accounts', icon: '🏢' },
     { name: 'Products', href: '/products', icon: '📦' },
     { name: 'Invoices', href: '/invoices', icon: '🧾' },
-    { name: 'Calendar', href: '/calendar', icon: '📅' },
   ];
 
   return (
