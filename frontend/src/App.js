@@ -1855,8 +1855,8 @@ const ProductsPage = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
+      <div className="flex flex-col items-center gap-4">
+        <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900">Product Catalog</h1>
           <p className="text-gray-600">Manage your products and services</p>
         </div>
