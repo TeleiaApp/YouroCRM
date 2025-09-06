@@ -361,7 +361,7 @@ const Dashboard = () => {
             <div className="flex items-center p-3 bg-gray-50 rounded-lg">
               <span className="text-2xl mr-3">🎉</span>
               <div>
-                <p className="font-medium text-gray-900">Welcome to CRM Pro!</p>
+                <p className="font-medium text-gray-900">Welcome to yourocrm.com!</p>
                 <p className="text-sm text-gray-600">Start by adding your first contact</p>
               </div>
             </div>
