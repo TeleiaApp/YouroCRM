@@ -547,10 +547,25 @@ def generate_invoice_pdf(invoice_data, account_data, contact_data, products_data
     story.append(Paragraph("INVOICE", header_style))
     
     # Invoice details table
+    issue_date = invoice_data['issue_date']
+    if isinstance(issue_date, datetime):
+        issue_date_str = issue_date.strftime('%Y-%m-%d')
+    else:
+        issue_date_str = str(issue_date)[:10]
+    
+    due_date = invoice_data.get('due_date')
+    if due_date:
+        if isinstance(due_date, datetime):
+            due_date_str = due_date.strftime('%Y-%m-%d')
+        else:
+            due_date_str = str(due_date)[:10]
+    else:
+        due_date_str = 'On Receipt'
+    
     invoice_details = [
         ['Invoice Number:', invoice_data['invoice_number']],
-        ['Issue Date:', invoice_data['issue_date'][:10]],
-        ['Due Date:', invoice_data['due_date'][:10] if invoice_data.get('due_date') else 'On Receipt'],
+        ['Issue Date:', issue_date_str],
+        ['Due Date:', due_date_str],
         ['Status:', invoice_data['status'].title()]
     ]
     
