@@ -222,7 +222,7 @@ const Layout = ({ children }) => {
           {/* Sidebar Header */}
           <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
             <Link to="/dashboard" className="flex items-center space-x-3">
-              <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500 via-blue-600 to-purple-700 rounded-xl shadow-lg border-2 border-blue-200">
+              <div className="yourocrm-logo flex items-center justify-center w-10 h-10 rounded-xl border-2 border-blue-200">
                 <span className="text-lg font-black text-white">YC</span>
               </div>
               <div>
