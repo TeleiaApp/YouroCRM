@@ -1218,6 +1218,15 @@ const AccountsPage = () => {
     notes: ''
   });
 
+  // Check for new parameter and open modal
+  const location = useLocation();
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    if (urlParams.get('new') === 'true') {
+      openModal();
+    }
+  }, [location]);
+
   // Fetch data
   useEffect(() => {
     fetchData();
