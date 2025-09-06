@@ -855,12 +855,502 @@ const ContactsPage = () => {
   );
 };
 
-const AccountsPage = () => (
-  <div className="text-center py-12">
-    <h1 className="text-2xl font-bold text-gray-900 mb-4">Accounts</h1>
-    <p className="text-gray-600">Account management coming soon...</p>
-  </div>
-);
+// Accounts Management Component
+const AccountsPage = () => {
+  const [accounts, setAccounts] = useState([]);
+  const [contacts, setContacts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Account form state
+  const [accountForm, setAccountForm] = useState({
+    name: '',
+    contact_id: '',
+    industry: '',
+    website: '',
+    annual_revenue: '',
+    employee_count: '',
+    address: '',
+    vat_number: '',
+    notes: ''
+  });
+
+  // Fetch data
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [accountsRes, contactsRes] = await Promise.all([
+        axios.get(`${API}/accounts`, { withCredentials: true }),
+        axios.get(`${API}/contacts`, { withCredentials: true })
+      ]);
+      setAccounts(accountsRes.data);
+      setContacts(contactsRes.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Filter accounts by search term
+  const filteredAccounts = accounts.filter(account =>
+    account.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    account.industry?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    account.vat_number?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Get contact name for account
+  const getContactName = (contactId) => {
+    const contact = contacts.find(c => c.id === contactId);
+    return contact ? contact.name : 'No contact assigned';
+  };
+
+  // Modal handlers
+  const openModal = (account = null) => {
+    if (account) {
+      setAccountForm({
+        ...account,
+        annual_revenue: account.annual_revenue || '',
+        employee_count: account.employee_count || '',
+        contact_id: account.contact_id || ''
+      });
+      setSelectedAccount(account);
+    } else {
+      setAccountForm({
+        name: '',
+        contact_id: '',
+        industry: '',
+        website: '',
+        annual_revenue: '',
+        employee_count: '',
+        address: '',
+        vat_number: '',
+        notes: ''
+      });
+      setSelectedAccount(null);
+    }
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedAccount(null);
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const submitData = {
+        ...accountForm,
+        annual_revenue: accountForm.annual_revenue ? parseFloat(accountForm.annual_revenue) : null,
+        employee_count: accountForm.employee_count ? parseInt(accountForm.employee_count) : null,
+        contact_id: accountForm.contact_id || null
+      };
+
+      if (selectedAccount) {
+        // Update existing account
+        await axios.put(`${API}/accounts/${selectedAccount.id}`, submitData, { withCredentials: true });
+        setAccounts(accounts.map(a => a.id === selectedAccount.id ? { ...selectedAccount, ...submitData } : a));
+      } else {
+        // Create new account
+        const response = await axios.post(`${API}/accounts`, submitData, { withCredentials: true });
+        setAccounts([...accounts, response.data]);
+      }
+      closeModal();
+    } catch (error) {
+      console.error('Error saving account:', error);
+    }
+  };
+
+  // Handle delete
+  const handleDelete = async (accountId) => {
+    if (window.confirm('Are you sure you want to delete this account? This action cannot be undone.')) {
+      try {
+        await axios.delete(`${API}/accounts/${accountId}`, { withCredentials: true });
+        setAccounts(accounts.filter(a => a.id !== accountId));
+        closeModal();
+      } catch (error) {
+        console.error('Error deleting account:', error);
+      }
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="animate-pulse space-y-6">
+        <div className="h-8 bg-gray-200 rounded w-48"></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="h-56 bg-gray-200 rounded-lg"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Accounts</h1>
+          <p className="text-gray-600">Manage your company accounts and clients</p>
+        </div>
+        <button
+          onClick={() => openModal()}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+        >
+          + Add Account
+        </button>
+      </div>
+
+      {/* Search */}
+      <div className="max-w-md">
+        <input
+          type="text"
+          placeholder="Search accounts..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        />
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="text-2xl font-bold text-blue-600">{accounts.length}</div>
+          <div className="text-sm text-gray-600">Total Accounts</div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="text-2xl font-bold text-green-600">
+            {accounts.filter(a => a.vat_number).length}
+          </div>
+          <div className="text-sm text-gray-600">With VAT Number</div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="text-2xl font-bold text-purple-600">
+            {accounts.filter(a => a.website).length}
+          </div>
+          <div className="text-sm text-gray-600">With Website</div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="text-2xl font-bold text-orange-600">
+            {accounts.reduce((sum, a) => sum + (a.annual_revenue || 0), 0).toLocaleString()}€
+          </div>
+          <div className="text-sm text-gray-600">Total Revenue</div>
+        </div>
+      </div>
+
+      {/* Accounts Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredAccounts.map((account) => (
+          <div key={account.id} className="bg-white rounded-lg shadow border hover:shadow-md transition-shadow">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+                    <span className="text-white font-semibold text-lg">
+                      {account.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{account.name}</h3>
+                    {account.industry && (
+                      <p className="text-sm text-gray-600">{account.industry}</p>
+                    )}
+                  </div>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openModal(account);
+                  }}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  ✏️
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center text-sm text-gray-600">
+                  <span className="mr-2">👤</span>
+                  {getContactName(account.contact_id)}
+                </div>
+
+                {account.website && (
+                  <div className="flex items-center text-sm text-gray-600">
+                    <span className="mr-2">🌐</span>
+                    <a 
+                      href={account.website.startsWith('http') ? account.website : `https://${account.website}`}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="hover:text-blue-600 truncate"
+                    >
+                      {account.website}
+                    </a>
+                  </div>
+                )}
+
+                {account.vat_number && (
+                  <div className="flex items-center text-sm text-gray-600">
+                    <span className="mr-2">💼</span>
+                    VAT: {account.vat_number}
+                  </div>
+                )}
+
+                {account.address && (
+                  <div className="flex items-center text-sm text-gray-600">
+                    <span className="mr-2">📍</span>
+                    {account.address}
+                  </div>
+                )}
+
+                {account.annual_revenue && (
+                  <div className="flex items-center text-sm text-gray-600">
+                    <span className="mr-2">💰</span>
+                    {account.annual_revenue.toLocaleString()}€ revenue
+                  </div>
+                )}
+
+                {account.employee_count && (
+                  <div className="flex items-center text-sm text-gray-600">
+                    <span className="mr-2">👥</span>
+                    {account.employee_count} employees
+                  </div>
+                )}
+              </div>
+
+              {account.notes && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <p className="text-sm text-gray-600 line-clamp-2">{account.notes}</p>
+                </div>
+              )}
+
+              <div className="mt-4 text-xs text-gray-500">
+                Added {new Date(account.created_at).toLocaleDateString()}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Empty State */}
+      {filteredAccounts.length === 0 && !loading && (
+        <div className="text-center py-12">
+          <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-4xl">🏢</span>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            {searchTerm ? 'No accounts found' : 'No accounts yet'}
+          </h3>
+          <p className="text-gray-600 mb-4">
+            {searchTerm 
+              ? 'Try adjusting your search terms'
+              : 'Start building your client base by adding your first account'
+            }
+          </p>
+          {!searchTerm && (
+            <button
+              onClick={() => openModal()}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              Add Your First Account
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Account Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {selectedAccount ? 'Edit Account' : 'Add New Account'}
+                </h3>
+                <button
+                  onClick={closeModal}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Account Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={accountForm.name}
+                      onChange={(e) => setAccountForm({...accountForm, name: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Company Name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Primary Contact
+                    </label>
+                    <select
+                      value={accountForm.contact_id}
+                      onChange={(e) => setAccountForm({...accountForm, contact_id: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">Select a contact</option>
+                      {contacts.map(contact => (
+                        <option key={contact.id} value={contact.id}>
+                          {contact.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Industry
+                    </label>
+                    <input
+                      type="text"
+                      value={accountForm.industry}
+                      onChange={(e) => setAccountForm({...accountForm, industry: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Technology, Healthcare, Finance..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Website
+                    </label>
+                    <input
+                      type="url"
+                      value={accountForm.website}
+                      onChange={(e) => setAccountForm({...accountForm, website: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="https://company.com"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Annual Revenue (€)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1000"
+                      value={accountForm.annual_revenue}
+                      onChange={(e) => setAccountForm({...accountForm, annual_revenue: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="1000000"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Employee Count
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={accountForm.employee_count}
+                      onChange={(e) => setAccountForm({...accountForm, employee_count: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="50"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    VAT Number (Peppol)
+                  </label>
+                  <input
+                    type="text"
+                    value={accountForm.vat_number}
+                    onChange={(e) => setAccountForm({...accountForm, vat_number: e.target.value})}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="BE0123456789"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Required for Peppol invoicing</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Address
+                  </label>
+                  <input
+                    type="text"
+                    value={accountForm.address}
+                    onChange={(e) => setAccountForm({...accountForm, address: e.target.value})}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Street, City, Country"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Notes
+                  </label>
+                  <textarea
+                    value={accountForm.notes}
+                    onChange={(e) => setAccountForm({...accountForm, notes: e.target.value})}
+                    rows={3}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Additional notes about this account..."
+                  />
+                </div>
+
+                <div className="flex justify-between pt-4">
+                  <div>
+                    {selectedAccount && (
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(selectedAccount.id)}
+                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm font-medium"
+                      >
+                        Delete Account
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex space-x-3">
+                    <button
+                      type="button"
+                      onClick={closeModal}
+                      className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors text-sm font-medium"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+                    >
+                      {selectedAccount ? 'Update Account' : 'Add Account'}
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const ProductsPage = () => (
   <div className="text-center py-12">
