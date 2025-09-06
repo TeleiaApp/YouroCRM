@@ -3090,7 +3090,7 @@ const CalendarPage = () => {
 
       {/* Month/Year Display */}
       <div className="text-center">
-        <h2 className="text-xl font-semibold text-gray-900">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
           {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
         </h2>
       </div>
