@@ -408,12 +408,494 @@ const InvoicesPage = () => (
   </div>
 );
 
-const CalendarPage = () => (
-  <div className="text-center py-12">
-    <h1 className="text-2xl font-bold text-gray-900 mb-4">Calendar</h1>
-    <p className="text-gray-600">Calendar and event management coming soon...</p>
-  </div>
-);
+// Calendar Component
+const CalendarPage = () => {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [events, setEvents] = useState([]);
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [contacts, setContacts] = useState([]);
+  const [accounts, setAccounts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Event form state
+  const [eventForm, setEventForm] = useState({
+    title: '',
+    description: '',
+    start_date: '',
+    end_date: '',
+    event_type: 'meeting',
+    related_id: '',
+    related_type: '',
+    location: '',
+    all_day: false,
+    reminder_minutes: 30
+  });
+
+  // Fetch data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [eventsRes, contactsRes, accountsRes] = await Promise.all([
+          axios.get(`${API}/calendar/events`, { withCredentials: true }),
+          axios.get(`${API}/contacts`, { withCredentials: true }),
+          axios.get(`${API}/accounts`, { withCredentials: true })
+        ]);
+        
+        setEvents(eventsRes.data);
+        setContacts(contactsRes.data);
+        setAccounts(accountsRes.data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Date navigation
+  const navigateMonth = (direction) => {
+    const newDate = new Date(currentDate);
+    newDate.setMonth(currentDate.getMonth() + direction);
+    setCurrentDate(newDate);
+  };
+
+  const goToToday = () => {
+    setCurrentDate(new Date());
+  };
+
+  // Get calendar days for current month
+  const getCalendarDays = () => {
+    const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
+    
+    const days = [];
+    const current = new Date(startDate);
+    
+    // Generate 42 days (6 weeks)
+    for (let i = 0; i < 42; i++) {
+      days.push(new Date(current));
+      current.setDate(current.getDate() + 1);
+    }
+    
+    return days;
+  };
+
+  // Get events for a specific date
+  const getEventsForDate = (date) => {
+    const dateStr = date.toDateString();
+    return events.filter(event => {
+      const eventDate = new Date(event.start_date);
+      return eventDate.toDateString() === dateStr;
+    });
+  };
+
+  // Handle event form
+  const openEventModal = (date = null, event = null) => {
+    if (event) {
+      // Edit existing event
+      const startDate = new Date(event.start_date);
+      const endDate = new Date(event.end_date);
+      setEventForm({
+        ...event,
+        start_date: startDate.toISOString().slice(0, 16),
+        end_date: endDate.toISOString().slice(0, 16)
+      });
+      setSelectedEvent(event);
+    } else {
+      // Create new event
+      const selectedDateTime = date || new Date();
+      selectedDateTime.setHours(9, 0, 0, 0);
+      const endDateTime = new Date(selectedDateTime);
+      endDateTime.setHours(10, 0, 0, 0);
+      
+      setEventForm({
+        title: '',
+        description: '',
+        start_date: selectedDateTime.toISOString().slice(0, 16),
+        end_date: endDateTime.toISOString().slice(0, 16),
+        event_type: 'meeting',
+        related_id: '',
+        related_type: '',
+        location: '',
+        all_day: false,
+        reminder_minutes: 30
+      });
+      setSelectedEvent(null);
+    }
+    setSelectedDate(date);
+    setShowEventModal(true);
+  };
+
+  const closeEventModal = () => {
+    setShowEventModal(false);
+    setSelectedEvent(null);
+    setSelectedDate(null);
+  };
+
+  const handleEventSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const eventData = {
+        ...eventForm,
+        start_date: new Date(eventForm.start_date).toISOString(),
+        end_date: new Date(eventForm.end_date).toISOString()
+      };
+
+      if (selectedEvent) {
+        // Update existing event
+        await axios.put(`${API}/calendar/events/${selectedEvent.id}`, eventData, { withCredentials: true });
+        setEvents(events.map(e => e.id === selectedEvent.id ? { ...selectedEvent, ...eventData } : e));
+      } else {
+        // Create new event
+        const response = await axios.post(`${API}/calendar/events`, eventData, { withCredentials: true });
+        setEvents([...events, response.data]);
+      }
+      
+      closeEventModal();
+    } catch (error) {
+      console.error('Error saving event:', error);
+    }
+  };
+
+  const handleEventDelete = async (eventId) => {
+    if (window.confirm('Are you sure you want to delete this event?')) {
+      try {
+        await axios.delete(`${API}/calendar/events/${eventId}`, { withCredentials: true });
+        setEvents(events.filter(e => e.id !== eventId));
+        closeEventModal();
+      } catch (error) {
+        console.error('Error deleting event:', error);
+      }
+    }
+  };
+
+  const eventTypeColors = {
+    meeting: 'bg-blue-100 text-blue-800 border-l-4 border-blue-500',
+    invoice_due: 'bg-red-100 text-red-800 border-l-4 border-red-500',
+    deadline: 'bg-orange-100 text-orange-800 border-l-4 border-orange-500',
+    call: 'bg-green-100 text-green-800 border-l-4 border-green-500',
+  };
+
+  if (loading) {
+    return (
+      <div className="animate-pulse space-y-6">
+        <div className="h-8 bg-gray-200 rounded w-48"></div>
+        <div className="h-96 bg-gray-200 rounded"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Calendar Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Calendar</h1>
+          <p className="text-gray-600">Manage your events and schedule</p>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => navigateMonth(-1)}
+            className="p-2 hover:bg-gray-100 rounded-md transition-colors"
+            title="Previous month"
+          >
+            ← 
+          </button>
+          <button
+            onClick={goToToday}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+          >
+            Today
+          </button>
+          <button
+            onClick={() => navigateMonth(1)}
+            className="p-2 hover:bg-gray-100 rounded-md transition-colors"
+            title="Next month"
+          >
+            →
+          </button>
+          <button
+            onClick={() => openEventModal()}
+            className="ml-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm font-medium"
+          >
+            + New Event
+          </button>
+        </div>
+      </div>
+
+      {/* Month/Year Display */}
+      <div className="text-center">
+        <h2 className="text-xl font-semibold text-gray-900">
+          {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+        </h2>
+      </div>
+
+      {/* Calendar Grid */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        {/* Week headers */}
+        <div className="grid grid-cols-7 gap-0 bg-gray-50 border-b">
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+            <div key={day} className="p-3 text-center text-sm font-medium text-gray-700">
+              {day}
+            </div>
+          ))}
+        </div>
+        
+        {/* Calendar days */}
+        <div className="grid grid-cols-7 gap-0">
+          {getCalendarDays().map((date, index) => {
+            const isCurrentMonth = date.getMonth() === currentDate.getMonth();
+            const isToday = date.toDateString() === new Date().toDateString();
+            const dayEvents = getEventsForDate(date);
+            
+            return (
+              <div
+                key={index}
+                className={`min-h-[120px] p-2 border-r border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors ${
+                  !isCurrentMonth ? 'bg-gray-50 text-gray-400' : ''
+                }`}
+                onClick={() => openEventModal(date)}
+              >
+                <div className="flex justify-between items-start mb-1">
+                  <span className={`text-sm font-medium ${
+                    isToday ? 'bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs' : ''
+                  }`}>
+                    {date.getDate()}
+                  </span>
+                </div>
+                
+                <div className="space-y-1">
+                  {dayEvents.slice(0, 3).map(event => (
+                    <div
+                      key={event.id}
+                      className={`text-xs p-1 rounded truncate cursor-pointer ${eventTypeColors[event.event_type] || eventTypeColors.meeting}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEventModal(date, event);
+                      }}
+                      title={event.title}
+                    >
+                      {event.title}
+                    </div>
+                  ))}
+                  {dayEvents.length > 3 && (
+                    <div className="text-xs text-gray-500 pl-1">
+                      +{dayEvents.length - 3} more
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Event Modal */}
+      {showEventModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {selectedEvent ? 'Edit Event' : 'New Event'}
+                </h3>
+                <button
+                  onClick={closeEventModal}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              <form onSubmit={handleEventSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Event Title *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={eventForm.title}
+                    onChange={(e) => setEventForm({...eventForm, title: e.target.value})}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter event title"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Event Type
+                  </label>
+                  <select
+                    value={eventForm.event_type}
+                    onChange={(e) => setEventForm({...eventForm, event_type: e.target.value})}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="meeting">Meeting</option>
+                    <option value="call">Phone Call</option>
+                    <option value="deadline">Deadline</option>
+                    <option value="invoice_due">Invoice Due</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Start Date & Time *
+                    </label>
+                    <input
+                      type="datetime-local"
+                      required
+                      value={eventForm.start_date}
+                      onChange={(e) => setEventForm({...eventForm, start_date: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      End Date & Time *
+                    </label>
+                    <input
+                      type="datetime-local"
+                      required
+                      value={eventForm.end_date}
+                      onChange={(e) => setEventForm({...eventForm, end_date: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Location
+                  </label>
+                  <input
+                    type="text"
+                    value={eventForm.location}
+                    onChange={(e) => setEventForm({...eventForm, location: e.target.value})}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter location or meeting link"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Related To
+                  </label>
+                  <div className="flex gap-2">
+                    <select
+                      value={eventForm.related_type}
+                      onChange={(e) => {
+                        setEventForm({...eventForm, related_type: e.target.value, related_id: ''});
+                      }}
+                      className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">None</option>
+                      <option value="contact">Contact</option>
+                      <option value="account">Account</option>
+                    </select>
+                    {eventForm.related_type && (
+                      <select
+                        value={eventForm.related_id}
+                        onChange={(e) => setEventForm({...eventForm, related_id: e.target.value})}
+                        className="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Select {eventForm.related_type}</option>
+                        {(eventForm.related_type === 'contact' ? contacts : accounts).map(item => (
+                          <option key={item.id} value={item.id}>
+                            {item.name}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    value={eventForm.description}
+                    onChange={(e) => setEventForm({...eventForm, description: e.target.value})}
+                    rows={3}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Event description..."
+                  />
+                </div>
+
+                <div className="flex items-center space-x-4">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={eventForm.all_day}
+                      onChange={(e) => setEventForm({...eventForm, all_day: e.target.checked})}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">All day</span>
+                  </label>
+                  
+                  {!eventForm.all_day && (
+                    <div className="flex items-center">
+                      <label className="text-sm text-gray-700 mr-2">Reminder:</label>
+                      <select
+                        value={eventForm.reminder_minutes}
+                        onChange={(e) => setEventForm({...eventForm, reminder_minutes: parseInt(e.target.value)})}
+                        className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value={0}>None</option>
+                        <option value={15}>15 min</option>
+                        <option value={30}>30 min</option>
+                        <option value={60}>1 hour</option>
+                        <option value={1440}>1 day</option>
+                      </select>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-between pt-4">
+                  <div>
+                    {selectedEvent && (
+                      <button
+                        type="button"
+                        onClick={() => handleEventDelete(selectedEvent.id)}
+                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm font-medium"
+                      >
+                        Delete Event
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex space-x-3">
+                    <button
+                      type="button"
+                      onClick={closeEventModal}
+                      className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors text-sm font-medium"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+                    >
+                      {selectedEvent ? 'Update Event' : 'Create Event'}
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 function App() {
   return (
