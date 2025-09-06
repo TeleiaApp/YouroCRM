@@ -632,7 +632,7 @@ const Dashboard = () => {
         </div>
         
         {/* Global Search */}
-        <div className="w-full lg:flex-1 lg:max-w-2xl">
+        <div className="w-full max-w-2xl">
           <GlobalSearch />
         </div>
       </div>
