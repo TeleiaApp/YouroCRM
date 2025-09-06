@@ -445,12 +445,415 @@ const Dashboard = () => {
 };
 
 // Placeholder components for other routes
-const ContactsPage = () => (
-  <div className="text-center py-12">
-    <h1 className="text-2xl font-bold text-gray-900 mb-4">Contacts</h1>
-    <p className="text-gray-600">Contact management coming soon...</p>
-  </div>
-);
+// Contacts Management Component
+const ContactsPage = () => {
+  const [contacts, setContacts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedContact, setSelectedContact] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Contact form state
+  const [contactForm, setContactForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    company: '',
+    position: '',
+    address: '',
+    notes: ''
+  });
+
+  // Fetch contacts
+  useEffect(() => {
+    fetchContacts();
+  }, []);
+
+  const fetchContacts = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API}/contacts`, { withCredentials: true });
+      setContacts(response.data);
+    } catch (error) {
+      console.error('Error fetching contacts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Filter contacts by search term
+  const filteredContacts = contacts.filter(contact =>
+    contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contact.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contact.company?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Modal handlers
+  const openModal = (contact = null) => {
+    if (contact) {
+      setContactForm(contact);
+      setSelectedContact(contact);
+    } else {
+      setContactForm({
+        name: '',
+        email: '',
+        phone: '',
+        company: '',
+        position: '',
+        address: '',
+        notes: ''
+      });
+      setSelectedContact(null);
+    }
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedContact(null);
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (selectedContact) {
+        // Update existing contact
+        await axios.put(`${API}/contacts/${selectedContact.id}`, contactForm, { withCredentials: true });
+        setContacts(contacts.map(c => c.id === selectedContact.id ? { ...selectedContact, ...contactForm } : c));
+      } else {
+        // Create new contact
+        const response = await axios.post(`${API}/contacts`, contactForm, { withCredentials: true });
+        setContacts([...contacts, response.data]);
+      }
+      closeModal();
+    } catch (error) {
+      console.error('Error saving contact:', error);
+    }
+  };
+
+  // Handle delete
+  const handleDelete = async (contactId) => {
+    if (window.confirm('Are you sure you want to delete this contact?')) {
+      try {
+        await axios.delete(`${API}/contacts/${contactId}`, { withCredentials: true });
+        setContacts(contacts.filter(c => c.id !== contactId));
+        closeModal();
+      } catch (error) {
+        console.error('Error deleting contact:', error);
+      }
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="animate-pulse space-y-6">
+        <div className="h-8 bg-gray-200 rounded w-48"></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="h-48 bg-gray-200 rounded-lg"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Contacts</h1>
+          <p className="text-gray-600">Manage your customers and leads</p>
+        </div>
+        <button
+          onClick={() => openModal()}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+        >
+          + Add Contact
+        </button>
+      </div>
+
+      {/* Search */}
+      <div className="max-w-md">
+        <input
+          type="text"
+          placeholder="Search contacts..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        />
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="text-2xl font-bold text-blue-600">{contacts.length}</div>
+          <div className="text-sm text-gray-600">Total Contacts</div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="text-2xl font-bold text-green-600">
+            {contacts.filter(c => c.company).length}
+          </div>
+          <div className="text-sm text-gray-600">With Companies</div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="text-2xl font-bold text-purple-600">
+            {contacts.filter(c => c.email).length}
+          </div>
+          <div className="text-sm text-gray-600">With Email</div>
+        </div>
+      </div>
+
+      {/* Contacts Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredContacts.map((contact) => (
+          <div key={contact.id} className="bg-white rounded-lg shadow border hover:shadow-md transition-shadow">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
+                    <span className="text-white font-semibold text-lg">
+                      {contact.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{contact.name}</h3>
+                    {contact.position && (
+                      <p className="text-sm text-gray-600">{contact.position}</p>
+                    )}
+                  </div>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openModal(contact);
+                  }}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  ✏️
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {contact.company && (
+                  <div className="flex items-center text-sm text-gray-600">
+                    <span className="mr-2">🏢</span>
+                    {contact.company}
+                  </div>
+                )}
+                {contact.email && (
+                  <div className="flex items-center text-sm text-gray-600">
+                    <span className="mr-2">📧</span>
+                    <a href={`mailto:${contact.email}`} className="hover:text-blue-600">
+                      {contact.email}
+                    </a>
+                  </div>
+                )}
+                {contact.phone && (
+                  <div className="flex items-center text-sm text-gray-600">
+                    <span className="mr-2">📞</span>
+                    <a href={`tel:${contact.phone}`} className="hover:text-blue-600">
+                      {contact.phone}
+                    </a>
+                  </div>
+                )}
+                {contact.address && (
+                  <div className="flex items-center text-sm text-gray-600">
+                    <span className="mr-2">📍</span>
+                    {contact.address}
+                  </div>
+                )}
+              </div>
+
+              {contact.notes && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <p className="text-sm text-gray-600 line-clamp-2">{contact.notes}</p>
+                </div>
+              )}
+
+              <div className="mt-4 text-xs text-gray-500">
+                Added {new Date(contact.created_at).toLocaleDateString()}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Empty State */}
+      {filteredContacts.length === 0 && !loading && (
+        <div className="text-center py-12">
+          <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-4xl">👥</span>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            {searchTerm ? 'No contacts found' : 'No contacts yet'}
+          </h3>
+          <p className="text-gray-600 mb-4">
+            {searchTerm 
+              ? 'Try adjusting your search terms'
+              : 'Start building your contact list by adding your first contact'
+            }
+          </p>
+          {!searchTerm && (
+            <button
+              onClick={() => openModal()}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              Add Your First Contact
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Contact Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {selectedContact ? 'Edit Contact' : 'Add New Contact'}
+                </h3>
+                <button
+                  onClick={closeModal}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={contactForm.name}
+                      onChange={(e) => setContactForm({...contactForm, name: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="John Smith"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={contactForm.email}
+                      onChange={(e) => setContactForm({...contactForm, email: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="john@company.com"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Phone
+                    </label>
+                    <input
+                      type="tel"
+                      value={contactForm.phone}
+                      onChange={(e) => setContactForm({...contactForm, phone: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="+32 2 123 4567"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Company
+                    </label>
+                    <input
+                      type="text"
+                      value={contactForm.company}
+                      onChange={(e) => setContactForm({...contactForm, company: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Company Name"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Position
+                  </label>
+                  <input
+                    type="text"
+                    value={contactForm.position}
+                    onChange={(e) => setContactForm({...contactForm, position: e.target.value})}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="CEO, Manager, Developer..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Address
+                  </label>
+                  <input
+                    type="text"
+                    value={contactForm.address}
+                    onChange={(e) => setContactForm({...contactForm, address: e.target.value})}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Street, City, Country"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Notes
+                  </label>
+                  <textarea
+                    value={contactForm.notes}
+                    onChange={(e) => setContactForm({...contactForm, notes: e.target.value})}
+                    rows={3}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Additional notes about this contact..."
+                  />
+                </div>
+
+                <div className="flex justify-between pt-4">
+                  <div>
+                    {selectedContact && (
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(selectedContact.id)}
+                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm font-medium"
+                      >
+                        Delete Contact
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex space-x-3">
+                    <button
+                      type="button"
+                      onClick={closeModal}
+                      className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors text-sm font-medium"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+                    >
+                      {selectedContact ? 'Update Contact' : 'Add Contact'}
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const AccountsPage = () => (
   <div className="text-center py-12">
