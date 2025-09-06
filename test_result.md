@@ -265,12 +265,13 @@ metadata:
   frontend_tests_failed: 0
 
 test_plan:
-  current_focus: []
+  current_focus: 
+    - "Calendar Page with Event Management"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
   backend_testing_complete: true
-  frontend_testing_complete: true
+  frontend_testing_complete: false
 
 agent_communication:
     - agent: "main"
