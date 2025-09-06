@@ -151,7 +151,7 @@ const LoginPage = () => {
               alt="YouroCRM Logo"
               className="h-24 w-auto mb-3 transform hover:scale-105 transition-transform"
             />
-            <p className="text-gray-600 text-center">Manage customers and send Peppol invoices</p>
+            <p className="text-gray-600 text-center">Professional CRM & Peppol Invoicing Platform</p>
           </div>
           <p className="text-gray-600">Manage customers and send Peppol invoices</p>
         </div>
