@@ -408,7 +408,7 @@ const GlobalSearch = () => {
       <div className="relative">
         <input
           type="text"
-          placeholder="🔍 Search across all entities (contacts, accounts, products, invoices, events)..."
+          placeholder="🔍 Search everything..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onFocus={() => searchTerm.length >= 2 && setShowResults(true)}
