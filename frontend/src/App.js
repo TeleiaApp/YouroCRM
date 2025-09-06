@@ -145,13 +145,13 @@ const LoginPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
         <div className="text-center mb-8">
-          <div className="flex flex-col items-center mb-4">
+          <div className="flex flex-col items-center mb-6">
             <img 
               src="https://customer-assets.emergentagent.com/job_biz-connector-4/artifacts/tgh8glfj_image.png"
               alt="YouroCRM Logo"
-              className="h-24 w-auto mb-3 transform hover:scale-105 transition-transform"
+              className="h-32 sm:h-40 md:h-48 w-auto mb-4 transform hover:scale-105 transition-transform shadow-lg rounded-lg"
             />
-            <p className="text-gray-600 text-center">Professional CRM & Peppol Invoicing Platform</p>
+            <p className="text-gray-600 text-center text-lg sm:text-xl">Professional CRM & Peppol Invoicing Platform</p>
           </div>
           <p className="text-gray-600">Manage customers and send Peppol invoices</p>
         </div>
