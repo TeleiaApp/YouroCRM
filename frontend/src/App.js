@@ -2892,6 +2892,7 @@ const CalendarPage = () => {
   const [contacts, setContacts] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState('calendar');
 
   // Event form state
   const [eventForm, setEventForm] = useState({
