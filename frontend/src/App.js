@@ -302,8 +302,13 @@ const Layout = ({ children }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <Link to="/dashboard" className="text-lg font-bold text-gray-900">
-            yourocrm.com
+          <Link to="/dashboard" className="flex items-center space-x-2">
+            <img 
+              src="https://customer-assets.emergentagent.com/job_biz-connector-4/artifacts/la9nytru_YouroCRM_logo.svg" 
+              alt="YouroCRM Logo" 
+              className="h-6 w-auto"
+            />
+            <span className="text-lg font-bold text-gray-900">yourocrm.com</span>
           </Link>
           <div className="w-6"></div> {/* Spacer for centering */}
         </header>
