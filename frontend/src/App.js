@@ -146,11 +146,9 @@ const LoginPage = () => {
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
         <div className="text-center mb-8">
           <div className="flex flex-col items-center mb-2">
-            <img 
-              src="https://customer-assets.emergentagent.com/job_biz-connector-4/artifacts/la9nytru_YouroCRM_logo.svg" 
-              alt="YouroCRM Logo" 
-              className="h-12 w-auto mb-2"
-            />
+            <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl shadow-lg mb-3">
+              <span className="text-2xl font-bold text-white">YC</span>
+            </div>
             <h1 className="text-2xl font-bold text-gray-900">yourocrm.com</h1>
           </div>
           <p className="text-gray-600">Manage customers and send Peppol invoices</p>
