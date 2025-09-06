@@ -262,7 +262,7 @@ metadata:
   test_sequence: 3
   run_ui: true
   last_tested_by: "testing_agent"
-  backend_tests_passed: 26
+  backend_tests_passed: 34
   backend_tests_failed: 0
   frontend_tests_passed: 4
   frontend_tests_failed: 0
