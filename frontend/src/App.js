@@ -948,79 +948,85 @@ const ContactsPage = () => {
         </div>
       </div>
 
-      {/* Contacts Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredContacts.map((contact) => (
-          <div key={contact.id} className="bg-white rounded-lg shadow border hover:shadow-md transition-shadow">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
-                    <span className="text-white font-semibold text-lg">
-                      {contact.name.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{contact.name}</h3>
-                    {contact.position && (
-                      <p className="text-sm text-gray-600">{contact.position}</p>
-                    )}
-                  </div>
-                </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openModal(contact);
-                  }}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  ✏️
-                </button>
-              </div>
-
-              <div className="space-y-2">
-                {contact.company && (
-                  <div className="flex items-center text-sm text-gray-600">
-                    <span className="mr-2">🏢</span>
-                    {contact.company}
-                  </div>
-                )}
-                {contact.email && (
-                  <div className="flex items-center text-sm text-gray-600">
-                    <span className="mr-2">📧</span>
-                    <a href={`mailto:${contact.email}`} className="hover:text-blue-600">
-                      {contact.email}
-                    </a>
-                  </div>
-                )}
-                {contact.phone && (
-                  <div className="flex items-center text-sm text-gray-600">
-                    <span className="mr-2">📞</span>
-                    <a href={`tel:${contact.phone}`} className="hover:text-blue-600">
-                      {contact.phone}
-                    </a>
-                  </div>
-                )}
-                {contact.address && (
-                  <div className="flex items-center text-sm text-gray-600">
-                    <span className="mr-2">📍</span>
-                    {contact.address}
-                  </div>
-                )}
-              </div>
-
-              {contact.notes && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <p className="text-sm text-gray-600 line-clamp-2">{contact.notes}</p>
-                </div>
-              )}
-
-              <div className="mt-4 text-xs text-gray-500">
-                Added {new Date(contact.created_at).toLocaleDateString()}
-              </div>
-            </div>
-          </div>
-        ))}
+      {/* Contacts Table */}
+      <div className="bg-white rounded-lg shadow border overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Company
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Email
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Phone
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Position
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Created
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredContacts.map((contact) => (
+                <tr key={contact.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <div className="flex items-center justify-center space-x-3">
+                      <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                        <span className="text-white font-semibold text-sm">
+                          {contact.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="font-medium text-gray-900">{contact.name}</div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                    {contact.company || '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                    {contact.email ? (
+                      <a href={`mailto:${contact.email}`} className="text-blue-600 hover:text-blue-900">
+                        {contact.email}
+                      </a>
+                    ) : '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                    {contact.phone ? (
+                      <a href={`tel:${contact.phone}`} className="text-blue-600 hover:text-blue-900">
+                        {contact.phone}
+                      </a>
+                    ) : '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                    {contact.position || '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                    {new Date(contact.created_at).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                    <button
+                      onClick={() => openModal(contact)}
+                      className="text-blue-600 hover:text-blue-900 mr-3"
+                      title="Edit Contact"
+                    >
+                      ✏️ Edit
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Empty State */}
