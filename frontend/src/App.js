@@ -305,7 +305,7 @@ const Layout = ({ children }) => {
             <img 
               src="https://customer-assets.emergentagent.com/job_biz-connector-4/artifacts/tgh8glfj_image.png"
               alt="YouroCRM Logo"
-              className="h-6 w-auto"
+              className="h-8 sm:h-10 w-auto transform hover:scale-105 transition-transform"
             />
           </Link>
           <div className="w-6"></div> {/* Spacer for centering */}
