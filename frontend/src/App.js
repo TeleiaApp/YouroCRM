@@ -1055,7 +1055,8 @@ const ContactsPage = () => {
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">
+                <div></div>
+                <h3 className="text-lg font-semibold text-gray-900 text-center flex-1">
                   {selectedContact ? 'Edit Contact' : 'Add New Contact'}
                 </h3>
                 <button
