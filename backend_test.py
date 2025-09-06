@@ -102,10 +102,9 @@ class CRMBackendTester:
             self.log_result("auth", "POST /auth/set-session endpoint exists", False,
                           f"Endpoint not accessible: {response}")
 
-        # Create a mock session for testing other endpoints
-        # Since we can't easily test OAuth flow, we'll create a mock session
-        self.session_token = "mock_session_token_for_testing"
-        print("ℹ️  Using mock session token for subsequent tests")
+        # Use the test session token created in the database
+        self.session_token = "5a7e5ca6-69c0-4434-ae3c-759ff027f1fd"
+        print("ℹ️  Using valid test session token for subsequent tests")
 
     def test_contacts_crud(self):
         """Test Contact CRUD operations"""
