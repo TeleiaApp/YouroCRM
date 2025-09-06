@@ -1,34 +1,192 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+.App {
+  text-align: center;
 }
 
 .App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+  background-color: #282c34;
+  padding: 80px 20px;
+  color: white;
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
 }
 
 .App-link {
-    color: #61dafb;
+  color: #61dafb;
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+/* Custom scrollbar for better UX */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Smooth transitions for interactive elements */
+button, a, .transition-colors {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Form input styles */
+.form-input {
+  @apply block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm;
+}
+
+/* Custom button variants */
+.btn-primary {
+  @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors;
+}
+
+.btn-secondary {
+  @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md transition-colors;
+}
+
+.btn-danger {
+  @apply bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md transition-colors;
+}
+
+/* Card hover effects */
+.card-hover {
+  @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-1;
+}
+
+/* Loading spinner */
+.spinner {
+  @apply animate-spin rounded-full border-b-2 border-blue-500;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .App-header {
+    padding: 40px 20px;
+    font-size: calc(8px + 2vmin);
+  }
+  
+  /* Stack navigation items on mobile */
+  .nav-mobile {
+    @apply flex flex-col space-y-2;
+  }
+}
+
+/* Print styles for invoices */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+}
+
+/* Calendar specific styles */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background-color: #e5e7eb;
+}
+
+.calendar-cell {
+  @apply bg-white p-2 min-h-[100px] hover:bg-gray-50 cursor-pointer;
+}
+
+.calendar-event {
+  @apply text-xs p-1 mb-1 rounded bg-blue-100 text-blue-800 truncate;
+}
+
+/* Invoice specific styles */
+.invoice-header {
+  @apply border-b-2 border-gray-300 pb-4 mb-6;
+}
+
+.invoice-item-row {
+  @apply border-b border-gray-200 py-2;
+}
+
+.invoice-total {
+  @apply bg-gray-50 p-4 rounded-lg font-semibold;
+}
+
+/* Status badges */
+.status-draft {
+  @apply bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.status-sent {
+  @apply bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.status-paid {
+  @apply bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.status-overdue {
+  @apply bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium;
+}
+
+/* Animation classes */
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Focus styles for accessibility */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+}
+
+/* Error states */
+.error-input {
+  @apply border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500;
+}
+
+.error-text {
+  @apply text-red-600 text-sm mt-1;
+}
+
+/* Success states */
+.success-input {
+  @apply border-green-300 text-green-900 focus:border-green-500 focus:ring-green-500;
+}
+
+.success-text {
+  @apply text-green-600 text-sm mt-1;
 }
