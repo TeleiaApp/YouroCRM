@@ -1353,12 +1353,512 @@ const AccountsPage = () => {
   );
 };
 
-const ProductsPage = () => (
-  <div className="text-center py-12">
-    <h1 className="text-2xl font-bold text-gray-900 mb-4">Products</h1>
-    <p className="text-gray-600">Product catalog coming soon...</p>
-  </div>
-);
+// Products Management Component
+const ProductsPage = () => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
+
+  // Product form state
+  const [productForm, setProductForm] = useState({
+    name: '',
+    description: '',
+    price: '',
+    currency: 'EUR',
+    tax_rate: 0.21,
+    sku: '',
+    category: '',
+    active: true
+  });
+
+  // Fetch products
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API}/products`, { withCredentials: true });
+      setProducts(response.data);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get unique categories
+  const categories = [...new Set(products.filter(p => p.category).map(p => p.category))];
+
+  // Filter products
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         product.sku?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = !categoryFilter || product.category === categoryFilter;
+    return matchesSearch && matchesCategory;
+  });
+
+  // Modal handlers
+  const openModal = (product = null) => {
+    if (product) {
+      setProductForm({
+        ...product,
+        price: product.price.toString()
+      });
+      setSelectedProduct(product);
+    } else {
+      setProductForm({
+        name: '',
+        description: '',
+        price: '',
+        currency: 'EUR',
+        tax_rate: 0.21,
+        sku: '',
+        category: '',
+        active: true
+      });
+      setSelectedProduct(null);
+    }
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedProduct(null);
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const submitData = {
+        ...productForm,
+        price: parseFloat(productForm.price),
+        tax_rate: parseFloat(productForm.tax_rate)
+      };
+
+      if (selectedProduct) {
+        // Update existing product
+        await axios.put(`${API}/products/${selectedProduct.id}`, submitData, { withCredentials: true });
+        setProducts(products.map(p => p.id === selectedProduct.id ? { ...selectedProduct, ...submitData } : p));
+      } else {
+        // Create new product
+        const response = await axios.post(`${API}/products`, submitData, { withCredentials: true });
+        setProducts([...products, response.data]);
+      }
+      closeModal();
+    } catch (error) {
+      console.error('Error saving product:', error);
+    }
+  };
+
+  // Handle delete
+  const handleDelete = async (productId) => {
+    if (window.confirm('Are you sure you want to delete this product? This will affect any invoices that reference it.')) {
+      try {
+        await axios.delete(`${API}/products/${productId}`, { withCredentials: true });
+        setProducts(products.filter(p => p.id !== productId));
+        closeModal();
+      } catch (error) {
+        console.error('Error deleting product:', error);
+      }
+    }
+  };
+
+  // Generate SKU suggestion
+  const generateSKU = () => {
+    const name = productForm.name.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 6);
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    return `${name}-${random}`;
+  };
+
+  if (loading) {
+    return (
+      <div className="animate-pulse space-y-6">
+        <div className="h-8 bg-gray-200 rounded w-48"></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="h-64 bg-gray-200 rounded-lg"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Product Catalog</h1>
+          <p className="text-gray-600">Manage your products and services</p>
+        </div>
+        <button
+          onClick={() => openModal()}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+        >
+          + Add Product
+        </button>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1 max-w-md">
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+        <div className="sm:w-48">
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">All Categories</option>
+            {categories.map(category => (
+              <option key={category} value={category}>{category}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="text-2xl font-bold text-blue-600">{products.length}</div>
+          <div className="text-sm text-gray-600">Total Products</div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="text-2xl font-bold text-green-600">
+            {products.filter(p => p.active).length}
+          </div>
+          <div className="text-sm text-gray-600">Active Products</div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="text-2xl font-bold text-purple-600">{categories.length}</div>
+          <div className="text-sm text-gray-600">Categories</div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="text-2xl font-bold text-orange-600">
+            €{products.reduce((sum, p) => sum + p.price, 0).toFixed(0)}
+          </div>
+          <div className="text-sm text-gray-600">Total Value</div>
+        </div>
+      </div>
+
+      {/* Products Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredProducts.map((product) => (
+          <div key={product.id} className={`bg-white rounded-lg shadow border hover:shadow-md transition-shadow ${!product.active ? 'opacity-60' : ''}`}>
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center">
+                    <span className="text-white font-semibold text-lg">
+                      {product.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{product.name}</h3>
+                    {product.category && (
+                      <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                        {product.category}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  {!product.active && (
+                    <span className="text-red-500 text-sm">Inactive</span>
+                  )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openModal(product);
+                    }}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    ✏️
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {product.description && (
+                  <p className="text-sm text-gray-600 line-clamp-2">{product.description}</p>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-2xl font-bold text-green-600">
+                      €{product.price.toFixed(2)}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      + {(product.tax_rate * 100).toFixed(0)}% VAT
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-semibold text-gray-900">
+                      €{(product.price * (1 + product.tax_rate)).toFixed(2)}
+                    </div>
+                    <div className="text-xs text-gray-500">Inc. VAT</div>
+                  </div>
+                </div>
+
+                {product.sku && (
+                  <div className="flex items-center text-sm text-gray-600">
+                    <span className="mr-2">🏷️</span>
+                    SKU: {product.sku}
+                  </div>
+                )}
+
+                <div className="pt-3 border-t border-gray-200">
+                  <div className="text-xs text-gray-500">
+                    Added {new Date(product.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Empty State */}
+      {filteredProducts.length === 0 && !loading && (
+        <div className="text-center py-12">
+          <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-4xl">📦</span>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            {searchTerm || categoryFilter ? 'No products found' : 'No products yet'}
+          </h3>
+          <p className="text-gray-600 mb-4">
+            {searchTerm || categoryFilter
+              ? 'Try adjusting your search terms or filters'
+              : 'Create your first product to start building your catalog'
+            }
+          </p>
+          {!searchTerm && !categoryFilter && (
+            <button
+              onClick={() => openModal()}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              Add Your First Product
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Product Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {selectedProduct ? 'Edit Product' : 'Add New Product'}
+                </h3>
+                <button
+                  onClick={closeModal}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Product Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={productForm.name}
+                      onChange={(e) => setProductForm({...productForm, name: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Professional Consulting"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Category
+                    </label>
+                    <input
+                      type="text"
+                      value={productForm.category}
+                      onChange={(e) => setProductForm({...productForm, category: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Services, Software, Hardware..."
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    value={productForm.description}
+                    onChange={(e) => setProductForm({...productForm, description: e.target.value})}
+                    rows={3}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Detailed description of your product or service..."
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Price (€) *
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      step="0.01"
+                      value={productForm.price}
+                      onChange={(e) => setProductForm({...productForm, price: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="100.00"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Currency
+                    </label>
+                    <select
+                      value={productForm.currency}
+                      onChange={(e) => setProductForm({...productForm, currency: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="EUR">EUR (€)</option>
+                      <option value="USD">USD ($)</option>
+                      <option value="GBP">GBP (£)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Tax Rate (%)
+                    </label>
+                    <select
+                      value={productForm.tax_rate}
+                      onChange={(e) => setProductForm({...productForm, tax_rate: parseFloat(e.target.value)})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value={0.21}>21% (Belgium Standard)</option>
+                      <option value={0.12}>12% (Belgium Reduced)</option>
+                      <option value={0.06}>6% (Belgium Super Reduced)</option>
+                      <option value={0.00}>0% (Exempt)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      SKU (Stock Keeping Unit)
+                    </label>
+                    <div className="flex">
+                      <input
+                        type="text"
+                        value={productForm.sku}
+                        onChange={(e) => setProductForm({...productForm, sku: e.target.value})}
+                        className="flex-1 border border-gray-300 rounded-l-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="PROD-001"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setProductForm({...productForm, sku: generateSKU()})}
+                        className="px-3 py-2 bg-gray-100 border border-l-0 border-gray-300 rounded-r-md hover:bg-gray-200 text-sm"
+                        title="Generate SKU"
+                      >
+                        🎲
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={productForm.active}
+                        onChange={(e) => setProductForm({...productForm, active: e.target.checked})}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">Active Product</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Price Preview */}
+                {productForm.price && (
+                  <div className="bg-gray-50 p-4 rounded-md">
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">Price Preview</h4>
+                    <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <div className="text-gray-600">Base Price</div>
+                        <div className="font-semibold">€{parseFloat(productForm.price || 0).toFixed(2)}</div>
+                      </div>
+                      <div>
+                        <div className="text-gray-600">VAT ({(productForm.tax_rate * 100).toFixed(0)}%)</div>
+                        <div className="font-semibold">€{(parseFloat(productForm.price || 0) * productForm.tax_rate).toFixed(2)}</div>
+                      </div>
+                      <div>
+                        <div className="text-gray-600">Total Price</div>
+                        <div className="font-semibold text-green-600">
+                          €{(parseFloat(productForm.price || 0) * (1 + productForm.tax_rate)).toFixed(2)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex justify-between pt-4">
+                  <div>
+                    {selectedProduct && (
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(selectedProduct.id)}
+                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm font-medium"
+                      >
+                        Delete Product
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex space-x-3">
+                    <button
+                      type="button"
+                      onClick={closeModal}
+                      className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors text-sm font-medium"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+                    >
+                      {selectedProduct ? 'Update Product' : 'Add Product'}
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 // Invoices Management Component
 const InvoicesPage = () => {
