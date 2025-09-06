@@ -346,6 +346,7 @@ const Dashboard = () => {
     { name: 'Contacts', value: stats.contacts, icon: '👥', color: 'blue' },
     { name: 'Accounts', value: stats.accounts, icon: '🏢', color: 'green' },
     { name: 'Products', value: stats.products, icon: '📦', color: 'purple' },
+    { name: 'Invoices', value: stats.invoices || 0, icon: '🧾', color: 'red' },
     { name: 'Events', value: stats.events, icon: '📅', color: 'orange' },
   ];
 
