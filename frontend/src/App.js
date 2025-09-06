@@ -221,13 +221,11 @@ const Layout = ({ children }) => {
           {/* Sidebar Header */}
           <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
             <Link to="/dashboard" className="flex items-center space-x-3">
-              <div className="yourocrm-logo flex items-center justify-center w-10 h-10 rounded-xl border-2 border-blue-200">
-                <span className="text-lg font-black text-white">YC</span>
-              </div>
-              <div>
-                <div className="text-lg font-black text-gray-900">YouroCRM</div>
-                <div className="text-xs text-blue-600 font-semibold">yourocrm.com</div>
-              </div>
+              <img 
+                src="https://customer-assets.emergentagent.com/job_biz-connector-4/artifacts/tgh8glfj_image.png"
+                alt="YouroCRM Logo"
+                className="h-8 w-auto"
+              />
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}
