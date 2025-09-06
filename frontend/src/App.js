@@ -701,15 +701,15 @@ const Dashboard = () => {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         {statCards.map((card) => (
-          <div key={card.name} className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">{card.name}</p>
-                <p className="text-3xl font-bold text-gray-900">{card.value}</p>
-              </div>
+          <div key={card.name} className="bg-white rounded-lg shadow p-6 text-center">
+            <div className="flex flex-col items-center space-y-2">
               <div className="text-3xl">{card.icon}</div>
+              <div>
+                <p className="text-3xl font-bold text-gray-900">{card.value}</p>
+                <p className="text-sm font-medium text-gray-600">{card.name}</p>
+              </div>
             </div>
           </div>
         ))}
