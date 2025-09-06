@@ -322,9 +322,269 @@ const Layout = ({ children }) => {
   );
 };
 
+// Global Search Component
+const GlobalSearch = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState({ contacts: [], accounts: [], products: [], invoices: [], events: [] });
+  const [searching, setSearching] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+
+  const performSearch = async (term) => {
+    if (term.length < 2) {
+      setSearchResults({ contacts: [], accounts: [], products: [], invoices: [], events: [] });
+      setShowResults(false);
+      return;
+    }
+
+    setSearching(true);
+    try {
+      const [contactsRes, accountsRes, productsRes, invoicesRes, eventsRes] = await Promise.all([
+        axios.get(`${API}/contacts`, { withCredentials: true }),
+        axios.get(`${API}/accounts`, { withCredentials: true }),
+        axios.get(`${API}/products`, { withCredentials: true }),
+        axios.get(`${API}/invoices`, { withCredentials: true }),
+        axios.get(`${API}/calendar/events`, { withCredentials: true })
+      ]);
+
+      const lowerTerm = term.toLowerCase();
+
+      const filteredContacts = contactsRes.data.filter(contact => 
+        contact.name.toLowerCase().includes(lowerTerm) ||
+        contact.email?.toLowerCase().includes(lowerTerm) ||
+        contact.company?.toLowerCase().includes(lowerTerm)
+      ).slice(0, 3);
+
+      const filteredAccounts = accountsRes.data.filter(account =>
+        account.name.toLowerCase().includes(lowerTerm) ||
+        account.industry?.toLowerCase().includes(lowerTerm) ||
+        account.vat_number?.toLowerCase().includes(lowerTerm)
+      ).slice(0, 3);
+
+      const filteredProducts = productsRes.data.filter(product =>
+        product.name.toLowerCase().includes(lowerTerm) ||
+        product.description?.toLowerCase().includes(lowerTerm) ||
+        product.sku?.toLowerCase().includes(lowerTerm)
+      ).slice(0, 3);
+
+      const filteredInvoices = invoicesRes.data.filter(invoice =>
+        invoice.invoice_number.toLowerCase().includes(lowerTerm)
+      ).slice(0, 3);
+
+      const filteredEvents = eventsRes.data.filter(event =>
+        event.title.toLowerCase().includes(lowerTerm) ||
+        event.description?.toLowerCase().includes(lowerTerm)
+      ).slice(0, 3);
+
+      setSearchResults({
+        contacts: filteredContacts,
+        accounts: filteredAccounts,
+        products: filteredProducts,
+        invoices: filteredInvoices,
+        events: filteredEvents
+      });
+      setShowResults(true);
+    } catch (error) {
+      console.error('Search error:', error);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      performSearch(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchTerm]);
+
+  const getTotalResults = () => {
+    return searchResults.contacts.length + searchResults.accounts.length + 
+           searchResults.products.length + searchResults.invoices.length + searchResults.events.length;
+  };
+
+  return (
+    <div className="relative w-full max-w-2xl">
+      <div className="relative">
+        <input
+          type="text"
+          placeholder="🔍 Search across all entities (contacts, accounts, products, invoices, events)..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onFocus={() => searchTerm.length >= 2 && setShowResults(true)}
+          className="w-full border-2 border-blue-300 rounded-lg px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
+        />
+        {searching && (
+          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+          </div>
+        )}
+      </div>
+
+      {/* Search Results Dropdown */}
+      {showResults && searchTerm.length >= 2 && (
+        <div className="absolute top-full mt-2 w-full bg-white rounded-lg shadow-xl border-2 border-gray-200 z-50 max-h-96 overflow-y-auto">
+          {getTotalResults() === 0 ? (
+            <div className="p-4 text-center text-gray-500">
+              No results found for "{searchTerm}"
+            </div>
+          ) : (
+            <div className="p-2">
+              <div className="text-sm text-gray-500 px-3 py-2 border-b">
+                Found {getTotalResults()} results for "{searchTerm}"
+              </div>
+
+              {/* Contacts Results */}
+              {searchResults.contacts.length > 0 && (
+                <div className="py-2">
+                  <div className="text-xs font-semibold text-gray-400 px-3 py-1 uppercase tracking-wider">Contacts</div>
+                  {searchResults.contacts.map(contact => (
+                    <Link
+                      key={contact.id}
+                      to="/contacts"
+                      className="block px-3 py-2 hover:bg-blue-50 transition-colors"
+                      onClick={() => setShowResults(false)}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm font-semibold">
+                            {contact.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900">{contact.name}</div>
+                          <div className="text-sm text-gray-600">{contact.email}</div>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              {/* Accounts Results */}
+              {searchResults.accounts.length > 0 && (
+                <div className="py-2">
+                  <div className="text-xs font-semibold text-gray-400 px-3 py-1 uppercase tracking-wider">Accounts</div>
+                  {searchResults.accounts.map(account => (
+                    <Link
+                      key={account.id}
+                      to="/accounts"
+                      className="block px-3 py-2 hover:bg-green-50 transition-colors"
+                      onClick={() => setShowResults(false)}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm font-semibold">
+                            {account.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900">{account.name}</div>
+                          <div className="text-sm text-gray-600">{account.industry}</div>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              {/* Products Results */}
+              {searchResults.products.length > 0 && (
+                <div className="py-2">
+                  <div className="text-xs font-semibold text-gray-400 px-3 py-1 uppercase tracking-wider">Products</div>
+                  {searchResults.products.map(product => (
+                    <Link
+                      key={product.id}
+                      to="/products"
+                      className="block px-3 py-2 hover:bg-purple-50 transition-colors"
+                      onClick={() => setShowResults(false)}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm font-semibold">
+                            {product.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900">{product.name}</div>
+                          <div className="text-sm text-gray-600">€{product.price.toFixed(2)}</div>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              {/* Invoices Results */}
+              {searchResults.invoices.length > 0 && (
+                <div className="py-2">
+                  <div className="text-xs font-semibold text-gray-400 px-3 py-1 uppercase tracking-wider">Invoices</div>
+                  {searchResults.invoices.map(invoice => (
+                    <Link
+                      key={invoice.id}
+                      to="/invoices"
+                      className="block px-3 py-2 hover:bg-red-50 transition-colors"
+                      onClick={() => setShowResults(false)}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm font-semibold">🧾</span>
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900">{invoice.invoice_number}</div>
+                          <div className="text-sm text-gray-600">€{invoice.total_amount.toFixed(2)}</div>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              {/* Events Results */}
+              {searchResults.events.length > 0 && (
+                <div className="py-2">
+                  <div className="text-xs font-semibold text-gray-400 px-3 py-1 uppercase tracking-wider">Events</div>
+                  {searchResults.events.map(event => (
+                    <Link
+                      key={event.id}
+                      to="/calendar"
+                      className="block px-3 py-2 hover:bg-orange-50 transition-colors"
+                      onClick={() => setShowResults(false)}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm font-semibold">📅</span>
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900">{event.title}</div>
+                          <div className="text-sm text-gray-600">
+                            {new Date(event.start_date).toLocaleDateString()}
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Click outside to close */}
+      {showResults && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setShowResults(false)}
+        />
+      )}
+    </div>
+  );
+};
+
 // Dashboard Component
 const Dashboard = () => {
-  const [stats, setStats] = useState({ contacts: 0, accounts: 0, products: 0, events: 0 });
+  const [stats, setStats] = useState({ contacts: 0, accounts: 0, products: 0, events: 0, invoices: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
