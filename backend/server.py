@@ -444,6 +444,234 @@ async def delete_event(event_id: str, current_user: User = Depends(get_current_u
         raise HTTPException(status_code=404, detail="Event not found")
     return {"message": "Event deleted"}
 
+# Invoice creation models
+class InvoiceItemCreate(BaseModel):
+    product_id: str
+    quantity: float
+    unit_price: float
+    description: Optional[str] = None
+
+class InvoiceCreate(BaseModel):
+    account_id: str
+    contact_id: Optional[str] = None
+    items: List[InvoiceItemCreate]
+    due_date: Optional[datetime] = None
+    notes: Optional[str] = None
+    invoice_type: str = "invoice"
+
+# Invoice routes
+@api_router.post("/invoices", response_model=Invoice)
+async def create_invoice(invoice_data: InvoiceCreate, current_user: User = Depends(get_current_user)):
+    # Generate invoice number
+    invoice_count = await db.invoices.count_documents({"user_id": current_user.id})
+    invoice_number = f"INV-{datetime.now().year}-{invoice_count + 1:04d}"
+    
+    # Calculate totals
+    subtotal = sum(item.quantity * item.unit_price for item in invoice_data.items)
+    tax_rate = 0.21  # Belgium VAT rate
+    tax_amount = subtotal * tax_rate
+    total_amount = subtotal + tax_amount
+    
+    invoice_dict = invoice_data.dict()
+    invoice_dict.update({
+        "user_id": current_user.id,
+        "invoice_number": invoice_number,
+        "subtotal": subtotal,
+        "tax_amount": tax_amount,
+        "total_amount": total_amount
+    })
+    
+    invoice = Invoice(**invoice_dict)
+    await db.invoices.insert_one(invoice.dict())
+    return invoice
+
+@api_router.get("/invoices", response_model=List[Invoice])
+async def get_invoices(current_user: User = Depends(get_current_user)):
+    invoices = await db.invoices.find({"user_id": current_user.id}).to_list(1000)
+    return [Invoice(**invoice) for invoice in invoices]
+
+@api_router.get("/invoices/{invoice_id}", response_model=Invoice)
+async def get_invoice(invoice_id: str, current_user: User = Depends(get_current_user)):
+    invoice = await db.invoices.find_one({"id": invoice_id, "user_id": current_user.id})
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    return Invoice(**invoice)
+
+@api_router.put("/invoices/{invoice_id}", response_model=Invoice)
+async def update_invoice(invoice_id: str, invoice_data: InvoiceCreate, current_user: User = Depends(get_current_user)):
+    invoice = await db.invoices.find_one({"id": invoice_id, "user_id": current_user.id})
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    
+    # Recalculate totals
+    subtotal = sum(item.quantity * item.unit_price for item in invoice_data.items)
+    tax_rate = 0.21
+    tax_amount = subtotal * tax_rate
+    total_amount = subtotal + tax_amount
+    
+    update_data = invoice_data.dict()
+    update_data.update({
+        "subtotal": subtotal,
+        "tax_amount": tax_amount,
+        "total_amount": total_amount,
+        "updated_at": datetime.now(timezone.utc)
+    })
+    
+    await db.invoices.update_one({"id": invoice_id}, {"$set": update_data})
+    updated_invoice = await db.invoices.find_one({"id": invoice_id})
+    return Invoice(**updated_invoice)
+
+@api_router.delete("/invoices/{invoice_id}")
+async def delete_invoice(invoice_id: str, current_user: User = Depends(get_current_user)):
+    result = await db.invoices.delete_one({"id": invoice_id, "user_id": current_user.id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    return {"message": "Invoice deleted"}
+
+# PDF Generation
+def generate_invoice_pdf(invoice_data, account_data, contact_data, products_data, user_data):
+    """Generate PDF for invoice"""
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=1*inch)
+    styles = getSampleStyleSheet()
+    story = []
+    
+    # Header
+    header_style = ParagraphStyle(
+        'CustomHeader',
+        parent=styles['Heading1'],
+        fontSize=24,
+        textColor=colors.HexColor('#2563eb'),
+        spaceAfter=30
+    )
+    story.append(Paragraph("INVOICE", header_style))
+    
+    # Invoice details table
+    invoice_details = [
+        ['Invoice Number:', invoice_data['invoice_number']],
+        ['Issue Date:', invoice_data['issue_date'][:10]],
+        ['Due Date:', invoice_data['due_date'][:10] if invoice_data.get('due_date') else 'On Receipt'],
+        ['Status:', invoice_data['status'].title()]
+    ]
+    
+    details_table = Table(invoice_details, colWidths=[2*inch, 3*inch])
+    details_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+    ]))
+    story.append(details_table)
+    story.append(Spacer(1, 20))
+    
+    # Billing information
+    billing_data = [
+        ['Bill To:', 'From:'],
+        [account_data['name'], user_data['name']],
+        [account_data.get('address', ''), 'yourocrm.com'],
+        [f"VAT: {account_data.get('vat_number', 'N/A')}", '']
+    ]
+    
+    billing_table = Table(billing_data, colWidths=[3*inch, 3*inch])
+    billing_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+    ]))
+    story.append(billing_table)
+    story.append(Spacer(1, 30))
+    
+    # Items table
+    items_data = [['Description', 'Quantity', 'Unit Price', 'Total']]
+    
+    for item in invoice_data['items']:
+        # Find product details
+        product = next((p for p in products_data if p['id'] == item['product_id']), None)
+        description = item.get('description') or (product['name'] if product else 'Product')
+        total = item['quantity'] * item['unit_price']
+        
+        items_data.append([
+            description,
+            str(item['quantity']),
+            f"€{item['unit_price']:.2f}",
+            f"€{total:.2f}"
+        ])
+    
+    items_table = Table(items_data, colWidths=[3*inch, 1*inch, 1.5*inch, 1.5*inch])
+    items_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f3f4f6')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+        ('ALIGN', (1, 0), (-1, -1), 'RIGHT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ]))
+    story.append(items_table)
+    story.append(Spacer(1, 20))
+    
+    # Totals table
+    totals_data = [
+        ['Subtotal:', f"€{invoice_data['subtotal']:.2f}"],
+        ['VAT (21%):', f"€{invoice_data['tax_amount']:.2f}"],
+        ['Total:', f"€{invoice_data['total_amount']:.2f}"]
+    ]
+    
+    totals_table = Table(totals_data, colWidths=[4.5*inch, 1.5*inch])
+    totals_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('LINEABOVE', (0, -1), (-1, -1), 2, colors.black),
+    ]))
+    story.append(totals_table)
+    
+    # Notes
+    if invoice_data.get('notes'):
+        story.append(Spacer(1, 30))
+        story.append(Paragraph("Notes:", styles['Heading3']))
+        story.append(Paragraph(invoice_data['notes'], styles['Normal']))
+    
+    # Footer
+    story.append(Spacer(1, 50))
+    footer_text = "Thank you for your business! Payment terms: Net 30 days."
+    story.append(Paragraph(footer_text, styles['Normal']))
+    
+    doc.build(story)
+    buffer.seek(0)
+    return buffer.getvalue()
+
+@api_router.get("/invoices/{invoice_id}/pdf")
+async def generate_invoice_pdf_endpoint(invoice_id: str, current_user: User = Depends(get_current_user)):
+    # Get invoice
+    invoice = await db.invoices.find_one({"id": invoice_id, "user_id": current_user.id})
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    
+    # Get related data
+    account = await db.accounts.find_one({"id": invoice["account_id"]})
+    contact = None
+    if invoice.get("contact_id"):
+        contact = await db.contacts.find_one({"id": invoice["contact_id"]})
+    
+    # Get products for invoice items
+    product_ids = [item["product_id"] for item in invoice["items"]]
+    products = await db.products.find({"id": {"$in": product_ids}}).to_list(100)
+    
+    # Generate PDF
+    pdf_bytes = generate_invoice_pdf(invoice, account, contact, products, current_user.dict())
+    
+    # Encode as base64 for JSON response
+    pdf_base64 = base64.b64encode(pdf_bytes).decode()
+    
+    return {
+        "pdf_data": pdf_base64,
+        "filename": f"{invoice['invoice_number']}.pdf"
+    }
+
 # Basic dashboard stats
 @api_router.get("/dashboard/stats")
 async def get_dashboard_stats(current_user: User = Depends(get_current_user)):
@@ -451,12 +679,14 @@ async def get_dashboard_stats(current_user: User = Depends(get_current_user)):
     accounts_count = await db.accounts.count_documents({"user_id": current_user.id})
     products_count = await db.products.count_documents({"user_id": current_user.id})
     events_count = await db.calendar_events.count_documents({"user_id": current_user.id})
+    invoices_count = await db.invoices.count_documents({"user_id": current_user.id})
     
     return {
         "contacts": contacts_count,
         "accounts": accounts_count,
         "products": products_count,
-        "events": events_count
+        "events": events_count,
+        "invoices": invoices_count
     }
 
 # Include the router in the main app
