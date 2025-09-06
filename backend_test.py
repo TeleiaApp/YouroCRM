@@ -672,6 +672,7 @@ class CRMBackendTester:
             self.test_accounts_crud()
             self.test_products_crud()
             self.test_calendar_crud()
+            self.test_invoices_crud()
             self.test_dashboard_stats()
             self.test_data_validation()
             self.cleanup_test_data()
