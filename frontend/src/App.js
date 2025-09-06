@@ -930,17 +930,17 @@ const ContactsPage = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow border">
+        <div className="bg-white p-4 rounded-lg shadow border text-center">
           <div className="text-2xl font-bold text-blue-600">{contacts.length}</div>
           <div className="text-sm text-gray-600">Total Contacts</div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow border">
+        <div className="bg-white p-4 rounded-lg shadow border text-center">
           <div className="text-2xl font-bold text-green-600">
             {contacts.filter(c => c.company).length}
           </div>
           <div className="text-sm text-gray-600">With Companies</div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow border">
+        <div className="bg-white p-4 rounded-lg shadow border text-center">
           <div className="text-2xl font-bold text-purple-600">
             {contacts.filter(c => c.email).length}
           </div>
