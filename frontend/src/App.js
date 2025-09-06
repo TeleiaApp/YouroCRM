@@ -2492,23 +2492,23 @@ const InvoicesPage = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow border">
+        <div className="bg-white p-4 rounded-lg shadow border text-center">
           <div className="text-2xl font-bold text-blue-600">{invoices.length}</div>
           <div className="text-sm text-gray-600">Total Invoices</div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow border">
+        <div className="bg-white p-4 rounded-lg shadow border text-center">
           <div className="text-2xl font-bold text-green-600">
             {invoices.filter(i => i.status === 'paid').length}
           </div>
           <div className="text-sm text-gray-600">Paid</div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow border">
+        <div className="bg-white p-4 rounded-lg shadow border text-center">
           <div className="text-2xl font-bold text-orange-600">
             {invoices.filter(i => i.status === 'sent').length}
           </div>
           <div className="text-sm text-gray-600">Pending</div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow border">
+        <div className="bg-white p-4 rounded-lg shadow border text-center">
           <div className="text-2xl font-bold text-purple-600">
             €{invoices.reduce((sum, i) => sum + i.total_amount, 0).toFixed(2)}
           </div>
