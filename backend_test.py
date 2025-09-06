@@ -361,6 +361,188 @@ class CRMBackendTester:
             self.log_result("calendar", "PUT /calendar/events/{id} - Update event", False,
                           f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
 
+    def test_invoices_crud(self):
+        """Test Invoice CRUD operations with comprehensive functionality"""
+        print("\n🧾 Testing Invoice Management...")
+        
+        # First ensure we have test data (account and product)
+        if not self.created_entities["accounts"] or not self.created_entities["products"]:
+            print("⚠️  Creating required test data for invoice tests...")
+            
+            # Create test account
+            account_data = {
+                "name": "Invoice Test Company",
+                "vat_number": "BE0987654321",
+                "address": "Test Street 123, 1000 Brussels, Belgium"
+            }
+            success, response = self.make_request("POST", "/accounts", data=account_data)
+            if success and response.status_code == 200:
+                account = response.json()
+                self.created_entities["accounts"].append(account["id"])
+                test_account_id = account["id"]
+            else:
+                self.log_result("invoices", "Setup - Create test account", False, "Failed to create test account")
+                return
+            
+            # Create test product
+            product_data = {
+                "name": "Test Service",
+                "description": "Professional consulting service",
+                "price": 100.0,
+                "currency": "EUR",
+                "tax_rate": 0.21,
+                "sku": "SERV-001"
+            }
+            success, response = self.make_request("POST", "/products", data=product_data)
+            if success and response.status_code == 200:
+                product = response.json()
+                self.created_entities["products"].append(product["id"])
+                test_product_id = product["id"]
+            else:
+                self.log_result("invoices", "Setup - Create test product", False, "Failed to create test product")
+                return
+        else:
+            test_account_id = self.created_entities["accounts"][0]
+            test_product_id = self.created_entities["products"][0]
+        
+        # Test CREATE invoice with proper calculations
+        invoice_data = {
+            "account_id": test_account_id,
+            "items": [
+                {
+                    "product_id": test_product_id,
+                    "quantity": 2.0,
+                    "unit_price": 100.0,
+                    "description": "Consulting hours"
+                },
+                {
+                    "product_id": test_product_id,
+                    "quantity": 1.0,
+                    "unit_price": 50.0,
+                    "description": "Additional service"
+                }
+            ],
+            "due_date": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat(),
+            "notes": "Test invoice for validation",
+            "invoice_type": "invoice"
+        }
+        
+        success, response = self.make_request("POST", "/invoices", data=invoice_data)
+        if success and response.status_code == 200:
+            invoice = response.json()
+            self.created_entities["invoices"].append(invoice["id"])
+            invoice_id = invoice["id"]
+            
+            # Verify invoice number format (INV-YYYY-NNNN)
+            invoice_number = invoice["invoice_number"]
+            current_year = datetime.now().year
+            if invoice_number.startswith(f"INV-{current_year}-") and len(invoice_number) == 13:
+                self.log_result("invoices", "POST /invoices - Invoice number format", True)
+            else:
+                self.log_result("invoices", "POST /invoices - Invoice number format", False,
+                              f"Invalid format: {invoice_number}")
+            
+            # Verify calculations (subtotal: 250, tax: 52.5, total: 302.5)
+            expected_subtotal = 250.0
+            expected_tax = 52.5  # 21% of 250
+            expected_total = 302.5
+            
+            if (abs(invoice["subtotal"] - expected_subtotal) < 0.01 and
+                abs(invoice["tax_amount"] - expected_tax) < 0.01 and
+                abs(invoice["total_amount"] - expected_total) < 0.01):
+                self.log_result("invoices", "POST /invoices - Calculation accuracy", True)
+            else:
+                self.log_result("invoices", "POST /invoices - Calculation accuracy", False,
+                              f"Expected: {expected_subtotal}/{expected_tax}/{expected_total}, "
+                              f"Got: {invoice['subtotal']}/{invoice['tax_amount']}/{invoice['total_amount']}")
+            
+            self.log_result("invoices", "POST /invoices - Create invoice", True)
+        else:
+            self.log_result("invoices", "POST /invoices - Create invoice", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+            return
+        
+        # Test GET all invoices
+        success, response = self.make_request("GET", "/invoices")
+        if success and response.status_code == 200:
+            invoices = response.json()
+            if len(invoices) > 0:
+                self.log_result("invoices", "GET /invoices - List invoices", True)
+            else:
+                self.log_result("invoices", "GET /invoices - List invoices", False, "No invoices returned")
+        else:
+            self.log_result("invoices", "GET /invoices - List invoices", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+        
+        # Test GET specific invoice
+        success, response = self.make_request("GET", f"/invoices/{invoice_id}")
+        if success and response.status_code == 200:
+            invoice_detail = response.json()
+            if invoice_detail["id"] == invoice_id:
+                self.log_result("invoices", "GET /invoices/{id} - Get invoice", True)
+            else:
+                self.log_result("invoices", "GET /invoices/{id} - Get invoice", False, "Wrong invoice returned")
+        else:
+            self.log_result("invoices", "GET /invoices/{id} - Get invoice", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+        
+        # Test UPDATE invoice with recalculation
+        update_data = {
+            "account_id": test_account_id,
+            "items": [
+                {
+                    "product_id": test_product_id,
+                    "quantity": 3.0,
+                    "unit_price": 120.0,
+                    "description": "Updated consulting hours"
+                }
+            ],
+            "due_date": (datetime.now(timezone.utc) + timedelta(days=45)).isoformat(),
+            "notes": "Updated test invoice",
+            "invoice_type": "invoice"
+        }
+        
+        success, response = self.make_request("PUT", f"/invoices/{invoice_id}", data=update_data)
+        if success and response.status_code == 200:
+            updated_invoice = response.json()
+            
+            # Verify recalculation (subtotal: 360, tax: 75.6, total: 435.6)
+            expected_subtotal = 360.0
+            expected_tax = 75.6  # 21% of 360
+            expected_total = 435.6
+            
+            if (abs(updated_invoice["subtotal"] - expected_subtotal) < 0.01 and
+                abs(updated_invoice["tax_amount"] - expected_tax) < 0.01 and
+                abs(updated_invoice["total_amount"] - expected_total) < 0.01):
+                self.log_result("invoices", "PUT /invoices/{id} - Update with recalculation", True)
+            else:
+                self.log_result("invoices", "PUT /invoices/{id} - Update with recalculation", False,
+                              f"Expected: {expected_subtotal}/{expected_tax}/{expected_total}, "
+                              f"Got: {updated_invoice['subtotal']}/{updated_invoice['tax_amount']}/{updated_invoice['total_amount']}")
+        else:
+            self.log_result("invoices", "PUT /invoices/{id} - Update invoice", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+        
+        # Test PDF Generation
+        success, response = self.make_request("GET", f"/invoices/{invoice_id}/pdf")
+        if success and response.status_code == 200:
+            pdf_response = response.json()
+            if "pdf_data" in pdf_response and "filename" in pdf_response:
+                # Verify PDF data is base64 encoded
+                try:
+                    import base64
+                    base64.b64decode(pdf_response["pdf_data"])
+                    self.log_result("invoices", "GET /invoices/{id}/pdf - PDF generation", True)
+                except Exception:
+                    self.log_result("invoices", "GET /invoices/{id}/pdf - PDF generation", False,
+                                  "Invalid base64 PDF data")
+            else:
+                self.log_result("invoices", "GET /invoices/{id}/pdf - PDF generation", False,
+                              "Missing pdf_data or filename in response")
+        else:
+            self.log_result("invoices", "GET /invoices/{id}/pdf - PDF generation", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+
     def test_dashboard_stats(self):
         """Test Dashboard Statistics endpoint"""
         print("\n📊 Testing Dashboard Statistics...")
@@ -368,7 +550,7 @@ class CRMBackendTester:
         success, response = self.make_request("GET", "/dashboard/stats")
         if success and response.status_code == 200:
             stats = response.json()
-            expected_keys = ["contacts", "accounts", "products", "events"]
+            expected_keys = ["contacts", "accounts", "products", "events", "invoices"]
             if all(key in stats for key in expected_keys):
                 self.log_result("dashboard", "GET /dashboard/stats - Get statistics", True)
             else:
