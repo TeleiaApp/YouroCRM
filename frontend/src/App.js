@@ -1925,81 +1925,99 @@ const ProductsPage = () => {
         </div>
       </div>
 
-      {/* Products Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredProducts.map((product) => (
-          <div key={product.id} className={`bg-white rounded-lg shadow border hover:shadow-md transition-shadow ${!product.active ? 'opacity-60' : ''}`}>
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center">
-                    <span className="text-white font-semibold text-lg">
-                      {product.name.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{product.name}</h3>
-                    {product.category && (
+      {/* Products Table */}
+      <div className="bg-white rounded-lg shadow border overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Product Name
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Category
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  SKU
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Price (Ex. VAT)
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  VAT Rate
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Price (Inc. VAT)
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Created
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredProducts.map((product) => (
+                <tr key={product.id} className={`hover:bg-gray-50 ${!product.active ? 'opacity-60' : ''}`}>
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <div className="flex items-center justify-center space-x-3">
+                      <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                        <span className="text-white font-semibold text-sm">
+                          {product.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="font-medium text-gray-900">{product.name}</div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                    {product.category ? (
                       <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
                         {product.category}
                       </span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  {!product.active && (
-                    <span className="text-red-500 text-sm">Inactive</span>
-                  )}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openModal(product);
-                    }}
-                    className="text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    ✏️
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                {product.description && (
-                  <p className="text-sm text-gray-600 line-clamp-2">{product.description}</p>
-                )}
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-2xl font-bold text-green-600">
-                      €{product.price.toFixed(2)}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      + {(product.tax_rate * 100).toFixed(0)}% VAT
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-lg font-semibold text-gray-900">
-                      €{(product.price * (1 + product.tax_rate)).toFixed(2)}
-                    </div>
-                    <div className="text-xs text-gray-500">Inc. VAT</div>
-                  </div>
-                </div>
-
-                {product.sku && (
-                  <div className="flex items-center text-sm text-gray-600">
-                    <span className="mr-2">🏷️</span>
-                    SKU: {product.sku}
-                  </div>
-                )}
-
-                <div className="pt-3 border-t border-gray-200">
-                  <div className="text-xs text-gray-500">
-                    Added {new Date(product.created_at).toLocaleDateString()}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
+                    ) : '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                    {product.sku || '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-semibold text-green-600">
+                    €{product.price.toFixed(2)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                    {(product.tax_rate * 100).toFixed(0)}%
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-semibold text-gray-900">
+                    €{(product.price * (1 + product.tax_rate)).toFixed(2)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      product.active 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {product.active ? 'Active' : 'Inactive'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                    {new Date(product.created_at).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                    <button
+                      onClick={() => openModal(product)}
+                      className="text-blue-600 hover:text-blue-900 mr-3"
+                      title="Edit Product"
+                    >
+                      ✏️ Edit
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Empty State */}
