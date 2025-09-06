@@ -1895,21 +1895,21 @@ const ProductsPage = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow border">
+        <div className="bg-white p-4 rounded-lg shadow border text-center">
           <div className="text-2xl font-bold text-blue-600">{products.length}</div>
           <div className="text-sm text-gray-600">Total Products</div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow border">
+        <div className="bg-white p-4 rounded-lg shadow border text-center">
           <div className="text-2xl font-bold text-green-600">
             {products.filter(p => p.active).length}
           </div>
           <div className="text-sm text-gray-600">Active Products</div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow border">
+        <div className="bg-white p-4 rounded-lg shadow border text-center">
           <div className="text-2xl font-bold text-purple-600">{categories.length}</div>
           <div className="text-sm text-gray-600">Categories</div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow border">
+        <div className="bg-white p-4 rounded-lg shadow border text-center">
           <div className="text-2xl font-bold text-orange-600">
             €{products.reduce((sum, p) => sum + p.price, 0).toFixed(0)}
           </div>
