@@ -305,7 +305,7 @@ const Layout = ({ children }) => {
             </svg>
           </button>
           <Link to="/dashboard" className="flex items-center space-x-2">
-            <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-blue-500 via-blue-600 to-purple-700 rounded-lg shadow-md border border-blue-200">
+            <div className="yourocrm-logo flex items-center justify-center w-8 h-8 rounded-lg border border-blue-200">
               <span className="text-sm font-black text-white">YC</span>
             </div>
             <span className="text-lg font-black text-gray-900">YouroCRM</span>
