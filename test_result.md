@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "CRM app to invoice customers linked to Peppol, with calendar, contact entity, account entity, product entity, and invoice entity"
+user_problem_statement: "Complete CRM app with Peppol invoicing, calendar, contacts, accounts, products, and invoice generation with PDF capabilities - ALL IMPLEMENTED AND READY FOR COMPREHENSIVE TESTING"
 
 backend:
   - task: "Google OAuth Authentication API"
