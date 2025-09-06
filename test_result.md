@@ -241,6 +241,18 @@ frontend:
           agent: "testing"
           comment: "Dashboard functionality working correctly. Protected route properly requires authentication, dashboard structure includes stats cards and quick action buttons for CRM tasks. UI elements are properly styled and responsive. Dashboard correctly integrates with backend API endpoints for stats retrieval."
 
+  - task: "Calendar Page with Event Management"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Calendar functionality implemented with comprehensive features: calendar grid display, month navigation, event creation/editing modal, event form with multiple fields, API integration for CRUD operations, CRM integration (linking to contacts/accounts), and support for different event types (meeting, call, deadline, invoice_due). Ready for testing."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
