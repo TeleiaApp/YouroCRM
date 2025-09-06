@@ -1409,97 +1409,98 @@ const AccountsPage = () => {
         </div>
       </div>
 
-      {/* Accounts Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredAccounts.map((account) => (
-          <div key={account.id} className="bg-white rounded-lg shadow border hover:shadow-md transition-shadow">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
-                    <span className="text-white font-semibold text-lg">
-                      {account.name.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{account.name}</h3>
-                    {account.industry && (
-                      <p className="text-sm text-gray-600">{account.industry}</p>
-                    )}
-                  </div>
-                </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openModal(account);
-                  }}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  ✏️
-                </button>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center text-sm text-gray-600">
-                  <span className="mr-2">👤</span>
-                  {getContactName(account.contact_id)}
-                </div>
-
-                {account.website && (
-                  <div className="flex items-center text-sm text-gray-600">
-                    <span className="mr-2">🌐</span>
-                    <a 
-                      href={account.website.startsWith('http') ? account.website : `https://${account.website}`}
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="hover:text-blue-600 truncate"
+      {/* Accounts Table */}
+      <div className="bg-white rounded-lg shadow border overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Account Name
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Contact
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Industry
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  VAT Number
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Website
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Revenue
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Employees
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Created
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredAccounts.map((account) => (
+                <tr key={account.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <div className="flex items-center justify-center space-x-3">
+                      <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                        <span className="text-white font-semibold text-sm">
+                          {account.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="font-medium text-gray-900">{account.name}</div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                    {getContactName(account.contact_id)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                    {account.industry || '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                    {account.vat_number || '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                    {account.website ? (
+                      <a 
+                        href={account.website.startsWith('http') ? account.website : `https://${account.website}`}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-900 truncate max-w-32 inline-block"
+                      >
+                        {account.website}
+                      </a>
+                    ) : '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                    {account.annual_revenue ? `€${account.annual_revenue.toLocaleString()}` : '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                    {account.employee_count || '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                    {new Date(account.created_at).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                    <button
+                      onClick={() => openModal(account)}
+                      className="text-blue-600 hover:text-blue-900 mr-3"
+                      title="Edit Account"
                     >
-                      {account.website}
-                    </a>
-                  </div>
-                )}
-
-                {account.vat_number && (
-                  <div className="flex items-center text-sm text-gray-600">
-                    <span className="mr-2">💼</span>
-                    VAT: {account.vat_number}
-                  </div>
-                )}
-
-                {account.address && (
-                  <div className="flex items-center text-sm text-gray-600">
-                    <span className="mr-2">📍</span>
-                    {account.address}
-                  </div>
-                )}
-
-                {account.annual_revenue && (
-                  <div className="flex items-center text-sm text-gray-600">
-                    <span className="mr-2">💰</span>
-                    {account.annual_revenue.toLocaleString()}€ revenue
-                  </div>
-                )}
-
-                {account.employee_count && (
-                  <div className="flex items-center text-sm text-gray-600">
-                    <span className="mr-2">👥</span>
-                    {account.employee_count} employees
-                  </div>
-                )}
-              </div>
-
-              {account.notes && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <p className="text-sm text-gray-600 line-clamp-2">{account.notes}</p>
-                </div>
-              )}
-
-              <div className="mt-4 text-xs text-gray-500">
-                Added {new Date(account.created_at).toLocaleDateString()}
-              </div>
-            </div>
-          </div>
-        ))}
+                      ✏️ Edit
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Empty State */}
