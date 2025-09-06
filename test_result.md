@@ -180,6 +180,21 @@ backend:
           agent: "testing"
           comment: "All CRUD operations working perfectly. Tested with realistic meeting event including proper datetime handling, event types, location, and reminder settings. CREATE, READ (list and individual), UPDATE, and DELETE all functioning correctly."
 
+  - task: "Invoice System CRUD API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented complete invoice system with PDF generation, Belgium VAT calculations, and Peppol readiness"
+        - working: true
+          agent: "testing"
+          comment: "All invoice functionality working perfectly. Fixed critical PDF generation bug (datetime formatting issue). Tested: invoice creation with proper INV-YYYY-NNNN numbering, Belgium VAT calculations (21%), multi-item invoices, PDF generation with base64 encoding, invoice updates with recalculation, and full CRUD operations. All 8 invoice tests passed including PDF export functionality."
+
   - task: "Dashboard Stats API"
     implemented: true
     working: true
