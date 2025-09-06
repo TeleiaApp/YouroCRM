@@ -1378,23 +1378,23 @@ const AccountsPage = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow border">
+        <div className="bg-white p-4 rounded-lg shadow border text-center">
           <div className="text-2xl font-bold text-blue-600">{accounts.length}</div>
           <div className="text-sm text-gray-600">Total Accounts</div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow border">
+        <div className="bg-white p-4 rounded-lg shadow border text-center">
           <div className="text-2xl font-bold text-green-600">
             {accounts.filter(a => a.vat_number).length}
           </div>
           <div className="text-sm text-gray-600">With VAT Number</div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow border">
+        <div className="bg-white p-4 rounded-lg shadow border text-center">
           <div className="text-2xl font-bold text-purple-600">
             {accounts.filter(a => a.website).length}
           </div>
           <div className="text-sm text-gray-600">With Website</div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow border">
+        <div className="bg-white p-4 rounded-lg shadow border text-center">
           <div className="text-2xl font-bold text-orange-600">
             {accounts.reduce((sum, a) => sum + (a.annual_revenue || 0), 0).toLocaleString()}€
           </div>
