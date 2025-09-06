@@ -3120,65 +3120,191 @@ const CalendarPage = () => {
         </h2>
       </div>
 
-      {/* Calendar Grid */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        {/* Week headers */}
-        <div className="grid grid-cols-7 gap-0 bg-gray-50 border-b">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="p-3 text-center text-sm font-medium text-gray-700">
-              {day}
-            </div>
-          ))}
-        </div>
-        
-        {/* Calendar days */}
-        <div className="grid grid-cols-7 gap-0">
-          {getCalendarDays().map((date, index) => {
-            const isCurrentMonth = date.getMonth() === currentDate.getMonth();
-            const isToday = date.toDateString() === new Date().toDateString();
-            const dayEvents = getEventsForDate(date);
-            
-            return (
-              <div
-                key={index}
-                className={`min-h-[120px] p-2 border-r border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors ${
-                  !isCurrentMonth ? 'bg-gray-50 text-gray-400' : ''
-                }`}
-                onClick={() => openEventModal(date)}
-              >
-                <div className="flex justify-between items-start mb-1">
-                  <span className={`text-sm font-medium ${
-                    isToday ? 'bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs' : ''
-                  }`}>
-                    {date.getDate()}
-                  </span>
-                </div>
-                
-                <div className="space-y-1">
-                  {dayEvents.slice(0, 3).map(event => (
-                    <div
-                      key={event.id}
-                      className={`text-xs p-1 rounded truncate cursor-pointer ${eventTypeColors[event.event_type] || eventTypeColors.meeting}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openEventModal(date, event);
-                      }}
-                      title={event.title}
-                    >
-                      {event.title}
-                    </div>
-                  ))}
-                  {dayEvents.length > 3 && (
-                    <div className="text-xs text-gray-500 pl-1">
-                      +{dayEvents.length - 3} more
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+      {/* Calendar View Toggle */}
+      <div className="flex justify-center mb-4">
+        <div className="bg-white rounded-lg shadow border p-1 flex">
+          <button
+            onClick={() => setViewMode('calendar')}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              viewMode === 'calendar' 
+                ? 'bg-blue-600 text-white' 
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            📅 Calendar View
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              viewMode === 'list' 
+                ? 'bg-blue-600 text-white' 
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            📋 List View
+          </button>
         </div>
       </div>
+
+      {viewMode === 'calendar' ? (
+        /* Calendar Grid */
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          {/* Week headers */}
+          <div className="grid grid-cols-7 gap-0 bg-gray-50 border-b">
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+              <div key={day} className="p-3 text-center text-sm font-medium text-gray-700">
+                {day}
+              </div>
+            ))}
+          </div>
+          
+          {/* Calendar days */}
+          <div className="grid grid-cols-7 gap-0">
+            {getCalendarDays().map((date, index) => {
+              const isCurrentMonth = date.getMonth() === currentDate.getMonth();
+              const isToday = date.toDateString() === new Date().toDateString();
+              const dayEvents = getEventsForDate(date);
+              
+              return (
+                <div
+                  key={index}
+                  className={`min-h-[120px] p-2 border-r border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors ${
+                    !isCurrentMonth ? 'bg-gray-50 text-gray-400' : ''
+                  }`}
+                  onClick={() => openEventModal(date)}
+                >
+                  <div className="flex justify-between items-start mb-1">
+                    <span className={`text-sm font-medium ${
+                      isToday ? 'bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs' : ''
+                    }`}>
+                      {date.getDate()}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    {dayEvents.slice(0, 3).map(event => (
+                      <div
+                        key={event.id}
+                        className={`text-xs p-1 rounded truncate cursor-pointer ${eventTypeColors[event.event_type] || eventTypeColors.meeting}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEventModal(date, event);
+                        }}
+                        title={event.title}
+                      >
+                        {event.title}
+                      </div>
+                    ))}
+                    {dayEvents.length > 3 && (
+                      <div className="text-xs text-gray-500 pl-1">
+                        +{dayEvents.length - 3} more
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        /* Events List Table */
+        <div className="bg-white rounded-lg shadow border overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Event Title
+                  </th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Type
+                  </th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Date & Time
+                  </th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Duration
+                  </th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Related To
+                  </th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Location
+                  </th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Created
+                  </th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {events.sort((a, b) => new Date(b.start_date) - new Date(a.start_date)).map((event) => {
+                  const startDate = new Date(event.start_date);
+                  const endDate = new Date(event.end_date);
+                  const duration = Math.round((endDate - startDate) / (1000 * 60)); // in minutes
+                  
+                  return (
+                    <tr key={event.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <div className="font-medium text-gray-900">{event.title}</div>
+                        {event.description && (
+                          <div className="text-sm text-gray-500 truncate max-w-32">
+                            {event.description}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          event.event_type === 'meeting' ? 'bg-blue-100 text-blue-800' :
+                          event.event_type === 'call' ? 'bg-green-100 text-green-800' :
+                          event.event_type === 'deadline' ? 'bg-orange-100 text-orange-800' :
+                          event.event_type === 'invoice_due' ? 'bg-red-100 text-red-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {event.event_type.replace('_', ' ').toUpperCase()}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                        <div>{startDate.toLocaleDateString()}</div>
+                        <div className="text-xs text-gray-500">
+                          {event.all_day ? 'All Day' : `${startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                        {event.all_day ? 'All Day' : `${duration} min`}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                        {event.related_type && event.related_id ? (
+                          <span className="text-blue-600">
+                            {event.related_type === 'contact' ? '👤 Contact' : '🏢 Account'}
+                          </span>
+                        ) : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                        {event.location || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                        {new Date(event.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                        <button
+                          onClick={() => openEventModal(null, event)}
+                          className="text-blue-600 hover:text-blue-900 mr-3"
+                          title="Edit Event"
+                        >
+                          ✏️ Edit
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Event Modal */}
       {showEventModal && (
