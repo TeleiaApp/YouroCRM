@@ -1364,14 +1364,16 @@ const AccountsPage = () => {
       </div>
 
       {/* Search */}
-      <div className="max-w-md">
-        <input
-          type="text"
-          placeholder="Search accounts..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        />
+      <div className="flex justify-center">
+        <div className="w-full max-w-md">
+          <input
+            type="text"
+            placeholder="Search accounts..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+          />
+        </div>
       </div>
 
       {/* Stats */}
