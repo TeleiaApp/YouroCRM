@@ -305,10 +305,10 @@ const Layout = ({ children }) => {
             </svg>
           </button>
           <Link to="/dashboard" className="flex items-center space-x-2">
-            <div className="flex items-center justify-center w-6 h-6 bg-gradient-to-br from-blue-600 to-blue-700 rounded-md">
-              <span className="text-xs font-bold text-white">YC</span>
+            <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-blue-500 via-blue-600 to-purple-700 rounded-lg shadow-md border border-blue-200">
+              <span className="text-sm font-black text-white">YC</span>
             </div>
-            <span className="text-lg font-bold text-gray-900">yourocrm.com</span>
+            <span className="text-lg font-black text-gray-900">YouroCRM</span>
           </Link>
           <div className="w-6"></div> {/* Spacer for centering */}
         </header>
