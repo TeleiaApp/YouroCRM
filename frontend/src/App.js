@@ -299,11 +299,9 @@ const Layout = ({ children }) => {
             </svg>
           </button>
           <Link to="/dashboard" className="flex items-center space-x-2">
-            <img 
-              src="https://customer-assets.emergentagent.com/job_biz-connector-4/artifacts/la9nytru_YouroCRM_logo.svg" 
-              alt="YouroCRM Logo" 
-              className="h-6 w-auto"
-            />
+            <div className="flex items-center justify-center w-6 h-6 bg-gradient-to-br from-blue-600 to-blue-700 rounded-md">
+              <span className="text-xs font-bold text-white">YC</span>
+            </div>
             <span className="text-lg font-bold text-gray-900">yourocrm.com</span>
           </Link>
           <div className="w-6"></div> {/* Spacer for centering */}
