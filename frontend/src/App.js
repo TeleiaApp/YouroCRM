@@ -3192,31 +3192,60 @@ const PricingPage = () => {
               <h3 className="text-2xl font-bold mb-4">Start Your Professional CRM Today!</h3>
               <p className="text-lg mb-6">Join thousands of businesses using YouroCRM for their customer management and invoicing needs.</p>
               
-              <button
-                onClick={handleSubscribe}
-                disabled={loading}
-                className="inline-flex items-center px-8 py-4 bg-white text-blue-600 font-bold text-lg rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mr-3"></div>
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    🚀 Subscribe Now - €14.99/month
-                  </>
-                )}
-              </button>
-              
-              <p className="text-sm mt-4 opacity-90">
-                Secure payment via Stripe • Valid across all EU countries • Cancel anytime
-              </p>
+              {/* Payment Buttons */}
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                  {/* Stripe Button */}
+                  <button
+                    onClick={handleStripeSubscribe}
+                    disabled={loading}
+                    className="inline-flex items-center px-6 py-3 bg-white text-blue-600 font-semibold text-base rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-w-[200px]"
+                  >
+                    {loading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        💳 Pay with Stripe
+                      </>
+                    )}
+                  </button>
+
+                  <div className="text-white opacity-75 text-sm">ou</div>
+
+                  {/* PayPal Button */}
+                  <button
+                    onClick={handlePayPalSubscribe}
+                    disabled={loading}
+                    className="inline-flex items-center px-6 py-3 bg-yellow-500 text-blue-900 font-semibold text-base rounded-lg hover:bg-yellow-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-w-[200px]"
+                  >
+                    {loading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-900 mr-2"></div>
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        🅿️ Pay with PayPal
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <div className="text-center">
+                  <div className="text-3xl font-bold mb-2">€14.99/month</div>
+                  <p className="text-sm opacity-90">
+                    Both options • Secure payment • Valid across all EU countries • Cancel anytime
+                  </p>
+                </div>
+              </div>
             </div>
 
             <div className="text-center text-gray-600">
-              <p className="mb-2">🔒 Secure European Payment Processing by Stripe</p>
-              <p className="text-sm">We accept all major credit cards and European payment methods</p>
+              <p className="mb-2">🔒 Secure European Payment Processing</p>
+              <p className="text-sm">Choose between Stripe (cards) or PayPal for your convenience</p>
             </div>
           </div>
         </div>
