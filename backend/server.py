@@ -936,6 +936,185 @@ async def stripe_webhook(request: Request):
         logger.error(f"Error processing webhook: {e}")
         raise HTTPException(status_code=500, detail="Webhook processing failed")
 
+# PayPal Payment routes
+@api_router.post("/payments/paypal/create-order")
+async def create_paypal_order(request: Request, order_req: PayPalOrderRequest, current_user: User = Depends(get_current_user)):
+    if not paypal_client_id or not paypal_client_secret:
+        raise HTTPException(status_code=500, detail="PayPal payment system not configured")
+    
+    # Validate package
+    if order_req.package_id not in PAYMENT_PACKAGES:
+        raise HTTPException(status_code=400, detail="Invalid package")
+    
+    package = PAYMENT_PACKAGES[order_req.package_id]
+    
+    try:
+        # Create PayPal order
+        orders_controller = OrdersController(paypal_client)
+        
+        order_request = OrderRequest(
+            intent="CAPTURE",
+            purchase_units=[
+                PurchaseUnitRequest(
+                    reference_id=f"yourocrm_{current_user.id}_{order_req.package_id}",
+                    amount=AmountWithBreakdown(
+                        currency_code="EUR",
+                        value=str(package["amount"])
+                    ),
+                    description=package["description"]
+                )
+            ],
+            application_context={
+                "return_url": order_req.return_url,
+                "cancel_url": order_req.cancel_url,
+                "brand_name": "YouroCRM",
+                "landing_page": "BILLING",
+                "user_action": "PAY_NOW"
+            }
+        )
+        
+        response = await orders_controller.orders_create_async(body=order_request)
+        
+        if response.status_code == 201:
+            order_data = response.body
+            
+            # Create payment transaction record
+            payment_transaction = PaymentTransaction(
+                user_id=current_user.id,
+                session_id=order_data.id,
+                amount=package["amount"],
+                currency=package["currency"],
+                package_id=order_req.package_id,
+                payment_status="pending",
+                metadata={
+                    "payment_method": "paypal",
+                    "paypal_order_id": order_data.id,
+                    **(order_req.metadata or {})
+                }
+            )
+            
+            await db.payment_transactions.insert_one(payment_transaction.dict())
+            
+            # Find approval URL
+            approval_url = None
+            for link in order_data.links:
+                if link.rel == "approve":
+                    approval_url = link.href
+                    break
+            
+            return {
+                "order_id": order_data.id,
+                "approval_url": approval_url,
+                "status": order_data.status
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Failed to create PayPal order")
+    
+    except Exception as e:
+        logger.error(f"Error creating PayPal order: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create PayPal order")
+
+@api_router.post("/payments/paypal/capture-order/{order_id}")
+async def capture_paypal_order(order_id: str, current_user: User = Depends(get_current_user)):
+    if not paypal_client_id or not paypal_client_secret:
+        raise HTTPException(status_code=500, detail="PayPal payment system not configured")
+    
+    try:
+        orders_controller = OrdersController(paypal_client)
+        response = await orders_controller.orders_capture_async(id=order_id)
+        
+        if response.status_code == 201:
+            order_data = response.body
+            
+            # Update payment transaction
+            await db.payment_transactions.update_one(
+                {"session_id": order_id, "user_id": current_user.id},
+                {
+                    "$set": {
+                        "payment_status": "paid" if order_data.status == "COMPLETED" else "pending",
+                        "payment_id": order_data.id,
+                        "updated_at": datetime.now(timezone.utc)
+                    }
+                }
+            )
+            
+            # If payment successful, upgrade user to premium
+            if order_data.status == "COMPLETED":
+                existing_role = await db.user_roles.find_one({
+                    "user_id": current_user.id,
+                    "role": "premium_user"
+                })
+                
+                if not existing_role:
+                    user_role = UserRole(
+                        user_id=current_user.id,
+                        role="premium_user",
+                        granted_by="system"
+                    )
+                    await db.user_roles.insert_one(user_role.dict())
+            
+            return {
+                "order_id": order_data.id,
+                "status": order_data.status,
+                "payment_status": "paid" if order_data.status == "COMPLETED" else "pending"
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Failed to capture PayPal payment")
+    
+    except Exception as e:
+        logger.error(f"Error capturing PayPal order: {e}")
+        raise HTTPException(status_code=500, detail="Failed to capture PayPal payment")
+
+@api_router.get("/payments/paypal/order-status/{order_id}")
+async def get_paypal_order_status(order_id: str, current_user: User = Depends(get_current_user)):
+    if not paypal_client_id or not paypal_client_secret:
+        raise HTTPException(status_code=500, detail="PayPal payment system not configured")
+    
+    try:
+        # Check our database first
+        payment_transaction = await db.payment_transactions.find_one({
+            "session_id": order_id,
+            "user_id": current_user.id
+        })
+        
+        if not payment_transaction:
+            raise HTTPException(status_code=404, detail="Payment transaction not found")
+        
+        # Get status from PayPal
+        orders_controller = OrdersController(paypal_client)
+        response = await orders_controller.orders_get_async(id=order_id)
+        
+        if response.status_code == 200:
+            order_data = response.body
+            
+            payment_status = "paid" if order_data.status == "COMPLETED" else "pending"
+            
+            # Update our database if status changed
+            if payment_status != payment_transaction["payment_status"]:
+                await db.payment_transactions.update_one(
+                    {"session_id": order_id},
+                    {
+                        "$set": {
+                            "payment_status": payment_status,
+                            "updated_at": datetime.now(timezone.utc)
+                        }
+                    }
+                )
+            
+            return {
+                "order_id": order_data.id,
+                "status": order_data.status,
+                "payment_status": payment_status,
+                "amount": payment_transaction["amount"],
+                "currency": payment_transaction["currency"]
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Failed to get PayPal order status")
+    
+    except Exception as e:
+        logger.error(f"Error getting PayPal order status: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get PayPal order status")
+
 # Admin routes
 @api_router.get("/admin/users")
 async def get_all_users(current_user: User = Depends(get_current_user)):
