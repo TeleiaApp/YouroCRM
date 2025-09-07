@@ -28,4 +28,5 @@ reportlab>=4.0.0
 weasyprint>=60.0
 emergentintegrations
 bcrypt==4.0.1
+python-stdnum==1.19  # For VAT number validation and VIES integration
 
