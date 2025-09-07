@@ -3875,10 +3875,10 @@ const PlanSelectionPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Choisissez votre plan YouroCRM
+              {t('choose_your_plan')}
             </h1>
             <p className="text-xl text-gray-600">
-              Commencez gratuitement et évoluez selon vos besoins
+              {t('start_free_scale')}
             </p>
           </div>
 
