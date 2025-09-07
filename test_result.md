@@ -516,7 +516,7 @@ metadata:
   last_tested_by: "testing_agent"
   backend_tests_passed: 57
   backend_tests_failed: 0
-  frontend_tests_passed: 13
+  frontend_tests_passed: 14
   frontend_tests_failed: 0
 
 test_plan:
