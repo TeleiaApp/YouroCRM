@@ -632,6 +632,7 @@ test_plan:
   dual_authentication_testing_complete: true
   vies_integration_testing_complete: true
   vies_frontend_integration_testing_complete: true
+  subscription_plans_testing_complete: true
 
 agent_communication:
     - agent: "main"
