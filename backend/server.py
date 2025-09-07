@@ -916,6 +916,152 @@ def generate_session_token() -> str:
     """Generate a secure session token"""
     return secrets.token_urlsafe(32)
 
+async def validate_vat_with_vies(vat_number: str) -> VIESResponse:
+    """Validate VAT number using VIES and retrieve company information"""
+    try:
+        # Clean and validate VAT number format
+        clean_vat = vat_number.replace(" ", "").replace("-", "").upper()
+        
+        # Check if it's a valid EU VAT number
+        if not vat.is_valid(clean_vat):
+            return VIESResponse(valid=False)
+        
+        # Extract country code and number
+        country_code = clean_vat[:2]
+        vat_num = clean_vat[2:]
+        
+        # VIES SOAP request
+        soap_request = f"""<?xml version="1.0" encoding="UTF-8"?>
+        <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+                       xmlns:tns1="urn:ec.europa.eu:taxud:vies:services:checkVat:types">
+            <soap:Header>
+            </soap:Header>
+            <soap:Body>
+                <tns1:checkVat>
+                    <tns1:countryCode>{country_code}</tns1:countryCode>
+                    <tns1:vatNumber>{vat_num}</tns1:vatNumber>
+                </tns1:checkVat>
+            </soap:Body>
+        </soap:Envelope>"""
+        
+        headers = {
+            'Content-Type': 'text/xml; charset=utf-8',
+            'SOAPAction': 'checkVat'
+        }
+        
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.post(
+                'https://ec.europa.eu/taxation_customs/vies/services/checkVatService',
+                data=soap_request,
+                headers=headers
+            )
+        
+        if response.status_code == 200:
+            # Parse SOAP response
+            root = ET.fromstring(response.text)
+            
+            # Find the checkVatResponse element
+            ns = {'soap': 'http://schemas.xmlsoap.org/soap/envelope/',
+                  'tns': 'urn:ec.europa.eu:taxud:vies:services:checkVat:types'}
+            
+            check_vat_response = root.find('.//tns:checkVatResponse', ns)
+            
+            if check_vat_response is not None:
+                valid_elem = check_vat_response.find('tns:valid', ns)
+                name_elem = check_vat_response.find('tns:name', ns)
+                address_elem = check_vat_response.find('tns:address', ns)
+                date_elem = check_vat_response.find('tns:requestDate', ns)
+                
+                is_valid = valid_elem.text.lower() == 'true' if valid_elem is not None else False
+                company_name = name_elem.text if name_elem is not None and name_elem.text else None
+                full_address = address_elem.text if address_elem is not None and address_elem.text else None
+                request_date = date_elem.text if date_elem is not None else None
+                
+                # Parse address into components (basic parsing)
+                street, street_nr, box, postal_code, city = parse_vies_address(full_address)
+                
+                return VIESResponse(
+                    valid=is_valid,
+                    name=company_name,
+                    address=full_address,
+                    street=street,
+                    street_nr=street_nr,
+                    box=box,
+                    postal_code=postal_code,
+                    city=city,
+                    country=get_country_name(country_code),
+                    country_code=country_code,
+                    request_date=request_date
+                )
+        
+        return VIESResponse(valid=False)
+        
+    except Exception as e:
+        logger.error(f"VIES validation error: {e}")
+        return VIESResponse(valid=False)
+
+def parse_vies_address(address: str) -> tuple:
+    """Parse VIES address into components"""
+    if not address:
+        return None, None, None, None, None
+    
+    # This is a basic parser - you might want to enhance it based on your needs
+    lines = address.strip().split('\n')
+    
+    street = None
+    street_nr = None
+    box = None
+    postal_code = None
+    city = None
+    
+    if len(lines) >= 1:
+        # First line usually contains street and number
+        first_line = lines[0].strip()
+        # Try to extract street number (basic regex)
+        import re
+        
+        # Look for patterns like "123" or "123A" at the end of the line
+        match = re.search(r'(.+?)\s+(\d+[A-Za-z]?)$', first_line)
+        if match:
+            street = match.group(1).strip()
+            street_nr = match.group(2).strip()
+        else:
+            street = first_line
+    
+    if len(lines) >= 2:
+        # Last line usually contains postal code and city
+        last_line = lines[-1].strip()
+        # Look for postal code pattern (varies by country)
+        match = re.search(r'^(\d{4,5})\s+(.+)$', last_line)
+        if match:
+            postal_code = match.group(1).strip()
+            city = match.group(2).strip()
+        else:
+            city = last_line
+    
+    # Check for box number in middle lines
+    if len(lines) > 2:
+        for line in lines[1:-1]:
+            if 'box' in line.lower() or 'boîte' in line.lower() or 'bus' in line.lower():
+                box_match = re.search(r'(\d+)', line)
+                if box_match:
+                    box = box_match.group(1)
+    
+    return street, street_nr, box, postal_code, city
+
+def get_country_name(country_code: str) -> str:
+    """Get country name from country code"""
+    country_map = {
+        'AT': 'Austria', 'BE': 'Belgium', 'BG': 'Bulgaria', 'CY': 'Cyprus',
+        'CZ': 'Czech Republic', 'DE': 'Germany', 'DK': 'Denmark', 'EE': 'Estonia',
+        'ES': 'Spain', 'FI': 'Finland', 'FR': 'France', 'GR': 'Greece',
+        'HR': 'Croatia', 'HU': 'Hungary', 'IE': 'Ireland', 'IT': 'Italy',
+        'LT': 'Lithuania', 'LU': 'Luxembourg', 'LV': 'Latvia', 'MT': 'Malta',
+        'NL': 'Netherlands', 'PL': 'Poland', 'PT': 'Portugal', 'RO': 'Romania',
+        'SE': 'Sweden', 'SI': 'Slovenia', 'SK': 'Slovakia'
+    }
+    return country_map.get(country_code, country_code)
+
 # Payment routes
 @api_router.post("/payments/checkout/session")
 async def create_checkout_session(request: Request, checkout_req: CheckoutRequest, current_user: User = Depends(get_current_user)):
