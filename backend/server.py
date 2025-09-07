@@ -471,6 +471,54 @@ async def login_user(response: Response, login_data: UserLogin):
     
     return {"message": "Login successful", "user": user_data, "session_token": session_token}
 
+# Subscription Plans routes
+@api_router.get("/plans")
+async def get_plans():
+    """Get all available subscription plans"""
+    return list(SUBSCRIPTION_PLANS.values())
+
+@api_router.post("/users/select-plan")
+async def select_plan(plan_selection: PlanSelection, current_user: User = Depends(get_current_user)):
+    """Select a subscription plan for current user"""
+    if plan_selection.plan_id not in SUBSCRIPTION_PLANS:
+        raise HTTPException(status_code=400, detail="Invalid plan selected")
+    
+    # Update user's current plan
+    await db.users.update_one(
+        {"id": current_user.id},
+        {"$set": {"current_plan": plan_selection.plan_id}}
+    )
+    
+    # Create subscription record
+    subscription = UserSubscription(
+        user_id=current_user.id,
+        plan_id=plan_selection.plan_id
+    )
+    await db.user_subscriptions.insert_one(subscription.dict())
+    
+    return {"message": "Plan selected successfully", "plan": SUBSCRIPTION_PLANS[plan_selection.plan_id]}
+
+@api_router.get("/users/plan")
+async def get_user_plan(current_user: User = Depends(get_current_user)):
+    """Get current user's subscription plan"""
+    plan = get_user_plan(current_user)
+    
+    # Get usage statistics
+    contacts_count = await db.contacts.count_documents({"user_id": current_user.id})
+    accounts_count = await db.accounts.count_documents({"user_id": current_user.id})
+    
+    return {
+        "plan": plan,
+        "usage": {
+            "contacts": contacts_count,
+            "accounts": accounts_count
+        },
+        "limits": {
+            "contacts_limit_reached": not check_plan_limits(current_user, "contacts", contacts_count),
+            "accounts_limit_reached": not check_plan_limits(current_user, "accounts", accounts_count)
+        }
+    }
+
 # Contact routes
 @api_router.post("/contacts", response_model=Contact)
 async def create_contact(contact_data: ContactCreate, current_user: User = Depends(get_current_user)):
