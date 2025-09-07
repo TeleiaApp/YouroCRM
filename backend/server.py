@@ -762,7 +762,7 @@ if not paypal_client_id or not paypal_client_secret:
     logger.warning("PayPal credentials not found in environment variables")
 else:
     # Initialize PayPal client
-    paypal_client = PaypalserversdkClient(
+    paypal_client = PaypalServersdkClient(
         client_credentials_config=OAuth2(
             o_auth_client_id=paypal_client_id,
             o_auth_client_secret=paypal_client_secret
