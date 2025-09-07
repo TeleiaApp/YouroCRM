@@ -407,62 +407,62 @@ const HomePage = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {/* Starter */}
             <div className="bg-white p-8 rounded-lg shadow border">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">🆓 Starter</h3>
-              <div className="text-3xl font-bold text-gray-900 mb-4">Gratuit</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('starter_plan')}</h3>
+              <div className="text-3xl font-bold text-gray-900 mb-4">{t('free')}</div>
               <ul className="text-left space-y-2 text-gray-600 mb-6">
-                <li>✅ 5 contacts maximum</li>
-                <li>✅ 2 comptes maximum</li>
-                <li>✅ Facturation basique</li>
-                <li>✅ Support email</li>
+                <li>✅ 5 {t('contacts_max')}</li>
+                <li>✅ 2 {t('accounts_max')}</li>
+                <li>✅ {t('basic_invoicing')}</li>
+                <li>✅ {t('email_support')}</li>
               </ul>
               <button
                 onClick={() => navigate('/register')}
                 className="w-full bg-gray-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-gray-700 transition-colors"
               >
-                Commencer
+                {t('start_free_btn')}
               </button>
             </div>
 
             {/* Professional */}
             <div className="bg-blue-600 text-white p-8 rounded-lg shadow relative transform scale-105">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-yellow-400 text-gray-900 px-4 py-1 rounded-full text-sm font-semibold">
-                Plus populaire
+                {t('most_popular')}
               </div>
-              <h3 className="text-xl font-semibold mb-2">💎 Professional</h3>
-              <div className="text-3xl font-bold mb-4">14.99€<span className="text-lg">/mois</span></div>
+              <h3 className="text-xl font-semibold mb-2">{t('professional_plan')}</h3>
+              <div className="text-3xl font-bold mb-4">14.99€<span className="text-lg">{t('per_month')}</span></div>
               <ul className="text-left space-y-2 mb-6">
-                <li>✅ Contacts/comptes illimités</li>
-                <li>✅ Intégration VIES complète</li>
-                <li>✅ Facturation Peppol</li>
-                <li>✅ Calendrier avancé</li>
-                <li>✅ Export PDF</li>
-                <li>✅ Support prioritaire</li>
+                <li>✅ {t('unlimited_contacts_accounts')}</li>
+                <li>✅ {t('vies_integration_complete')}</li>
+                <li>✅ {t('peppol_invoicing')}</li>
+                <li>✅ {t('advanced_calendar')}</li>
+                <li>✅ {t('pdf_export')}</li>
+                <li>✅ {t('priority_support')}</li>
               </ul>
               <button
                 onClick={() => navigate('/plans')}
                 className="w-full bg-white text-blue-600 py-2 px-4 rounded-lg font-medium hover:bg-gray-100 transition-colors"
               >
-                Choisir Professional
+                {t('choose_plan')} Professional
               </button>
             </div>
 
             {/* Enterprise */}
             <div className="bg-white p-8 rounded-lg shadow border">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">🏆 Enterprise</h3>
-              <div className="text-3xl font-bold text-gray-900 mb-4">39.99€<span className="text-lg">/mois</span></div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('enterprise_plan')}</h3>
+              <div className="text-3xl font-bold text-gray-900 mb-4">39.99€<span className="text-lg">{t('per_month')}</span></div>
               <ul className="text-left space-y-2 text-gray-600 mb-6">
-                <li>✅ Tout Professional</li>
-                <li>✅ Champs personnalisés</li>
-                <li>✅ API Access</li>
-                <li>✅ White-label</li>
-                <li>✅ Support dédié</li>
-                <li>✅ Formation incluse</li>
+                <li>✅ {t('everything_professional')}</li>
+                <li>✅ {t('custom_fields')}</li>
+                <li>✅ {t('api_access')}</li>
+                <li>✅ {t('white_label')}</li>
+                <li>✅ {t('dedicated_support')}</li>
+                <li>✅ {t('training_included')}</li>
               </ul>
               <button
                 onClick={() => navigate('/plans')}
                 className="w-full bg-gray-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-gray-700 transition-colors"
               >
-                Choisir Enterprise
+                {t('choose_plan')} Enterprise
               </button>
             </div>
           </div>
