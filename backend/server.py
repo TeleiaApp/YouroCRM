@@ -49,6 +49,7 @@ class User(BaseModel):
     password_hash: Optional[str] = None  # For traditional auth
     auth_type: str = "google"  # "google" or "traditional"
     is_active: bool = True
+    current_plan: str = "starter"  # starter, professional, enterprise
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class Session(BaseModel):
