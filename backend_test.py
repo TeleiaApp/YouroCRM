@@ -26,7 +26,9 @@ class CRMBackendTester:
             "products": {"passed": 0, "failed": 0, "errors": []},
             "calendar": {"passed": 0, "failed": 0, "errors": []},
             "invoices": {"passed": 0, "failed": 0, "errors": []},
-            "dashboard": {"passed": 0, "failed": 0, "errors": []}
+            "dashboard": {"passed": 0, "failed": 0, "errors": []},
+            "payments": {"passed": 0, "failed": 0, "errors": []},
+            "admin": {"passed": 0, "failed": 0, "errors": []}
         }
         self.created_entities = {
             "contacts": [],
