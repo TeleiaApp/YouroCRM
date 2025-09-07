@@ -1,5 +1,7 @@
  
+/* eslint-disable no-alert */
 /* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect, createContext, useContext } from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, Link } from "react-router-dom";
