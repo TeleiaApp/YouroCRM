@@ -1047,6 +1047,9 @@ class CRMBackendTester:
             # NEW: Test Stripe Payment Integration
             self.test_stripe_payment_integration()
             
+            # NEW: Test PayPal Payment Integration
+            self.test_paypal_payment_integration()
+            
             # NEW: Test Admin Panel APIs
             self.test_admin_panel_apis()
             
