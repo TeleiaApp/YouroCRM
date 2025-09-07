@@ -1399,11 +1399,13 @@ TRANSLATIONS = {
         "signing_in": "Signing in...",
         "back_to_login_options": "Back to login options",
         "create_your_account": "Create Your Account",
+        "join_yourocrm": "Join YouroCRM - Professional CRM Platform",
         "full_name": "Full Name",
         "create_account": "Create Account",
         "creating_account": "Creating Account...",
         "already_have_account": "Already have an account? Sign in here",
         "minimum_6_characters": "Minimum 6 characters",
+        "view_pricing_features": "💰 View Pricing & Features",
         
         # Plan Selection
         "choose_your_plan": "Choose your YouroCRM plan",
