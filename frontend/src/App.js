@@ -3698,6 +3698,7 @@ const RegisterPage = () => {
   const [registerForm, setRegisterForm] = useState({ name: '', email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const handleRegister = async (e) => {
     e.preventDefault();
