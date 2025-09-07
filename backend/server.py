@@ -623,6 +623,14 @@ async def delete_account(account_id: str, current_user: User = Depends(get_curre
 @api_router.get("/accounts/vies-lookup/{vat_number}", response_model=VIESResponse)
 async def vies_lookup(vat_number: str, current_user: User = Depends(get_current_user)):
     """Validate VAT number and retrieve company information from VIES"""
+    # Check if user has access to VIES integration
+    if not has_feature_access(current_user, "vies_integration"):
+        plan = get_user_plan(current_user)
+        raise HTTPException(
+            status_code=403, 
+            detail=f"VIES integration not available in {plan.name} plan. Upgrade to Professional to access EU company data auto-completion."
+        )
+    
     try:
         vies_data = await validate_vat_with_vies(vat_number)
         return vies_data
