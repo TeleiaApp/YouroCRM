@@ -3913,17 +3913,24 @@ const PlanSelectionPage = () => {
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
+            <button
+              onClick={() => navigate('/')}
+              className="flex items-center space-x-3 text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              <span className="font-medium">{t('back_to_home')}</span>
+            </button>
             <div className="flex items-center space-x-3">
               <img 
                 src="https://customer-assets.emergentagent.com/job_biz-connector-4/artifacts/tgh8glfj_image.png"
                 alt="YouroCRM Logo"
                 className="h-8 w-auto"
               />
-              <span className="text-2xl font-bold text-gray-900">YouroCRM</span>
+              <span className="text-2xl font-bold text-gray-900">{t('app_name')}</span>
             </div>
-            <Link to="/" className="text-gray-600 hover:text-gray-900">
-              Retour à l'accueil
-            </Link>
+            <LanguageSelector />
           </div>
         </div>
       </div>
