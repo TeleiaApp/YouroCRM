@@ -1406,6 +1406,25 @@ const AccountsPage = () => {
     return contact ? contact.name : 'No contact assigned';
   };
 
+  const formatAddress = (account) => {
+    const addressParts = [];
+    if (account.street) {
+      let streetLine = account.street;
+      if (account.street_nr) streetLine += ` ${account.street_nr}`;
+      if (account.box) streetLine += ` Box ${account.box}`;
+      addressParts.push(streetLine);
+    }
+    if (account.postal_code && account.city) {
+      addressParts.push(`${account.postal_code} ${account.city}`);
+    } else if (account.city) {
+      addressParts.push(account.city);
+    }
+    if (account.country) {
+      addressParts.push(account.country);
+    }
+    return addressParts.length > 0 ? addressParts.join(', ') : '-';
+  };
+
   // Modal handlers
   const openModal = (account = null) => {
     if (account) {
