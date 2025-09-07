@@ -1046,26 +1046,42 @@ async def capture_paypal_order(order_id: str, current_user: User = Depends(get_c
         raise HTTPException(status_code=500, detail="PayPal payment system not configured")
     
     try:
-        orders_controller = OrdersController(paypal_client)
-        response = await orders_controller.orders_capture_async(id=order_id)
+        # Get PayPal access token
+        access_token = await get_paypal_access_token()
+        if not access_token:
+            raise HTTPException(status_code=500, detail="Failed to authenticate with PayPal")
+        
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {access_token}",
+            "Accept": "application/json",
+            "Prefer": "return=representation"
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{PAYPAL_API_BASE}/v2/checkout/orders/{order_id}/capture",
+                headers=headers,
+                json={}
+            )
         
         if response.status_code == 201:
-            order_data = response.body
+            order_data = response.json()
             
             # Update payment transaction
             await db.payment_transactions.update_one(
                 {"session_id": order_id, "user_id": current_user.id},
                 {
                     "$set": {
-                        "payment_status": "paid" if order_data.status == "COMPLETED" else "pending",
-                        "payment_id": order_data.id,
+                        "payment_status": "paid" if order_data["status"] == "COMPLETED" else "pending",
+                        "payment_id": order_data["id"],
                         "updated_at": datetime.now(timezone.utc)
                     }
                 }
             )
             
             # If payment successful, upgrade user to premium
-            if order_data.status == "COMPLETED":
+            if order_data["status"] == "COMPLETED":
                 existing_role = await db.user_roles.find_one({
                     "user_id": current_user.id,
                     "role": "premium_user"
@@ -1080,11 +1096,12 @@ async def capture_paypal_order(order_id: str, current_user: User = Depends(get_c
                     await db.user_roles.insert_one(user_role.dict())
             
             return {
-                "order_id": order_data.id,
-                "status": order_data.status,
-                "payment_status": "paid" if order_data.status == "COMPLETED" else "pending"
+                "order_id": order_data["id"],
+                "status": order_data["status"],
+                "payment_status": "paid" if order_data["status"] == "COMPLETED" else "pending"
             }
         else:
+            logger.error(f"PayPal capture failed: {response.status_code} - {response.text}")
             raise HTTPException(status_code=500, detail="Failed to capture PayPal payment")
     
     except Exception as e:
