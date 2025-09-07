@@ -613,6 +613,7 @@ test_plan:
   dual_payment_integration_complete: true
   admin_panel_testing_complete: true
   dual_authentication_testing_complete: true
+  vies_integration_testing_complete: true
 
 agent_communication:
     - agent: "main"
