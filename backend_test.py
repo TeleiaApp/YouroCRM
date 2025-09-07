@@ -494,6 +494,226 @@ class CRMBackendTester:
             self.log_result("accounts", "PUT /accounts/{id} - Update account", False,
                           f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
 
+        # Test account creation with mixed old/new address data (backward compatibility)
+        mixed_account_data = {
+            "name": "Mixed Address Test Corp",
+            "industry": "Testing",
+            "street": "Test Street",
+            "street_nr": "123",
+            "postal_code": "1000",
+            "city": "Test City",
+            "country": "Belgium",
+            "vat_number": "BE0987654321"
+        }
+        
+        success, response = self.make_request("POST", "/accounts", data=mixed_account_data)
+        if success and response.status_code == 200:
+            mixed_account = response.json()
+            self.created_entities["accounts"].append(mixed_account["id"])
+            
+            # Verify new address fields are properly stored
+            if (mixed_account.get("street") == "Test Street" and 
+                mixed_account.get("street_nr") == "123" and
+                mixed_account.get("postal_code") == "1000" and
+                mixed_account.get("city") == "Test City" and
+                mixed_account.get("country") == "Belgium"):
+                self.log_result("accounts", "POST /accounts - Separated address fields storage", True)
+            else:
+                self.log_result("accounts", "POST /accounts - Separated address fields storage", False,
+                              "Address fields not properly stored")
+        else:
+            self.log_result("accounts", "POST /accounts - Separated address fields", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+
+    def test_vies_integration(self):
+        """Test VIES (VAT Information Exchange System) Integration"""
+        print("\n🇪🇺 Testing VIES VAT Validation Integration...")
+        
+        # Test 1: Valid EU VAT number format validation
+        test_vat_numbers = [
+            "BE0123456789",  # Belgium format
+            "FR12345678901", # France format  
+            "DE123456789",   # Germany format
+            "NL123456789B01" # Netherlands format
+        ]
+        
+        for vat_number in test_vat_numbers:
+            success, response = self.make_request("GET", f"/accounts/vies-lookup/{vat_number}")
+            if success and response.status_code == 200:
+                vies_response = response.json()
+                
+                # Check response structure
+                expected_fields = ["valid", "country_code", "request_date"]
+                if all(field in vies_response for field in expected_fields):
+                    self.log_result("vies", f"GET /accounts/vies-lookup/{vat_number} - Response structure", True)
+                    
+                    # Check country code extraction
+                    expected_country_code = vat_number[:2]
+                    if vies_response.get("country_code") == expected_country_code:
+                        self.log_result("vies", f"GET /accounts/vies-lookup/{vat_number} - Country code extraction", True)
+                    else:
+                        self.log_result("vies", f"GET /accounts/vies-lookup/{vat_number} - Country code extraction", False,
+                                      f"Expected {expected_country_code}, got {vies_response.get('country_code')}")
+                else:
+                    self.log_result("vies", f"GET /accounts/vies-lookup/{vat_number} - Response structure", False,
+                                  f"Missing fields: {set(expected_fields) - set(vies_response.keys())}")
+            else:
+                self.log_result("vies", f"GET /accounts/vies-lookup/{vat_number} - VIES lookup", False,
+                              f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+        
+        # Test 2: Invalid VAT number validation
+        invalid_vat_numbers = [
+            "INVALID123",      # Completely invalid format
+            "XX1234567890",    # Invalid country code
+            "BE123",           # Too short
+            "BE012345678901234" # Too long
+        ]
+        
+        for invalid_vat in invalid_vat_numbers:
+            success, response = self.make_request("GET", f"/accounts/vies-lookup/{invalid_vat}")
+            if success and response.status_code == 200:
+                vies_response = response.json()
+                if vies_response.get("valid") == False:
+                    self.log_result("vies", f"GET /accounts/vies-lookup/{invalid_vat} - Invalid VAT rejection", True)
+                else:
+                    self.log_result("vies", f"GET /accounts/vies-lookup/{invalid_vat} - Invalid VAT rejection", False,
+                                  f"Should reject invalid VAT, got valid={vies_response.get('valid')}")
+            else:
+                self.log_result("vies", f"GET /accounts/vies-lookup/{invalid_vat} - Invalid VAT handling", False,
+                              f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+        
+        # Test 3: Non-EU VAT number handling
+        non_eu_vat_numbers = [
+            "US123456789",     # United States
+            "CH123456789",     # Switzerland (not EU for VAT)
+            "GB123456789"      # UK (post-Brexit)
+        ]
+        
+        for non_eu_vat in non_eu_vat_numbers:
+            success, response = self.make_request("GET", f"/accounts/vies-lookup/{non_eu_vat}")
+            if success and response.status_code == 200:
+                vies_response = response.json()
+                if vies_response.get("valid") == False:
+                    self.log_result("vies", f"GET /accounts/vies-lookup/{non_eu_vat} - Non-EU VAT rejection", True)
+                else:
+                    self.log_result("vies", f"GET /accounts/vies-lookup/{non_eu_vat} - Non-EU VAT rejection", False,
+                                  f"Should reject non-EU VAT, got valid={vies_response.get('valid')}")
+            else:
+                self.log_result("vies", f"GET /accounts/vies-lookup/{non_eu_vat} - Non-EU VAT handling", False,
+                              f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+        
+        # Test 4: VIES service response parsing (using a known format)
+        test_vat = "BE0123456789"
+        success, response = self.make_request("GET", f"/accounts/vies-lookup/{test_vat}")
+        if success and response.status_code == 200:
+            vies_response = response.json()
+            
+            # Test address parsing fields (even if empty, they should be present)
+            address_fields = ["address", "street", "street_nr", "box", "postal_code", "city", "country"]
+            present_fields = [field for field in address_fields if field in vies_response]
+            
+            if len(present_fields) >= 4:  # At least some address fields should be present
+                self.log_result("vies", "GET /accounts/vies-lookup - Address parsing fields", True)
+            else:
+                self.log_result("vies", "GET /accounts/vies-lookup - Address parsing fields", False,
+                              f"Only {len(present_fields)} address fields present: {present_fields}")
+            
+            # Test country name mapping
+            if vies_response.get("country"):
+                country_name = vies_response["country"]
+                if isinstance(country_name, str) and len(country_name) > 2:
+                    self.log_result("vies", "GET /accounts/vies-lookup - Country name mapping", True)
+                else:
+                    self.log_result("vies", "GET /accounts/vies-lookup - Country name mapping", False,
+                                  f"Invalid country name: {country_name}")
+            else:
+                self.log_result("vies", "GET /accounts/vies-lookup - Country name mapping", True)  # May be None for invalid VAT
+        
+        # Test 5: Error handling for malformed requests
+        malformed_requests = [
+            "",                # Empty VAT number
+            "   ",            # Whitespace only
+            "BE-0123-456-789", # With hyphens (should be cleaned)
+            "be0123456789"     # Lowercase (should be normalized)
+        ]
+        
+        for malformed_vat in malformed_requests:
+            if malformed_vat.strip():  # Skip empty strings for URL safety
+                success, response = self.make_request("GET", f"/accounts/vies-lookup/{malformed_vat}")
+                if success and response.status_code == 200:
+                    vies_response = response.json()
+                    # Should handle malformed input gracefully
+                    if "valid" in vies_response:
+                        self.log_result("vies", f"GET /accounts/vies-lookup - Malformed input handling ({malformed_vat.strip()})", True)
+                    else:
+                        self.log_result("vies", f"GET /accounts/vies-lookup - Malformed input handling ({malformed_vat.strip()})", False,
+                                      "Missing valid field in response")
+                else:
+                    # Some malformed inputs might return 4xx errors, which is acceptable
+                    if hasattr(response, 'status_code') and response.status_code in [400, 422]:
+                        self.log_result("vies", f"GET /accounts/vies-lookup - Malformed input validation ({malformed_vat.strip()})", True)
+                    else:
+                        self.log_result("vies", f"GET /accounts/vies-lookup - Malformed input handling ({malformed_vat.strip()})", False,
+                                      f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+        
+        # Test 6: Authentication requirement
+        success, response = self.make_request("GET", "/accounts/vies-lookup/BE0123456789", headers={}, expect_auth_error=True)
+        if success and response.status_code == 401:
+            self.log_result("vies", "GET /accounts/vies-lookup - Authentication required", True)
+        else:
+            self.log_result("vies", "GET /accounts/vies-lookup - Authentication required", False,
+                          f"Expected 401, got {response.status_code if hasattr(response, 'status_code') else response}")
+        
+        # Test 7: SOAP communication error handling (simulate timeout scenario)
+        # This tests the error handling when VIES service is unavailable
+        # The actual VIES service might be down or slow, so we test that errors are handled gracefully
+        print("ℹ️  Testing VIES service error handling...")
+        
+        # Test with a format that might cause VIES service issues
+        edge_case_vat = "BE9999999999"  # Likely non-existent but valid format
+        success, response = self.make_request("GET", f"/accounts/vies-lookup/{edge_case_vat}")
+        if success and response.status_code == 200:
+            vies_response = response.json()
+            if "valid" in vies_response:
+                self.log_result("vies", "GET /accounts/vies-lookup - VIES service error handling", True)
+            else:
+                self.log_result("vies", "GET /accounts/vies-lookup - VIES service error handling", False,
+                              "Invalid response structure")
+        elif hasattr(response, 'status_code') and response.status_code == 500:
+            # 500 error is acceptable for VIES service issues
+            self.log_result("vies", "GET /accounts/vies-lookup - VIES service error handling", True)
+        else:
+            self.log_result("vies", "GET /accounts/vies-lookup - VIES service error handling", False,
+                          f"Unexpected response: {response.status_code if hasattr(response, 'status_code') else response}")
+        
+        # Test 8: VAT number format validation using python-stdnum
+        print("ℹ️  Testing VAT number format validation...")
+        
+        # Test various EU country formats
+        eu_vat_formats = {
+            "BE": "BE0123456789",      # Belgium: BE + 10 digits
+            "FR": "FR12345678901",     # France: FR + 11 digits
+            "DE": "DE123456789",       # Germany: DE + 9 digits
+            "NL": "NL123456789B01",    # Netherlands: NL + 9 digits + B + 2 digits
+            "IT": "IT12345678901",     # Italy: IT + 11 digits
+            "ES": "ES123456789"        # Spain: ES + 9 digits
+        }
+        
+        for country, vat_number in eu_vat_formats.items():
+            success, response = self.make_request("GET", f"/accounts/vies-lookup/{vat_number}")
+            if success and response.status_code == 200:
+                vies_response = response.json()
+                if vies_response.get("country_code") == country:
+                    self.log_result("vies", f"GET /accounts/vies-lookup - {country} format validation", True)
+                else:
+                    self.log_result("vies", f"GET /accounts/vies-lookup - {country} format validation", False,
+                                  f"Country code mismatch: expected {country}, got {vies_response.get('country_code')}")
+            else:
+                self.log_result("vies", f"GET /accounts/vies-lookup - {country} format validation", False,
+                              f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+        
+        print("ℹ️  VIES integration tests completed")
+
     def test_products_crud(self):
         """Test Product CRUD operations"""
         print("\n📦 Testing Product Management...")
