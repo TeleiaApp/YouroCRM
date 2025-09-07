@@ -251,6 +251,7 @@ const ProtectedRoute = ({ children }) => {
 // Home Page (Landing Page)
 const HomePage = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
@@ -264,20 +265,21 @@ const HomePage = () => {
                 alt="YouroCRM Logo"
                 className="h-8 w-auto"
               />
-              <span className="text-2xl font-bold text-gray-900">YouroCRM</span>
+              <span className="text-2xl font-bold text-gray-900">{t('app_name')}</span>
             </div>
             <div className="flex items-center space-x-4">
+              <LanguageSelector />
               <Link 
                 to="/login" 
                 className="text-gray-600 hover:text-gray-900 font-medium"
               >
-                Se connecter
+                {t('login')}
               </Link>
               <button
                 onClick={() => navigate('/register')}
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
               >
-                Essai gratuit
+                {t('start_free')}
               </button>
             </div>
           </div>
