@@ -3893,7 +3893,7 @@ const PlanSelectionPage = () => {
                 {plan.is_popular && (
                   <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
                     <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-1 rounded-full text-sm font-semibold shadow-lg">
-                      ⭐ Plus populaire
+                      {t('most_popular')}
                     </span>
                   </div>
                 )}
