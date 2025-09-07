@@ -3191,6 +3191,493 @@ const PricingPage = () => {
   );
 };
 
+// Admin Panel Component
+const AdminPanel = () => {
+  const [users, setUsers] = useState([]);
+  const [customFields, setCustomFields] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('users');
+  const [showUserRoleModal, setShowUserRoleModal] = useState(false);
+  const [showFieldModal, setShowFieldModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  // Role and field form states
+  const [roleForm, setRoleForm] = useState({ role: 'premium_user' });
+  const [fieldForm, setFieldForm] = useState({
+    entity_type: 'contacts',
+    field_name: '',
+    field_type: 'text',
+    field_options: [],
+    required: false
+  });
+
+  useEffect(() => {
+    fetchAdminData();
+  }, []);
+
+  const fetchAdminData = async () => {
+    try {
+      setLoading(true);
+      const [usersRes, fieldsRes] = await Promise.all([
+        axios.get(`${API}/admin/users`, { withCredentials: true }),
+        axios.get(`${API}/admin/custom-fields`, { withCredentials: true })
+      ]);
+      
+      setUsers(usersRes.data);
+      setCustomFields(fieldsRes.data);
+    } catch (error) {
+      console.error('Error fetching admin data:', error);
+      if (error.response?.status === 403) {
+        alert('Admin access required. Please contact the system administrator.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAssignRole = async () => {
+    try {
+      await axios.post(`${API}/admin/users/${selectedUser.id}/role`, roleForm, { withCredentials: true });
+      alert('Role assigned successfully!');
+      setShowUserRoleModal(false);
+      fetchAdminData();
+    } catch (error) {
+      console.error('Error assigning role:', error);
+      alert('Error assigning role. Please try again.');
+    }
+  };
+
+  const handleRemoveRole = async (userId, role) => {
+    if (window.confirm(`Are you sure you want to remove the ${role} role from this user?`)) {
+      try {
+        await axios.delete(`${API}/admin/users/${userId}/role/${role}`, { withCredentials: true });
+        alert('Role removed successfully!');
+        fetchAdminData();
+      } catch (error) {
+        console.error('Error removing role:', error);
+        alert('Error removing role. Please try again.');
+      }
+    }
+  };
+
+  const handleCreateCustomField = async () => {
+    try {
+      await axios.post(`${API}/admin/custom-fields`, fieldForm, { withCredentials: true });
+      alert('Custom field created successfully!');
+      setShowFieldModal(false);
+      setFieldForm({
+        entity_type: 'contacts',
+        field_name: '',
+        field_type: 'text',
+        field_options: [],
+        required: false
+      });
+      fetchAdminData();
+    } catch (error) {
+      console.error('Error creating custom field:', error);
+      alert('Error creating custom field. Please try again.');
+    }
+  };
+
+  const handleDeleteCustomField = async (fieldId) => {
+    if (window.confirm('Are you sure you want to delete this custom field? This action cannot be undone.')) {
+      try {
+        await axios.delete(`${API}/admin/custom-fields/${fieldId}`, { withCredentials: true });
+        alert('Custom field deleted successfully!');
+        fetchAdminData();
+      } catch (error) {
+        console.error('Error deleting custom field:', error);
+        alert('Error deleting custom field. Please try again.');
+      }
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="animate-pulse space-y-6">
+        <div className="h-8 bg-gray-200 rounded w-48"></div>
+        <div className="space-y-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="h-16 bg-gray-200 rounded-lg"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold text-gray-900">🛠️ Admin Panel</h1>
+        <p className="text-gray-600">Manage users, roles, and system configuration</p>
+      </div>
+
+      {/* Tab Navigation */}
+      <div className="flex justify-center">
+        <div className="bg-white rounded-lg shadow border p-1 flex">
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'users' 
+                ? 'bg-blue-600 text-white' 
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            👥 User Management
+          </button>
+          <button
+            onClick={() => setActiveTab('fields')}
+            className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'fields' 
+                ? 'bg-blue-600 text-white' 
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            🏗️ Custom Fields
+          </button>
+        </div>
+      </div>
+
+      {/* Users Tab */}
+      {activeTab === 'users' && (
+        <div className="space-y-6">
+          <div className="flex justify-center">
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <p className="text-blue-800 font-semibold">Total Users: {users.length}</p>
+              <p className="text-blue-600 text-sm">
+                Premium Users: {users.filter(u => u.roles?.includes('premium_user')).length}
+              </p>
+            </div>
+          </div>
+
+          {/* Users Table */}
+          <div className="bg-white rounded-lg shadow border overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      User
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Email
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Roles
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Payments
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Total Paid
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Joined
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {users.map((user) => (
+                    <tr key={user.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <div className="flex items-center justify-center space-x-3">
+                          {user.picture && (
+                            <img src={user.picture} alt="Profile" className="w-8 h-8 rounded-full" />
+                          )}
+                          <div className="font-medium text-gray-900">{user.name}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                        {user.email}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <div className="flex flex-wrap justify-center gap-1">
+                          {user.roles?.map(role => (
+                            <span
+                              key={role}
+                              className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                            >
+                              {role}
+                              <button
+                                onClick={() => handleRemoveRole(user.id, role)}
+                                className="ml-1 text-red-500 hover:text-red-700"
+                                title="Remove role"
+                              >
+                                ×
+                              </button>
+                            </span>
+                          )) || '-'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                        {user.payments_count || 0}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                        €{(user.total_paid || 0).toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                        {new Date(user.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                        <button
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setShowUserRoleModal(true);
+                          }}
+                          className="text-blue-600 hover:text-blue-900 mr-3"
+                          title="Assign Role"
+                        >
+                          👑 Add Role
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Fields Tab */}
+      {activeTab === 'fields' && (
+        <div className="space-y-6">
+          <div className="flex justify-center">
+            <button
+              onClick={() => setShowFieldModal(true)}
+              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+            >
+              ➕ Add Custom Field
+            </button>
+          </div>
+
+          {/* Custom Fields Table */}
+          <div className="bg-white rounded-lg shadow border overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Entity Type
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Field Name
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Field Type
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Required
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Created
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {customFields.map((field) => (
+                    <tr key={field.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                        <span className="capitalize">{field.entity_type}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center font-medium text-gray-900">
+                        {field.field_name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                        <span className="capitalize">{field.field_type}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          field.required ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {field.required ? 'Required' : 'Optional'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                        {new Date(field.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                        <button
+                          onClick={() => handleDeleteCustomField(field.id)}
+                          className="text-red-600 hover:text-red-900"
+                          title="Delete Field"
+                        >
+                          🗑️ Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {customFields.length === 0 && (
+            <div className="text-center py-12">
+              <div className="text-4xl mb-4">🏗️</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Custom Fields</h3>
+              <p className="text-gray-600 mb-4">Create custom fields to extend your CRM entities</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Role Assignment Modal */}
+      {showUserRoleModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 text-center flex-1">
+                  Assign Role to {selectedUser?.name}
+                </h3>
+                <button
+                  onClick={() => setShowUserRoleModal(false)}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Role
+                  </label>
+                  <select
+                    value={roleForm.role}
+                    onChange={(e) => setRoleForm({...roleForm, role: e.target.value})}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                  >
+                    <option value="premium_user">Premium User</option>
+                    <option value="admin">Administrator</option>
+                    <option value="moderator">Moderator</option>
+                  </select>
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button
+                    onClick={() => setShowUserRoleModal(false)}
+                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleAssignRole}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  >
+                    Assign Role
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Field Modal */}
+      {showFieldModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 text-center flex-1">
+                  Create Custom Field
+                </h3>
+                <button
+                  onClick={() => setShowFieldModal(false)}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Entity Type
+                  </label>
+                  <select
+                    value={fieldForm.entity_type}
+                    onChange={(e) => setFieldForm({...fieldForm, entity_type: e.target.value})}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                  >
+                    <option value="contacts">Contacts</option>
+                    <option value="accounts">Accounts</option>
+                    <option value="products">Products</option>
+                    <option value="invoices">Invoices</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Field Name
+                  </label>
+                  <input
+                    type="text"
+                    value={fieldForm.field_name}
+                    onChange={(e) => setFieldForm({...fieldForm, field_name: e.target.value})}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                    placeholder="Custom Field Name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Field Type
+                  </label>
+                  <select
+                    value={fieldForm.field_type}
+                    onChange={(e) => setFieldForm({...fieldForm, field_type: e.target.value})}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                  >
+                    <option value="text">Text</option>
+                    <option value="number">Number</option>
+                    <option value="date">Date</option>
+                    <option value="select">Select (Options)</option>
+                    <option value="boolean">Yes/No</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={fieldForm.required}
+                    onChange={(e) => setFieldForm({...fieldForm, required: e.target.checked})}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <label className="ml-2 text-sm text-gray-700">Required Field</label>
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button
+                    onClick={() => setShowFieldModal(false)}
+                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleCreateCustomField}
+                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                  >
+                    Create Field
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Calendar Component
 const CalendarPage = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
