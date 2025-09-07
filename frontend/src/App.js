@@ -1200,6 +1200,7 @@ const ContactsPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedContact, setSelectedContact] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [userPlan, setUserPlan] = useState(null);
 
   // Contact form state
   const [contactForm, setContactForm] = useState({
