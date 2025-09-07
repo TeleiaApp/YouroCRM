@@ -473,16 +473,16 @@ const HomePage = () => {
       <section className="py-20 bg-blue-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">
-            Prêt à transformer votre gestion client ?
+            {t('ready_to_transform')}
           </h2>
           <p className="text-xl text-blue-100 mb-8">
-            Rejoignez les entreprises européennes qui font confiance à YouroCRM
+            {t('join_european_companies')}
           </p>
           <button
             onClick={() => navigate('/register')}
             className="bg-green-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-green-700 transition-colors"
           >
-            🚀 Démarrer maintenant - C'est gratuit !
+            {t('start_now_free')}
           </button>
         </div>
       </section>
