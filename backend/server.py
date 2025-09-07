@@ -1389,6 +1389,57 @@ async def delete_custom_field(field_id: str, current_user: User = Depends(get_cu
     
     return {"message": "Custom field deleted successfully"}
 
+@api_router.post("/admin/users")
+async def create_user(user_data: UserCreate, current_user: User = Depends(get_current_user)):
+    # Check if user is admin
+    user_role = await db.user_roles.find_one({"user_id": current_user.id, "role": "admin"})
+    if not user_role:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Check if user already exists
+    existing_user = await db.users.find_one({"email": user_data.email})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="User with this email already exists")
+    
+    # Create new user
+    user = User(
+        email=user_data.email,
+        name=user_data.name,
+        password_hash=hash_password(user_data.password),
+        auth_type="traditional"
+    )
+    
+    await db.users.insert_one(user.dict())
+    
+    # Assign roles if provided
+    for role in user_data.roles:
+        user_role = UserRole(
+            user_id=user.id,
+            role=role,
+            granted_by=current_user.id
+        )
+        await db.user_roles.insert_one(user_role.dict())
+    
+    return {"message": "User created successfully", "user_id": user.id}
+
+@api_router.put("/admin/users/{user_id}/status")
+async def toggle_user_status(user_id: str, status_data: dict, current_user: User = Depends(get_current_user)):
+    # Check if user is admin
+    user_role = await db.user_roles.find_one({"user_id": current_user.id, "role": "admin"})
+    if not user_role:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Update user status
+    result = await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"is_active": status_data.get("is_active", True)}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {"message": "User status updated successfully"}
+
 # Basic dashboard stats
 @api_router.get("/dashboard/stats")
 async def get_dashboard_stats(current_user: User = Depends(get_current_user)):
