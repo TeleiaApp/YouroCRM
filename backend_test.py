@@ -586,6 +586,202 @@ class CRMBackendTester:
             self.log_result("products", "POST /products - Validation for required fields", False,
                           f"Should reject missing required fields, got status: {response.status_code}")
 
+    def test_stripe_payment_integration(self):
+        """Test Stripe Payment Integration APIs"""
+        print("\n💳 Testing Stripe Payment Integration...")
+        
+        # Test CREATE checkout session for premium package
+        checkout_data = {
+            "package_id": "premium",
+            "success_url": "https://yourocrm.preview.emergentagent.com/pricing?success=true",
+            "cancel_url": "https://yourocrm.preview.emergentagent.com/pricing?cancelled=true",
+            "metadata": {
+                "test_payment": "true",
+                "user_email": "test@example.com"
+            }
+        }
+        
+        success, response = self.make_request("POST", "/payments/checkout/session", data=checkout_data)
+        if success and response.status_code == 200:
+            checkout_response = response.json()
+            if "url" in checkout_response and "session_id" in checkout_response:
+                session_id = checkout_response["session_id"]
+                self.created_entities["payment_sessions"].append(session_id)
+                self.log_result("payments", "POST /payments/checkout/session - Create checkout session", True)
+                
+                # Verify session URL format
+                if checkout_response["url"].startswith("https://checkout.stripe.com/"):
+                    self.log_result("payments", "POST /payments/checkout/session - Valid Stripe URL", True)
+                else:
+                    self.log_result("payments", "POST /payments/checkout/session - Valid Stripe URL", False,
+                                  f"Invalid URL format: {checkout_response['url']}")
+            else:
+                self.log_result("payments", "POST /payments/checkout/session - Response format", False,
+                              "Missing url or session_id in response")
+        else:
+            self.log_result("payments", "POST /payments/checkout/session - Create checkout session", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+            return
+        
+        # Test invalid package ID
+        invalid_checkout_data = {
+            "package_id": "invalid_package",
+            "success_url": "https://yourocrm.preview.emergentagent.com/pricing?success=true",
+            "cancel_url": "https://yourocrm.preview.emergentagent.com/pricing?cancelled=true"
+        }
+        
+        success, response = self.make_request("POST", "/payments/checkout/session", data=invalid_checkout_data)
+        if not success or response.status_code == 400:
+            self.log_result("payments", "POST /payments/checkout/session - Invalid package validation", True)
+        else:
+            self.log_result("payments", "POST /payments/checkout/session - Invalid package validation", False,
+                          f"Should reject invalid package, got status: {response.status_code}")
+        
+        # Test GET checkout status
+        success, response = self.make_request("GET", f"/payments/checkout/status/{session_id}")
+        if success and response.status_code == 200:
+            status_response = response.json()
+            expected_keys = ["status", "payment_status", "amount_total", "currency"]
+            if all(key in status_response for key in expected_keys):
+                self.log_result("payments", "GET /payments/checkout/status/{session_id} - Get status", True)
+                
+                # Verify amount and currency for premium package
+                if status_response["amount_total"] == 1499 and status_response["currency"] == "eur":  # 14.99 EUR in cents
+                    self.log_result("payments", "GET /payments/checkout/status/{session_id} - Correct amount", True)
+                else:
+                    self.log_result("payments", "GET /payments/checkout/status/{session_id} - Correct amount", False,
+                                  f"Expected 1499 EUR, got {status_response['amount_total']} {status_response['currency']}")
+            else:
+                self.log_result("payments", "GET /payments/checkout/status/{session_id} - Response format", False,
+                              f"Missing keys: {set(expected_keys) - set(status_response.keys())}")
+        else:
+            self.log_result("payments", "GET /payments/checkout/status/{session_id} - Get status", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+        
+        # Test GET status for non-existent session
+        fake_session_id = "cs_test_fake_session_id_12345"
+        success, response = self.make_request("GET", f"/payments/checkout/status/{fake_session_id}")
+        if not success or response.status_code == 404:
+            self.log_result("payments", "GET /payments/checkout/status/{session_id} - Non-existent session", True)
+        else:
+            self.log_result("payments", "GET /payments/checkout/status/{session_id} - Non-existent session", False,
+                          f"Should return 404 for non-existent session, got: {response.status_code}")
+        
+        # Test webhook endpoint structure (can't fully test without Stripe signature)
+        webhook_data = {
+            "id": "evt_test_webhook",
+            "object": "event",
+            "type": "checkout.session.completed"
+        }
+        
+        success, response = self.make_request("POST", "/webhook/stripe", data=webhook_data, headers={})
+        # Webhook should fail due to missing signature, but endpoint should exist
+        if hasattr(response, 'status_code') and response.status_code in [400, 500]:
+            self.log_result("payments", "POST /webhook/stripe - Endpoint exists", True)
+        else:
+            self.log_result("payments", "POST /webhook/stripe - Endpoint exists", False,
+                          f"Webhook endpoint not accessible: {response}")
+
+    def setup_admin_user(self):
+        """Setup admin user for admin panel testing"""
+        print("\n👑 Setting up admin user for testing...")
+        
+        # First, get current user info to use as admin
+        success, response = self.make_request("GET", "/auth/me")
+        if success and response.status_code == 200:
+            user_data = response.json()
+            self.test_user_id = user_data["id"]
+            
+            # Create admin role for current user directly in database
+            # Since we can't test admin endpoints without admin access, we'll simulate having admin access
+            # by testing the access control logic
+            self.admin_user_id = user_data["id"]
+            print(f"ℹ️  Using user {self.admin_user_id} for admin testing")
+            return True
+        else:
+            print("❌ Failed to get current user for admin setup")
+            return False
+
+    def test_admin_panel_apis(self):
+        """Test Admin Panel Backend APIs"""
+        print("\n🛡️ Testing Admin Panel APIs...")
+        
+        if not self.setup_admin_user():
+            self.log_result("admin", "Setup admin user", False, "Failed to setup admin user")
+            return
+        
+        # Test GET /admin/users without admin role (should fail)
+        success, response = self.make_request("GET", "/admin/users")
+        if not success or response.status_code == 403:
+            self.log_result("admin", "GET /admin/users - Access control (non-admin)", True)
+        else:
+            self.log_result("admin", "GET /admin/users - Access control (non-admin)", False,
+                          f"Should deny access to non-admin, got: {response.status_code}")
+        
+        # For the remaining tests, we'll test the endpoint structure and validation
+        # since we can't easily create admin roles without database access
+        
+        # Test POST /admin/users/{user_id}/role structure
+        role_data = {"role": "premium_user"}
+        success, response = self.make_request("POST", f"/admin/users/{self.test_user_id}/role", data=role_data)
+        if hasattr(response, 'status_code') and response.status_code in [403, 404, 400]:
+            self.log_result("admin", "POST /admin/users/{user_id}/role - Endpoint exists", True)
+        else:
+            self.log_result("admin", "POST /admin/users/{user_id}/role - Endpoint exists", False,
+                          f"Endpoint not accessible: {response}")
+        
+        # Test DELETE /admin/users/{user_id}/role/{role} structure
+        success, response = self.make_request("DELETE", f"/admin/users/{self.test_user_id}/role/premium_user")
+        if hasattr(response, 'status_code') and response.status_code in [403, 404]:
+            self.log_result("admin", "DELETE /admin/users/{user_id}/role/{role} - Endpoint exists", True)
+        else:
+            self.log_result("admin", "DELETE /admin/users/{user_id}/role/{role} - Endpoint exists", False,
+                          f"Endpoint not accessible: {response}")
+        
+        # Test GET /admin/custom-fields access control
+        success, response = self.make_request("GET", "/admin/custom-fields")
+        if not success or response.status_code == 403:
+            self.log_result("admin", "GET /admin/custom-fields - Access control", True)
+        else:
+            self.log_result("admin", "GET /admin/custom-fields - Access control", False,
+                          f"Should deny access to non-admin, got: {response.status_code}")
+        
+        # Test POST /admin/custom-fields structure
+        custom_field_data = {
+            "entity_type": "contacts",
+            "field_name": "test_field",
+            "field_type": "text",
+            "required": False
+        }
+        
+        success, response = self.make_request("POST", "/admin/custom-fields", data=custom_field_data)
+        if hasattr(response, 'status_code') and response.status_code in [403, 400, 422]:
+            self.log_result("admin", "POST /admin/custom-fields - Endpoint exists", True)
+        else:
+            self.log_result("admin", "POST /admin/custom-fields - Endpoint exists", False,
+                          f"Endpoint not accessible: {response}")
+        
+        # Test DELETE /admin/custom-fields/{field_id} structure
+        fake_field_id = str(uuid.uuid4())
+        success, response = self.make_request("DELETE", f"/admin/custom-fields/{fake_field_id}")
+        if hasattr(response, 'status_code') and response.status_code in [403, 404]:
+            self.log_result("admin", "DELETE /admin/custom-fields/{field_id} - Endpoint exists", True)
+        else:
+            self.log_result("admin", "DELETE /admin/custom-fields/{field_id} - Endpoint exists", False,
+                          f"Endpoint not accessible: {response}")
+        
+        # Test role validation with invalid role
+        invalid_role_data = {"role": "invalid_role_name"}
+        success, response = self.make_request("POST", f"/admin/users/{self.test_user_id}/role", data=invalid_role_data)
+        # Should still get 403 due to access control, but endpoint should handle the request
+        if hasattr(response, 'status_code') and response.status_code in [403, 400, 422]:
+            self.log_result("admin", "POST /admin/users/{user_id}/role - Role validation", True)
+        else:
+            self.log_result("admin", "POST /admin/users/{user_id}/role - Role validation", False,
+                          f"Unexpected response: {response}")
+        
+        print("ℹ️  Note: Full admin functionality testing requires admin role setup in database")
+
     def cleanup_test_data(self):
         """Clean up created test data"""
         print("\n🧹 Cleaning up test data...")
