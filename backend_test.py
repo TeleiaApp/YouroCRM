@@ -877,6 +877,13 @@ class CRMBackendTester:
             self.test_invoices_crud()
             self.test_dashboard_stats()
             self.test_data_validation()
+            
+            # NEW: Test Stripe Payment Integration
+            self.test_stripe_payment_integration()
+            
+            # NEW: Test Admin Panel APIs
+            self.test_admin_panel_apis()
+            
             self.cleanup_test_data()
             
             return self.print_summary()
