@@ -1321,6 +1321,13 @@ class CRMBackendTester:
         
         try:
             self.test_authentication_endpoints()
+            
+            # NEW: Test Traditional Authentication System
+            self.test_traditional_authentication()
+            
+            # NEW: Test Enhanced Admin Panel APIs
+            self.test_enhanced_admin_panel()
+            
             self.test_contacts_crud()
             self.test_accounts_crud()
             self.test_products_crud()
@@ -1329,13 +1336,13 @@ class CRMBackendTester:
             self.test_dashboard_stats()
             self.test_data_validation()
             
-            # NEW: Test Stripe Payment Integration
+            # Test Stripe Payment Integration
             self.test_stripe_payment_integration()
             
-            # NEW: Test PayPal Payment Integration
+            # Test PayPal Payment Integration
             self.test_paypal_payment_integration()
             
-            # NEW: Test Admin Panel APIs
+            # Test Admin Panel APIs
             self.test_admin_panel_apis()
             
             self.cleanup_test_data()
