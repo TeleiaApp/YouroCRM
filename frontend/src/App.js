@@ -133,6 +133,9 @@ const ProtectedRoute = ({ children }) => {
 const LoginPage = () => {
   const { user, login } = useAuth();
   const navigate = useNavigate();
+  const [showTraditionalLogin, setShowTraditionalLogin] = useState(false);
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -140,9 +143,27 @@ const LoginPage = () => {
     }
   }, [user, navigate]);
 
-  const handleLogin = () => {
+  const handleGoogleLogin = () => {
     const redirectUrl = `${window.location.origin}/profile`;
     login(redirectUrl);
+  };
+
+  const handleTraditionalLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const response = await axios.post('/api/auth/login', loginForm, { withCredentials: true });
+      if (response.data.user) {
+        // Refresh auth context
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      alert(error.response?.data?.detail || 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
