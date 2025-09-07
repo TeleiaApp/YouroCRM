@@ -3624,6 +3624,37 @@ const AdminPanel = () => {
     }
   };
 
+  const handleCreateUser = async () => {
+    try {
+      await axios.post(`${API}/admin/users`, createUserForm, { withCredentials: true });
+      alert('User created successfully!');
+      setShowCreateUserModal(false);
+      setCreateUserForm({
+        name: '',
+        email: '',
+        password: '',
+        roles: []
+      });
+      fetchAdminData();
+    } catch (error) {
+      console.error('Error creating user:', error);
+      alert(error.response?.data?.detail || 'Error creating user. Please try again.');
+    }
+  };
+
+  const handleToggleUserStatus = async (userId, currentStatus) => {
+    try {
+      await axios.put(`${API}/admin/users/${userId}/status`, { 
+        is_active: !currentStatus 
+      }, { withCredentials: true });
+      alert(`User ${!currentStatus ? 'activated' : 'deactivated'} successfully!`);
+      fetchAdminData();
+    } catch (error) {
+      console.error('Error toggling user status:', error);
+      alert('Error updating user status. Please try again.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="animate-pulse space-y-6">
