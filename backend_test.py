@@ -831,6 +831,14 @@ class CRMBackendTester:
                 self.log_result("invoices", f"DELETE /invoices/{invoice_id}", False,
                               f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
 
+        # Note: Payment sessions and custom fields cleanup would require admin access
+        # These are handled automatically by the payment system and admin panel
+        if self.created_entities["payment_sessions"]:
+            print(f"ℹ️  Created {len(self.created_entities['payment_sessions'])} payment sessions (auto-managed by Stripe)")
+        
+        if self.created_entities["custom_fields"]:
+            print(f"ℹ️  Created {len(self.created_entities['custom_fields'])} custom fields (require admin access to delete)")
+
     def print_summary(self):
         """Print test summary"""
         print("\n" + "="*60)
