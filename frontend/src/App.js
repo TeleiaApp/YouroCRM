@@ -3940,9 +3940,9 @@ const PlanSelectionPage = () => {
                         Sélection...
                       </span>
                     ) : plan.id === 'starter' ? (
-                      'Commencer gratuitement'
+                      t('start_free_now')
                     ) : (
-                      `Choisir ${plan.name}`
+                      `${t('choose_plan')} ${plan.name}`
                     )}
                   </button>
                 </div>
