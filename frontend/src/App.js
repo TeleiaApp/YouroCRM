@@ -3820,6 +3820,7 @@ function App() {
           <Routes>
             <Route path="/" element={<LoginPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/pricing" element={<PricingPage />} />
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Layout>
