@@ -9,6 +9,76 @@ import axios from "axios";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+// Language Context
+const LanguageContext = createContext();
+
+const LanguageProvider = ({ children }) => {
+  const [currentLanguage, setCurrentLanguage] = useState(() => {
+    return localStorage.getItem('yourocrm_language') || 'en';
+  });
+  const [translations, setTranslations] = useState({});
+  const [supportedLanguages, setSupportedLanguages] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Load translations
+  useEffect(() => {
+    loadTranslations(currentLanguage);
+    loadSupportedLanguages();
+  }, [currentLanguage]);
+
+  const loadTranslations = async (language) => {
+    try {
+      const response = await axios.get(`${API}/translations/${language}`);
+      setTranslations(response.data.translations);
+    } catch (error) {
+      console.error('Error loading translations:', error);
+      // Fallback to English if error
+      if (language !== 'en') {
+        loadTranslations('en');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadSupportedLanguages = async () => {
+    try {
+      const response = await axios.get(`${API}/languages`);
+      setSupportedLanguages(response.data.languages);
+    } catch (error) {
+      console.error('Error loading supported languages:', error);
+    }
+  };
+
+  const changeLanguage = (language) => {
+    setCurrentLanguage(language);
+    localStorage.setItem('yourocrm_language', language);
+  };
+
+  const t = (key, fallback = null) => {
+    return translations[key] || fallback || key;
+  };
+
+  return (
+    <LanguageContext.Provider value={{
+      currentLanguage,
+      changeLanguage,
+      t,
+      supportedLanguages,
+      loading
+    }}>
+      {children}
+    </LanguageContext.Provider>
+  );
+};
+
+const useLanguage = () => {
+  const context = useContext(LanguageContext);
+  if (!context) {
+    throw new Error('useLanguage must be used within a LanguageProvider');
+  }
+  return context;
+};
 
 // Auth Context
 const AuthContext = createContext();
