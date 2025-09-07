@@ -317,10 +317,10 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Pourquoi choisir YouroCRM ?
+              {t('why_choose_title')}
             </h2>
             <p className="text-lg text-gray-600">
-              Le seul CRM avec intégration VIES native pour l'Europe
+              {t('why_choose_subtitle')}
             </p>
           </div>
 
@@ -330,9 +330,9 @@ const HomePage = () => {
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl">🇪🇺</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Intégration VIES</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('feature_vies_title')}</h3>
               <p className="text-gray-600">
-                Auto-complétion des données d'entreprise européennes en temps réel via le numéro de TVA
+                {t('feature_vies_desc')}
               </p>
             </div>
 
@@ -341,9 +341,9 @@ const HomePage = () => {
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl">📄</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Facturation Peppol</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('feature_peppol_title')}</h3>
               <p className="text-gray-600">
-                Facturation électronique conforme aux normes européennes et belges
+                {t('feature_peppol_desc')}
               </p>
             </div>
 
@@ -352,9 +352,9 @@ const HomePage = () => {
               <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl">👥</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Gestion Complète</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('feature_management_title')}</h3>
               <p className="text-gray-600">
-                Contacts, comptes, produits, factures et calendrier en une seule plateforme
+                {t('feature_management_desc')}
               </p>
             </div>
 
@@ -363,9 +363,9 @@ const HomePage = () => {
               <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl">🔒</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Sécurité Européenne</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('feature_security_title')}</h3>
               <p className="text-gray-600">
-                Conformité RGPD, authentification sécurisée et hébergement européen
+                {t('feature_security_desc')}
               </p>
             </div>
 
@@ -374,9 +374,9 @@ const HomePage = () => {
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl">💳</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Paiements Flexibles</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('feature_payments_title')}</h3>
               <p className="text-gray-600">
-                Stripe et PayPal intégrés pour faciliter vos transactions clients
+                {t('feature_payments_desc')}
               </p>
             </div>
 
@@ -385,9 +385,9 @@ const HomePage = () => {
               <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl">📱</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Multi-plateforme</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('feature_multiplatform_title')}</h3>
               <p className="text-gray-600">
-                Interface responsive accessible sur desktop, tablette et mobile
+                {t('feature_multiplatform_desc')}
               </p>
             </div>
           </div>
