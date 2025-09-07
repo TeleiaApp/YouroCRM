@@ -498,39 +498,39 @@ const HomePage = () => {
                   alt="YouroCRM Logo"
                   className="h-6 w-auto"
                 />
-                <span className="text-xl font-bold">YouroCRM</span>
+                <span className="text-xl font-bold">{t('app_name')}</span>
               </div>
               <p className="text-gray-400">
-                Le CRM européen avec intégration VIES pour les PME modernes.
+                {t('european_crm_tagline')}
               </p>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Produit</h4>
+              <h4 className="font-semibold mb-4">{t('product')}</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><Link to="/plans" className="hover:text-white">Tarifs</Link></li>
-                <li><a href="#" className="hover:text-white">Fonctionnalités</a></li>
-                <li><a href="#" className="hover:text-white">Intégrations</a></li>
+                <li><Link to="/plans" className="hover:text-white">{t('pricing')}</Link></li>
+                <li><a href="#" className="hover:text-white">{t('features')}</a></li>
+                <li><a href="#" className="hover:text-white">{t('integrations')}</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Support</h4>
+              <h4 className="font-semibold mb-4">{t('support')}</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white">Documentation</a></li>
-                <li><a href="#" className="hover:text-white">Centre d'aide</a></li>
-                <li><a href="#" className="hover:text-white">Contact</a></li>
+                <li><a href="#" className="hover:text-white">{t('documentation')}</a></li>
+                <li><a href="#" className="hover:text-white">{t('help_center')}</a></li>
+                <li><a href="#" className="hover:text-white">{t('contact')}</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Légal</h4>
+              <h4 className="font-semibold mb-4">{t('legal')}</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white">Confidentialité</a></li>
-                <li><a href="#" className="hover:text-white">Conditions</a></li>
-                <li><a href="#" className="hover:text-white">RGPD</a></li>
+                <li><a href="#" className="hover:text-white">{t('privacy')}</a></li>
+                <li><a href="#" className="hover:text-white">{t('terms')}</a></li>
+                <li><a href="#" className="hover:text-white">{t('gdpr')}</a></li>
               </ul>
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-gray-800 text-center text-gray-400">
-            <p>&copy; 2025 YouroCRM. Tous droits réservés. Conçu pour l'Europe 🇪🇺</p>
+            <p>&copy; 2025 {t('app_name')}. {t('all_rights_reserved')}</p>
           </div>
         </div>
       </footer>
