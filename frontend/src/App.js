@@ -1355,11 +1355,42 @@ const ContactsPage = () => {
         </div>
       </div>
 
+      {/* Plan Limit Warning */}
+      {userPlan && userPlan.limits?.contacts_limit_reached && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <span className="text-2xl">⚠️</span>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-yellow-800">
+                Limite du plan {userPlan.plan?.name} atteinte
+              </h3>
+              <div className="mt-2 text-sm text-yellow-700">
+                <p>
+                  Vous avez atteint la limite de {userPlan.plan?.limits?.contacts_max} contacts. 
+                  <Link to="/plans" className="font-medium text-yellow-800 underline hover:text-yellow-900">
+                    Passez au plan Professional
+                  </Link> pour des contacts illimités.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white p-4 rounded-lg shadow border text-center">
           <div className="text-2xl font-bold text-blue-600">{contacts.length}</div>
-          <div className="text-sm text-gray-600">Total Contacts</div>
+          <div className="text-sm text-gray-600">
+            Total Contacts
+            {userPlan?.plan?.limits?.contacts_max > 0 && (
+              <span className="text-xs text-gray-500 block">
+                ({contacts.length}/{userPlan.plan.limits.contacts_max})
+              </span>
+            )}
+          </div>
         </div>
         <div className="bg-white p-4 rounded-lg shadow border text-center">
           <div className="text-2xl font-bold text-green-600">
