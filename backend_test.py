@@ -1561,6 +1561,10 @@ class CRMBackendTester:
             
             self.test_contacts_crud()
             self.test_accounts_crud()
+            
+            # NEW: Test VIES Integration
+            self.test_vies_integration()
+            
             self.test_products_crud()
             self.test_calendar_crud()
             self.test_invoices_crud()
