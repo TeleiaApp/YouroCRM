@@ -241,6 +241,9 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     roles: Optional[List[str]] = []
+    
+class PlanSelection(BaseModel):
+    plan_id: str  # starter, professional, enterprise
 
 # VIES Response Models
 class VIESResponse(BaseModel):
