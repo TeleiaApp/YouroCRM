@@ -508,10 +508,10 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 4
+  test_sequence: 5
   run_ui: true
   last_tested_by: "testing_agent"
-  backend_tests_passed: 49
+  backend_tests_passed: 57
   backend_tests_failed: 0
   frontend_tests_passed: 13
   frontend_tests_failed: 0
