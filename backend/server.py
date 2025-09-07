@@ -165,7 +165,13 @@ class AccountCreate(BaseModel):
     website: Optional[str] = None
     annual_revenue: Optional[float] = None
     employee_count: Optional[int] = None
-    address: Optional[str] = None
+    # Separated address fields for VIES integration
+    street: Optional[str] = None
+    street_nr: Optional[str] = None
+    box: Optional[str] = None
+    postal_code: Optional[str] = None
+    city: Optional[str] = None
+    country: Optional[str] = None
     vat_number: Optional[str] = None
     notes: Optional[str] = None
 
