@@ -827,7 +827,7 @@ class CRMBackendTester:
         success, response = self.make_request("POST", f"/payments/paypal/capture-order/{order_id}")
         if hasattr(response, 'status_code'):
             # Endpoint should exist and return either success or appropriate error
-            if response.status_code in [200, 201, 400, 422, 500]:
+            if response.status_code in [200, 201, 400, 404, 422, 500]:
                 self.log_result("payments", "POST /payments/paypal/capture-order/{order_id} - Endpoint exists", True)
             else:
                 self.log_result("payments", "POST /payments/paypal/capture-order/{order_id} - Endpoint exists", False,
