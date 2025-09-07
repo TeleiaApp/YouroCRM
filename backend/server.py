@@ -203,6 +203,12 @@ class CheckoutRequest(BaseModel):
     cancel_url: str
     metadata: Optional[dict] = None
 
+class PayPalOrderRequest(BaseModel):
+    package_id: str
+    return_url: str
+    cancel_url: str
+    metadata: Optional[dict] = None
+
 # User Roles and Admin Models
 class UserRole(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
