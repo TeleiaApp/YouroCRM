@@ -22,6 +22,7 @@ class CRMBackendTester:
         self.test_results = {
             "auth": {"passed": 0, "failed": 0, "errors": []},
             "traditional_auth": {"passed": 0, "failed": 0, "errors": []},
+            "subscription_plans": {"passed": 0, "failed": 0, "errors": []},
             "contacts": {"passed": 0, "failed": 0, "errors": []},
             "accounts": {"passed": 0, "failed": 0, "errors": []},
             "vies": {"passed": 0, "failed": 0, "errors": []},
