@@ -1525,11 +1525,13 @@ TRANSLATIONS = {
         "signing_in": "Connexion...",
         "back_to_login_options": "Retour aux options de connexion",
         "create_your_account": "Créer votre compte",
+        "join_yourocrm": "Rejoignez YouroCRM - Plateforme CRM Professionnelle",
         "full_name": "Nom complet",
         "create_account": "Créer le compte",
         "creating_account": "Création du compte...",
         "already_have_account": "Déjà un compte ? Connectez-vous ici",
         "minimum_6_characters": "Minimum 6 caractères",
+        "view_pricing_features": "💰 Voir Tarifs & Fonctionnalités",
         
         # Plan Selection
         "choose_your_plan": "Choisissez votre plan YouroCRM",
