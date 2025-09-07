@@ -3717,19 +3717,47 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-        <div className="text-center mb-8">
-          <div className="flex flex-col items-center mb-6">
-            <img 
-              src="https://customer-assets.emergentagent.com/job_biz-connector-4/artifacts/tgh8glfj_image.png"
-              alt="YouroCRM Logo"
-              className="yourocrm-logo-main h-24 w-auto mb-4 transform hover:scale-105 transition-transform shadow-lg rounded-lg"
-            />
-            <h1 className="text-2xl font-bold text-gray-900">Create Your Account</h1>
-            <p className="text-gray-600">Join YouroCRM - Professional CRM Platform</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Header */}
+      <div className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => navigate('/')}
+              className="flex items-center space-x-3 text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              <span className="font-medium">{t('back_to_home')}</span>
+            </button>
+            <div className="flex items-center space-x-3">
+              <img 
+                src="https://customer-assets.emergentagent.com/job_biz-connector-4/artifacts/tgh8glfj_image.png"
+                alt="YouroCRM Logo"
+                className="h-8 w-auto"
+              />
+              <span className="text-2xl font-bold text-gray-900">{t('app_name')}</span>
+            </div>
+            <LanguageSelector />
           </div>
         </div>
+      </div>
+
+      {/* Registration Form */}
+      <div className="flex items-center justify-center py-12">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+          <div className="text-center mb-8">
+            <div className="flex flex-col items-center mb-6">
+              <img 
+                src="https://customer-assets.emergentagent.com/job_biz-connector-4/artifacts/tgh8glfj_image.png"
+                alt="YouroCRM Logo"
+                className="yourocrm-logo-main h-24 w-auto mb-4 transform hover:scale-105 transition-transform shadow-lg rounded-lg"
+              />
+              <h1 className="text-2xl font-bold text-gray-900">{t('create_your_account')}</h1>
+              <p className="text-gray-600">{t('join_yourocrm')}</p>
+            </div>
+          </div>
         
         <form onSubmit={handleRegister} className="space-y-6">
           <div>
