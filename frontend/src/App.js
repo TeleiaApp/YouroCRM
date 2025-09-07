@@ -1409,14 +1409,25 @@ const AccountsPage = () => {
   // Modal handlers
   const openModal = (account = null) => {
     if (account) {
+      setSelectedAccount(account);
       setAccountForm({
-        ...account,
+        name: account.name || '',
+        contact_id: account.contact_id || '',
+        industry: account.industry || '',
+        website: account.website || '',
         annual_revenue: account.annual_revenue || '',
         employee_count: account.employee_count || '',
-        contact_id: account.contact_id || ''
+        street: account.street || '',
+        street_nr: account.street_nr || '',
+        box: account.box || '',
+        postal_code: account.postal_code || '',
+        city: account.city || '',
+        country: account.country || '',
+        vat_number: account.vat_number || '',
+        notes: account.notes || ''
       });
-      setSelectedAccount(account);
     } else {
+      setSelectedAccount(null);
       setAccountForm({
         name: '',
         contact_id: '',
@@ -1424,13 +1435,62 @@ const AccountsPage = () => {
         website: '',
         annual_revenue: '',
         employee_count: '',
-        address: '',
+        street: '',
+        street_nr: '',
+        box: '',
+        postal_code: '',
+        city: '',
+        country: '',
         vat_number: '',
         notes: ''
       });
-      setSelectedAccount(null);
     }
+    setViesError('');
+    setViesSuccess('');
     setShowModal(true);
+  };
+
+  // VIES auto-completion function
+  const handleVATLookup = async () => {
+    if (!accountForm.vat_number) {
+      setViesError('Please enter a VAT number first');
+      return;
+    }
+
+    setViesLoading(true);
+    setViesError('');
+    setViesSuccess('');
+
+    try {
+      const response = await axios.get(`${API}/accounts/vies-lookup/${accountForm.vat_number}`, {
+        withCredentials: true
+      });
+
+      const viesData = response.data;
+
+      if (viesData.valid) {
+        // Auto-fill form with VIES data
+        setAccountForm(prev => ({
+          ...prev,
+          name: viesData.name || prev.name,
+          street: viesData.street || prev.street,
+          street_nr: viesData.street_nr || prev.street_nr,
+          box: viesData.box || prev.box,
+          postal_code: viesData.postal_code || prev.postal_code,
+          city: viesData.city || prev.city,
+          country: viesData.country || prev.country
+        }));
+
+        setViesSuccess('✅ Company information retrieved from VIES database!');
+      } else {
+        setViesError('❌ VAT number not found in VIES database or invalid');
+      }
+    } catch (error) {
+      console.error('VIES lookup error:', error);
+      setViesError('❌ Error retrieving company information. Please try again.');
+    } finally {
+      setViesLoading(false);
+    }
   };
 
   const closeModal = () => {
