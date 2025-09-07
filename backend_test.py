@@ -360,6 +360,330 @@ class CRMBackendTester:
         
         print("ℹ️  Enhanced admin panel tests completed")
 
+    def test_subscription_plans_system(self):
+        """Test Subscription Plans System with Plan Limits and Feature Access"""
+        print("\n💎 Testing Subscription Plans System...")
+        
+        # Test 1: GET /api/plans - Get all available subscription plans
+        success, response = self.make_request("GET", "/plans")
+        if success and response.status_code == 200:
+            plans = response.json()
+            if isinstance(plans, list) and len(plans) == 3:
+                # Verify all three plans exist
+                plan_ids = [plan.get("id") for plan in plans]
+                expected_plans = ["starter", "professional", "enterprise"]
+                if all(plan_id in plan_ids for plan_id in expected_plans):
+                    self.log_result("subscription_plans", "GET /api/plans - All three plans available", True)
+                    
+                    # Verify plan structure
+                    starter_plan = next((p for p in plans if p.get("id") == "starter"), None)
+                    if starter_plan:
+                        required_fields = ["id", "name", "price", "features", "limits"]
+                        if all(field in starter_plan for field in required_fields):
+                            self.log_result("subscription_plans", "GET /api/plans - Plan structure validation", True)
+                            
+                            # Verify starter plan limits
+                            limits = starter_plan.get("limits", {})
+                            if (limits.get("contacts_max") == 5 and 
+                                limits.get("accounts_max") == 2 and
+                                limits.get("vies_integration") == False):
+                                self.log_result("subscription_plans", "GET /api/plans - Starter plan limits correct", True)
+                            else:
+                                self.log_result("subscription_plans", "GET /api/plans - Starter plan limits correct", False,
+                                              f"Incorrect limits: contacts_max={limits.get('contacts_max')}, accounts_max={limits.get('accounts_max')}, vies_integration={limits.get('vies_integration')}")
+                        else:
+                            missing_fields = set(required_fields) - set(starter_plan.keys())
+                            self.log_result("subscription_plans", "GET /api/plans - Plan structure validation", False,
+                                          f"Missing fields: {missing_fields}")
+                    
+                    # Verify professional plan features
+                    professional_plan = next((p for p in plans if p.get("id") == "professional"), None)
+                    if professional_plan:
+                        limits = professional_plan.get("limits", {})
+                        if (limits.get("contacts_max") == -1 and 
+                            limits.get("accounts_max") == -1 and
+                            limits.get("vies_integration") == True):
+                            self.log_result("subscription_plans", "GET /api/plans - Professional plan unlimited access", True)
+                        else:
+                            self.log_result("subscription_plans", "GET /api/plans - Professional plan unlimited access", False,
+                                          f"Incorrect limits: contacts_max={limits.get('contacts_max')}, accounts_max={limits.get('accounts_max')}, vies_integration={limits.get('vies_integration')}")
+                    
+                    # Verify enterprise plan features
+                    enterprise_plan = next((p for p in plans if p.get("id") == "enterprise"), None)
+                    if enterprise_plan:
+                        limits = enterprise_plan.get("limits", {})
+                        if (limits.get("custom_fields") == True and 
+                            limits.get("api_access") == True and
+                            limits.get("vies_integration") == True):
+                            self.log_result("subscription_plans", "GET /api/plans - Enterprise plan advanced features", True)
+                        else:
+                            self.log_result("subscription_plans", "GET /api/plans - Enterprise plan advanced features", False,
+                                          f"Missing enterprise features: custom_fields={limits.get('custom_fields')}, api_access={limits.get('api_access')}")
+                else:
+                    self.log_result("subscription_plans", "GET /api/plans - All three plans available", False,
+                                  f"Missing plans: {set(expected_plans) - set(plan_ids)}")
+            else:
+                self.log_result("subscription_plans", "GET /api/plans - Response format", False,
+                              f"Expected 3 plans, got {len(plans) if isinstance(plans, list) else 'invalid format'}")
+        else:
+            self.log_result("subscription_plans", "GET /api/plans - Get subscription plans", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+            return
+        
+        # Test 2: GET /api/users/plan - Get current user's plan (should default to starter)
+        success, response = self.make_request("GET", "/users/plan")
+        if success and response.status_code == 200:
+            user_plan_response = response.json()
+            if ("plan" in user_plan_response and "usage" in user_plan_response and 
+                "limits" in user_plan_response):
+                plan = user_plan_response["plan"]
+                usage = user_plan_response["usage"]
+                limits = user_plan_response["limits"]
+                
+                # Verify default plan is starter
+                if plan.get("id") == "starter":
+                    self.log_result("subscription_plans", "GET /api/users/plan - Default starter plan", True)
+                else:
+                    self.log_result("subscription_plans", "GET /api/users/plan - Default starter plan", False,
+                                  f"Expected starter plan, got {plan.get('id')}")
+                
+                # Verify usage statistics structure
+                if "contacts" in usage and "accounts" in usage:
+                    self.log_result("subscription_plans", "GET /api/users/plan - Usage statistics structure", True)
+                else:
+                    self.log_result("subscription_plans", "GET /api/users/plan - Usage statistics structure", False,
+                                  f"Missing usage fields: {set(['contacts', 'accounts']) - set(usage.keys())}")
+                
+                # Verify limits checking structure
+                if "contacts_limit_reached" in limits and "accounts_limit_reached" in limits:
+                    self.log_result("subscription_plans", "GET /api/users/plan - Limits checking structure", True)
+                else:
+                    self.log_result("subscription_plans", "GET /api/users/plan - Limits checking structure", False,
+                                  f"Missing limit fields: {set(['contacts_limit_reached', 'accounts_limit_reached']) - set(limits.keys())}")
+            else:
+                self.log_result("subscription_plans", "GET /api/users/plan - Response structure", False,
+                              f"Missing required fields in response")
+        else:
+            self.log_result("subscription_plans", "GET /api/users/plan - Get user plan", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+        
+        # Test 3: POST /api/users/select-plan - Plan selection
+        plan_selection_data = {"plan_id": "professional"}
+        success, response = self.make_request("POST", "/users/select-plan", data=plan_selection_data)
+        if success and response.status_code == 200:
+            selection_response = response.json()
+            if "message" in selection_response and "plan" in selection_response:
+                selected_plan = selection_response["plan"]
+                if selected_plan.get("id") == "professional":
+                    self.log_result("subscription_plans", "POST /api/users/select-plan - Valid plan selection", True)
+                else:
+                    self.log_result("subscription_plans", "POST /api/users/select-plan - Valid plan selection", False,
+                                  f"Expected professional plan, got {selected_plan.get('id')}")
+            else:
+                self.log_result("subscription_plans", "POST /api/users/select-plan - Response format", False,
+                              "Missing message or plan in response")
+        else:
+            self.log_result("subscription_plans", "POST /api/users/select-plan - Plan selection", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+        
+        # Test 4: Invalid plan selection
+        invalid_plan_data = {"plan_id": "invalid_plan"}
+        success, response = self.make_request("POST", "/users/select-plan", data=invalid_plan_data)
+        if not success or response.status_code == 400:
+            self.log_result("subscription_plans", "POST /api/users/select-plan - Invalid plan rejection", True)
+        else:
+            self.log_result("subscription_plans", "POST /api/users/select-plan - Invalid plan rejection", False,
+                          f"Should reject invalid plan, got status: {response.status_code}")
+        
+        # Test 5: Verify plan change took effect
+        success, response = self.make_request("GET", "/users/plan")
+        if success and response.status_code == 200:
+            updated_plan_response = response.json()
+            plan = updated_plan_response.get("plan", {})
+            if plan.get("id") == "professional":
+                self.log_result("subscription_plans", "GET /api/users/plan - Plan change verification", True)
+            else:
+                self.log_result("subscription_plans", "GET /api/users/plan - Plan change verification", False,
+                              f"Plan not updated, still showing: {plan.get('id')}")
+        
+        # Test 6: Test plan limits enforcement - Create multiple contacts to test starter limits
+        # First, switch back to starter plan to test limits
+        starter_plan_data = {"plan_id": "starter"}
+        success, response = self.make_request("POST", "/users/select-plan", data=starter_plan_data)
+        if success and response.status_code == 200:
+            self.log_result("subscription_plans", "POST /api/users/select-plan - Switch to starter for limits test", True)
+            
+            # Count current contacts
+            success, response = self.make_request("GET", "/contacts")
+            current_contacts_count = 0
+            if success and response.status_code == 200:
+                contacts = response.json()
+                current_contacts_count = len(contacts)
+            
+            # Try to create contacts up to the limit (5 for starter)
+            contacts_to_create = max(0, 6 - current_contacts_count)  # Try to exceed limit by 1
+            created_test_contacts = []
+            
+            for i in range(contacts_to_create):
+                contact_data = {
+                    "name": f"Plan Test Contact {i+1}",
+                    "email": f"plantest{i+1}@example.com",
+                    "company": "Plan Test Company"
+                }
+                
+                success, response = self.make_request("POST", "/contacts", data=contact_data)
+                if success and response.status_code == 200:
+                    contact = response.json()
+                    created_test_contacts.append(contact["id"])
+                    if current_contacts_count + len(created_test_contacts) <= 5:
+                        # Should succeed within limit
+                        continue
+                    else:
+                        # Should fail when exceeding limit
+                        self.log_result("subscription_plans", "POST /contacts - Plan limit enforcement failed", False,
+                                      "Contact creation should have been blocked by plan limit")
+                        break
+                elif response.status_code == 403:
+                    # Should fail with 403 when limit exceeded
+                    if current_contacts_count + len(created_test_contacts) >= 5:
+                        self.log_result("subscription_plans", "POST /contacts - Starter plan limit enforcement", True)
+                        break
+                    else:
+                        self.log_result("subscription_plans", "POST /contacts - Plan limit enforcement error", False,
+                                      f"Unexpected 403 error before limit reached")
+                        break
+                else:
+                    self.log_result("subscription_plans", "POST /contacts - Plan limit testing", False,
+                                  f"Unexpected status: {response.status_code}")
+                    break
+            
+            # Clean up test contacts
+            for contact_id in created_test_contacts:
+                self.make_request("DELETE", f"/contacts/{contact_id}")
+        
+        # Test 7: Test VIES integration access control
+        # Test with starter plan (should be denied)
+        test_vat = "BE0123456789"
+        success, response = self.make_request("GET", f"/accounts/vies-lookup/{test_vat}")
+        if not success or response.status_code == 403:
+            self.log_result("subscription_plans", "GET /accounts/vies-lookup - Starter plan access denied", True)
+        else:
+            self.log_result("subscription_plans", "GET /accounts/vies-lookup - Starter plan access control", False,
+                          f"VIES should be blocked for starter plan, got status: {response.status_code}")
+        
+        # Switch to professional plan and test VIES access
+        professional_plan_data = {"plan_id": "professional"}
+        success, response = self.make_request("POST", "/users/select-plan", data=professional_plan_data)
+        if success and response.status_code == 200:
+            # Test VIES access with professional plan
+            success, response = self.make_request("GET", f"/accounts/vies-lookup/{test_vat}")
+            if success and response.status_code == 200:
+                vies_response = response.json()
+                if "valid" in vies_response:
+                    self.log_result("subscription_plans", "GET /accounts/vies-lookup - Professional plan access granted", True)
+                else:
+                    self.log_result("subscription_plans", "GET /accounts/vies-lookup - Professional plan VIES response", False,
+                                  "Invalid VIES response structure")
+            else:
+                self.log_result("subscription_plans", "GET /accounts/vies-lookup - Professional plan access", False,
+                              f"VIES should be accessible for professional plan, got status: {response.status_code}")
+        
+        # Test 8: Test account creation limits
+        # Switch back to starter plan
+        success, response = self.make_request("POST", "/users/select-plan", data=starter_plan_data)
+        if success and response.status_code == 200:
+            # Count current accounts
+            success, response = self.make_request("GET", "/accounts")
+            current_accounts_count = 0
+            if success and response.status_code == 200:
+                accounts = response.json()
+                current_accounts_count = len(accounts)
+            
+            # Try to create accounts up to the limit (2 for starter)
+            accounts_to_create = max(0, 3 - current_accounts_count)  # Try to exceed limit by 1
+            created_test_accounts = []
+            
+            for i in range(accounts_to_create):
+                account_data = {
+                    "name": f"Plan Test Account {i+1}",
+                    "industry": "Testing",
+                    "vat_number": f"BE012345678{i}"
+                }
+                
+                success, response = self.make_request("POST", "/accounts", data=account_data)
+                if success and response.status_code == 200:
+                    account = response.json()
+                    created_test_accounts.append(account["id"])
+                    if current_accounts_count + len(created_test_accounts) <= 2:
+                        # Should succeed within limit
+                        continue
+                    else:
+                        # Should fail when exceeding limit
+                        self.log_result("subscription_plans", "POST /accounts - Plan limit enforcement failed", False,
+                                      "Account creation should have been blocked by plan limit")
+                        break
+                elif response.status_code == 403:
+                    # Should fail with 403 when limit exceeded
+                    if current_accounts_count + len(created_test_accounts) >= 2:
+                        self.log_result("subscription_plans", "POST /accounts - Starter plan account limit enforcement", True)
+                        break
+                    else:
+                        self.log_result("subscription_plans", "POST /accounts - Account limit enforcement error", False,
+                                      f"Unexpected 403 error before limit reached")
+                        break
+                else:
+                    self.log_result("subscription_plans", "POST /accounts - Account limit testing", False,
+                                  f"Unexpected status: {response.status_code}")
+                    break
+            
+            # Clean up test accounts
+            for account_id in created_test_accounts:
+                self.make_request("DELETE", f"/accounts/{account_id}")
+        
+        # Test 9: Test professional plan unlimited access
+        success, response = self.make_request("POST", "/users/select-plan", data=professional_plan_data)
+        if success and response.status_code == 200:
+            # Test that professional plan allows unlimited contacts/accounts
+            # We won't create many resources, just verify the limits are not enforced
+            contact_data = {
+                "name": "Professional Plan Test Contact",
+                "email": "professional@example.com",
+                "company": "Professional Test Company"
+            }
+            
+            success, response = self.make_request("POST", "/contacts", data=contact_data)
+            if success and response.status_code == 200:
+                contact = response.json()
+                self.created_entities["contacts"].append(contact["id"])
+                self.log_result("subscription_plans", "POST /contacts - Professional plan unlimited access", True)
+            else:
+                self.log_result("subscription_plans", "POST /contacts - Professional plan unlimited access", False,
+                              f"Professional plan should allow unlimited contacts, got status: {response.status_code}")
+        
+        # Test 10: Test error messages for plan upgrades
+        # Switch back to starter and test error message quality
+        success, response = self.make_request("POST", "/users/select-plan", data=starter_plan_data)
+        if success and response.status_code == 200:
+            # Test VIES error message
+            success, response = self.make_request("GET", f"/accounts/vies-lookup/{test_vat}")
+            if not success or response.status_code == 403:
+                if hasattr(response, 'json'):
+                    try:
+                        error_response = response.json()
+                        error_detail = error_response.get("detail", "")
+                        if "Professional" in error_detail and "upgrade" in error_detail.lower():
+                            self.log_result("subscription_plans", "GET /accounts/vies-lookup - Upgrade message quality", True)
+                        else:
+                            self.log_result("subscription_plans", "GET /accounts/vies-lookup - Upgrade message quality", False,
+                                          f"Poor upgrade message: {error_detail}")
+                    except:
+                        self.log_result("subscription_plans", "GET /accounts/vies-lookup - Error response format", False,
+                                      "Error response not in JSON format")
+                else:
+                    self.log_result("subscription_plans", "GET /accounts/vies-lookup - Error response", True)
+        
+        print("ℹ️  Subscription plans system tests completed")
+
     def test_contacts_crud(self):
         """Test Contact CRUD operations"""
         print("\n👥 Testing Contact Management...")
