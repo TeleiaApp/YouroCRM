@@ -3825,7 +3825,7 @@ const PlanSelectionPage = () => {
   const [selecting, setSelecting] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t, loading: translationsLoading } = useLanguage();
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchPlans();
