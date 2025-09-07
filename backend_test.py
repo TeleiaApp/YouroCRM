@@ -1937,6 +1937,9 @@ class CRMBackendTester:
             # NEW: Test Enhanced Admin Panel APIs
             self.test_enhanced_admin_panel()
             
+            # NEW: Test Subscription Plans System
+            self.test_subscription_plans_system()
+            
             self.test_contacts_crud()
             self.test_accounts_crud()
             
