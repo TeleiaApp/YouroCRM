@@ -529,6 +529,30 @@ async def get_user_plan(current_user: User = Depends(get_current_user)):
         }
     }
 
+# Internationalization routes
+@api_router.get("/translations/{language}")
+async def get_translations_by_language(language: str):
+    """Get translations for specified language"""
+    if language not in TRANSLATIONS:
+        raise HTTPException(status_code=404, detail="Language not supported")
+    
+    return LanguageResponse(
+        language=language,
+        translations=get_translations(language)
+    )
+
+@api_router.get("/languages")
+async def get_supported_languages():
+    """Get list of supported languages"""
+    return {
+        "languages": [
+            {"code": "en", "name": "English", "flag": "🇬🇧"},
+            {"code": "fr", "name": "Français", "flag": "🇫🇷"},
+            {"code": "nl", "name": "Nederlands", "flag": "🇳🇱"}
+        ],
+        "default": "en"
+    }
+
 # Contact routes
 @api_router.post("/contacts", response_model=Contact)
 async def create_contact(contact_data: ContactCreate, current_user: User = Depends(get_current_user)):
