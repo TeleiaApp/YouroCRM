@@ -572,6 +572,15 @@ async def delete_contact(contact_id: str, current_user: User = Depends(get_curre
 # Account routes
 @api_router.post("/accounts", response_model=Account)
 async def create_account(account_data: AccountCreate, current_user: User = Depends(get_current_user)):
+    # Check plan limits
+    current_accounts = await db.accounts.count_documents({"user_id": current_user.id})
+    if not check_plan_limits(current_user, "accounts", current_accounts):
+        plan = get_user_plan(current_user)
+        raise HTTPException(
+            status_code=403, 
+            detail=f"Plan limit reached. {plan.name} plan allows maximum {plan.limits['accounts_max']} accounts. Upgrade to Professional for unlimited accounts."
+        )
+    
     account_dict = account_data.dict()
     account_dict["user_id"] = current_user.id
     account = Account(**account_dict)
