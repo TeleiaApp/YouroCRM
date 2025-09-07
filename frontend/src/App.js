@@ -3704,13 +3704,25 @@ const AdminPanel = () => {
       {/* Users Tab */}
       {activeTab === 'users' && (
         <div className="space-y-6">
-          <div className="flex justify-center">
+          <div className="flex justify-between items-center">
             <div className="bg-blue-50 p-4 rounded-lg">
               <p className="text-blue-800 font-semibold">Total Users: {users.length}</p>
               <p className="text-blue-600 text-sm">
-                Premium Users: {users.filter(u => u.roles?.includes('premium_user')).length}
+                Premium Users: {users.filter(u => u.roles?.includes('premium_user')).length} | 
+                Google Users: {users.filter(u => u.auth_type === 'google').length} | 
+                Traditional Users: {users.filter(u => u.auth_type === 'traditional').length}
               </p>
             </div>
+            
+            <button
+              onClick={() => setShowCreateUserModal(true)}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              <span>Create User</span>
+            </button>
           </div>
 
           {/* Users Table */}
