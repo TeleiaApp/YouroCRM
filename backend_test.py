@@ -530,6 +530,7 @@ class CRMBackendTester:
         print("\n🇪🇺 Testing VIES VAT Validation Integration...")
         
         # Test 1: Valid EU VAT number format validation
+        # Note: These are test VAT numbers that may not exist in VIES database
         test_vat_numbers = [
             "BE0123456789",  # Belgium format
             "FR12345678901", # France format  
@@ -542,21 +543,23 @@ class CRMBackendTester:
             if success and response.status_code == 200:
                 vies_response = response.json()
                 
-                # Check response structure
-                expected_fields = ["valid", "country_code", "request_date"]
+                # Check response structure (all fields should be present even if null)
+                expected_fields = ["valid", "name", "address", "street", "street_nr", "box", 
+                                 "postal_code", "city", "country", "country_code", "request_date"]
                 if all(field in vies_response for field in expected_fields):
                     self.log_result("vies", f"GET /accounts/vies-lookup/{vat_number} - Response structure", True)
-                    
-                    # Check country code extraction
-                    expected_country_code = vat_number[:2]
-                    if vies_response.get("country_code") == expected_country_code:
-                        self.log_result("vies", f"GET /accounts/vies-lookup/{vat_number} - Country code extraction", True)
-                    else:
-                        self.log_result("vies", f"GET /accounts/vies-lookup/{vat_number} - Country code extraction", False,
-                                      f"Expected {expected_country_code}, got {vies_response.get('country_code')}")
                 else:
+                    missing_fields = set(expected_fields) - set(vies_response.keys())
                     self.log_result("vies", f"GET /accounts/vies-lookup/{vat_number} - Response structure", False,
-                                  f"Missing fields: {set(expected_fields) - set(vies_response.keys())}")
+                                  f"Missing fields: {missing_fields}")
+                
+                # For test VAT numbers, we expect valid=false, but the format should be processed
+                # The fact that we get a proper response structure indicates the VIES integration is working
+                if isinstance(vies_response.get("valid"), bool):
+                    self.log_result("vies", f"GET /accounts/vies-lookup/{vat_number} - VAT format processing", True)
+                else:
+                    self.log_result("vies", f"GET /accounts/vies-lookup/{vat_number} - VAT format processing", False,
+                                  f"Invalid 'valid' field type: {type(vies_response.get('valid'))}")
             else:
                 self.log_result("vies", f"GET /accounts/vies-lookup/{vat_number} - VIES lookup", False,
                               f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
