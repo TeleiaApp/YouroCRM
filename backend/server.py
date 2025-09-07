@@ -529,6 +529,17 @@ async def delete_account(account_id: str, current_user: User = Depends(get_curre
         raise HTTPException(status_code=404, detail="Account not found")
     return {"message": "Account deleted"}
 
+# VIES VAT validation route
+@api_router.get("/accounts/vies-lookup/{vat_number}", response_model=VIESResponse)
+async def vies_lookup(vat_number: str, current_user: User = Depends(get_current_user)):
+    """Validate VAT number and retrieve company information from VIES"""
+    try:
+        vies_data = await validate_vat_with_vies(vat_number)
+        return vies_data
+    except Exception as e:
+        logger.error(f"VIES lookup error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to validate VAT number with VIES")
+
 # Product routes
 @api_router.post("/products", response_model=Product)
 async def create_product(product_data: ProductCreate, current_user: User = Depends(get_current_user)):
