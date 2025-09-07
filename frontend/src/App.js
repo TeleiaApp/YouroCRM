@@ -398,10 +398,10 @@ const HomePage = () => {
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Tarifs Simples et Transparents
+            {t('pricing_title')}
           </h2>
           <p className="text-lg text-gray-600 mb-12">
-            Commencez gratuitement, évoluez selon vos besoins
+            {t('pricing_subtitle')}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
