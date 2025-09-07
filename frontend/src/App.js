@@ -290,25 +290,23 @@ const HomePage = () => {
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Le CRM Européen avec 
-            <span className="text-blue-600"> Intégration VIES</span>
+            {t('hero_title')}
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Gérez vos clients européens avec l'auto-complétion des données d'entreprise VIES, 
-            la facturation Peppol conforme, et bien plus encore. Conçu pour les PME européennes.
+            {t('hero_subtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={() => navigate('/register')}
               className="bg-green-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-green-700 transition-colors"
             >
-              🚀 Commencer gratuitement
+              {t('start_free')}
             </button>
             <button
               onClick={() => navigate('/plans')}
               className="bg-white text-gray-900 px-8 py-4 rounded-lg text-lg font-semibold border-2 border-gray-300 hover:border-gray-400 transition-colors"
             >
-              📋 Voir les tarifs
+              {t('view_pricing')}
             </button>
           </div>
         </div>
