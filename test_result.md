@@ -614,6 +614,7 @@ test_plan:
   admin_panel_testing_complete: true
   dual_authentication_testing_complete: true
   vies_integration_testing_complete: true
+  vies_frontend_integration_testing_complete: true
 
 agent_communication:
     - agent: "main"
