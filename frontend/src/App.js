@@ -1684,6 +1684,11 @@ const AccountsPage = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
                     {account.vat_number || '-'}
                   </td>
+                  <td className="px-6 py-4 text-center text-sm text-gray-900">
+                    <div className="max-w-32 truncate" title={formatAddress(account)}>
+                      {formatAddress(account)}
+                    </div>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
                     {account.website ? (
                       <a 
