@@ -30,11 +30,26 @@ const LanguageProvider = ({ children }) => {
     try {
       const response = await axios.get(`${API}/translations/${language}`);
       setTranslations(response.data.translations);
+      console.log('Translations loaded for', language, response.data.translations);
     } catch (error) {
       console.error('Error loading translations:', error);
-      // Fallback to English if error
+      // Fallback to default translations if API fails
       if (language !== 'en') {
-        loadTranslations('en');
+        try {
+          const fallbackResponse = await axios.get(`${API}/translations/en`);
+          setTranslations(fallbackResponse.data.translations);
+        } catch (fallbackError) {
+          console.error('Fallback translations failed:', fallbackError);
+          // Use basic fallback translations
+          setTranslations({
+            app_name: "YouroCRM",
+            hero_title: "The European CRM with VIES Integration",
+            start_free: "🚀 Start for free",
+            view_pricing: "📋 View pricing",
+            login: "Login",
+            register: "Register"
+          });
+        }
       }
     } finally {
       setLoading(false);
