@@ -3759,89 +3759,91 @@ const RegisterPage = () => {
             </div>
           </div>
         
-        <form onSubmit={handleRegister} className="space-y-6">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              Full Name
-            </label>
-            <input
-              id="name"
-              type="text"
-              value={registerForm.name}
-              onChange={(e) => setRegisterForm({...registerForm, name: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="John Doe"
-              required
-            />
-          </div>
+          <form onSubmit={handleRegister} className="space-y-6">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                {t('full_name')}
+              </label>
+              <input
+                id="name"
+                type="text"
+                value={registerForm.name}
+                onChange={(e) => setRegisterForm({...registerForm, name: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="John Doe"
+                required
+              />
+            </div>
 
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email Address
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={registerForm.email}
-              onChange={(e) => setRegisterForm({...registerForm, email: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="your@email.com"
-              required
-            />
-          </div>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                {t('email_address')}
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={registerForm.email}
+                onChange={(e) => setRegisterForm({...registerForm, email: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="your@email.com"
+                required
+              />
+            </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={registerForm.password}
-              onChange={(e) => setRegisterForm({...registerForm, password: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Create a secure password"
-              required
-              minLength="6"
-            />
-            <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
-          </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                {t('password')}
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={registerForm.password}
+                onChange={(e) => setRegisterForm({...registerForm, password: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Create a secure password"
+                required
+                minLength="6"
+              />
+              <p className="text-xs text-gray-500 mt-1">{t('minimum_6_characters')}</p>
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-          >
-            {loading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Creating Account...
-              </>
-            ) : (
-              'Create Account'
-            )}
-          </button>
-
-          <div className="text-center">
-            <Link 
-              to="/" 
-              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
-              Already have an account? Sign in here
-            </Link>
-          </div>
-        </form>
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  {t('creating_account')}
+                </>
+              ) : (
+                t('create_account')
+              )}
+            </button>
 
-        <div className="mt-8 pt-6 border-t border-gray-200">
-          <div className="text-center">
-            <Link 
-              to="/pricing" 
-              className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm"
-            >
-              💰 View Pricing & Features
-            </Link>
+            <div className="text-center">
+              <Link 
+                to="/login" 
+                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              >
+                {t('already_have_account')}
+              </Link>
+            </div>
+          </form>
+
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <div className="text-center">
+              <Link 
+                to="/pricing" 
+                className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm"
+              >
+                {t('view_pricing_features')}
+              </Link>
+            </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
