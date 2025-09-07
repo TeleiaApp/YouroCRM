@@ -241,6 +241,20 @@ class UserCreate(BaseModel):
     password: str
     roles: Optional[List[str]] = []
 
+# VIES Response Models
+class VIESResponse(BaseModel):
+    valid: bool
+    name: Optional[str] = None
+    address: Optional[str] = None
+    street: Optional[str] = None
+    street_nr: Optional[str] = None
+    box: Optional[str] = None
+    postal_code: Optional[str] = None
+    city: Optional[str] = None
+    country: Optional[str] = None
+    country_code: Optional[str] = None
+    request_date: Optional[str] = None
+
 # User Roles and Admin Models
 class UserRole(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
