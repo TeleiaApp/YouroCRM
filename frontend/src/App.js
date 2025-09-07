@@ -3867,6 +3867,7 @@ function App() {
                 </Layout>
               </ProtectedRoute>
             } />
+            <Route path="/pricing" element={<PricingPage />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>
