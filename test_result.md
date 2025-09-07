@@ -521,7 +521,6 @@ metadata:
 
 test_plan:
   current_focus: 
-    - "Pricing Page with Stripe Integration"
     - "Admin Panel Frontend"
   stuck_tasks: []
   test_all: false
@@ -529,6 +528,7 @@ test_plan:
   backend_testing_complete: true
   frontend_testing_complete: true
   paypal_integration_complete: true
+  dual_payment_integration_complete: true
 
 agent_communication:
     - agent: "main"
