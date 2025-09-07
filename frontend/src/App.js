@@ -3907,8 +3907,8 @@ const PlanSelectionPage = () => {
                       {plan.name}
                     </h3>
                     <div className="text-4xl font-bold text-gray-900">
-                      {plan.price === 0 ? 'Gratuit' : `${plan.price}€`}
-                      {plan.price > 0 && <span className="text-lg text-gray-600">/mois</span>}
+                      {plan.price === 0 ? t('free') : `${plan.price}€`}
+                      {plan.price > 0 && <span className="text-lg text-gray-600">{t('per_month')}</span>}
                     </div>
                   </div>
 
