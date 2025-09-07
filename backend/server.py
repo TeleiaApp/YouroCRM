@@ -1651,11 +1651,13 @@ TRANSLATIONS = {
         "signing_in": "Inloggen...",
         "back_to_login_options": "Terug naar login opties",
         "create_your_account": "Maak uw account aan",
+        "join_yourocrm": "Word lid van YouroCRM - Professioneel CRM Platform",
         "full_name": "Volledige naam",
         "create_account": "Account aanmaken",
         "creating_account": "Account aanmaken...",
         "already_have_account": "Al een account? Log hier in",
         "minimum_6_characters": "Minimum 6 karakters",
+        "view_pricing_features": "💰 Prijzen & Functies Bekijken",
         
         # Plan Selection
         "choose_your_plan": "Kies uw YouroCRM plan",
