@@ -177,6 +177,44 @@ class CalendarEventCreate(BaseModel):
     all_day: bool = False
     reminder_minutes: Optional[int] = 30
 
+# Payment Models
+class PaymentTransaction(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    session_id: str
+    payment_id: Optional[str] = None
+    amount: float
+    currency: str = "EUR"
+    package_id: str
+    payment_status: str = "pending"  # pending, paid, failed, expired
+    metadata: Optional[dict] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class CheckoutRequest(BaseModel):
+    package_id: str
+    success_url: str
+    cancel_url: str
+    metadata: Optional[dict] = None
+
+# User Roles and Admin Models
+class UserRole(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    role: str  # admin, user, premium_user
+    granted_by: str
+    granted_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class CustomField(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    entity_type: str  # contacts, accounts, products, invoices
+    field_name: str
+    field_type: str  # text, number, date, select, boolean
+    field_options: Optional[List[str]] = None  # for select fields
+    required: bool = False
+    created_by: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 # Authentication helper
 async def get_current_user(request: Request) -> User:
     session_token = request.cookies.get("session_token")
