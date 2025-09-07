@@ -3775,6 +3775,27 @@ const AdminPanel = () => {
                         {user.email}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          user.auth_type === 'google' 
+                            ? 'bg-red-100 text-red-800' 
+                            : 'bg-green-100 text-green-800'
+                        }`}>
+                          {user.auth_type === 'google' ? '🔍 Google' : '📧 Email'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <button
+                          onClick={() => handleToggleUserStatus(user.id, user.is_active)}
+                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                            user.is_active 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          {user.is_active ? '✅ Active' : '❌ Inactive'}
+                        </button>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
                         <div className="flex flex-wrap justify-center gap-1">
                           {user.roles?.map(role => (
                             <span
