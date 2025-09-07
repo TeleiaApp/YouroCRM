@@ -21,6 +21,7 @@ class CRMBackendTester:
         self.user_id = None
         self.test_results = {
             "auth": {"passed": 0, "failed": 0, "errors": []},
+            "traditional_auth": {"passed": 0, "failed": 0, "errors": []},
             "contacts": {"passed": 0, "failed": 0, "errors": []},
             "accounts": {"passed": 0, "failed": 0, "errors": []},
             "products": {"passed": 0, "failed": 0, "errors": []},
@@ -28,7 +29,8 @@ class CRMBackendTester:
             "invoices": {"passed": 0, "failed": 0, "errors": []},
             "dashboard": {"passed": 0, "failed": 0, "errors": []},
             "payments": {"passed": 0, "failed": 0, "errors": []},
-            "admin": {"passed": 0, "failed": 0, "errors": []}
+            "admin": {"passed": 0, "failed": 0, "errors": []},
+            "admin_enhanced": {"passed": 0, "failed": 0, "errors": []}
         }
         self.created_entities = {
             "contacts": [],
