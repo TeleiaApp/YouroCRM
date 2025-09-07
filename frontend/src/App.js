@@ -2941,6 +2941,7 @@ const PricingPage = () => {
     } catch (error) {
       console.error('Error checking payment status:', error);
       setCheckingPayment(false);
+      // eslint-disable-next-line no-undef
       alert('Error checking payment status. Please contact support.');
     }
   };
