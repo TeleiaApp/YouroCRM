@@ -120,6 +120,30 @@ backend:
           agent: "testing"
           comment: "All authentication endpoints working correctly. Fixed timezone comparison issue in session validation. Tested /auth/me (401 without token), /auth/profile (400 without session_id), /auth/set-session endpoint exists, and /auth/me returns correct user data with valid token."
 
+  - task: "Stripe Payment Integration API"
+    implemented: true
+    working: "testing"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented complete Stripe payment system using emergentintegrations library. Includes checkout session creation, payment status polling, webhook handling for successful payments, user role upgrades to premium_user, and payment transaction tracking. Uses 14.99€ premium package. Three endpoints: /api/payments/checkout/session, /api/payments/checkout/status/{session_id}, /api/webhook/stripe"
+
+  - task: "Admin Panel Backend API"
+    implemented: true
+    working: "testing"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented comprehensive admin backend with role-based access control. Includes: /api/admin/users (get all users with roles and payment info), /api/admin/users/{user_id}/role (assign roles), /api/admin/users/{user_id}/role/{role} (remove roles), /api/admin/custom-fields (CRUD for custom field management). Admin access required for all endpoints."
+
   - task: "Contact Management CRUD API"
     implemented: true
     working: true
