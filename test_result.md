@@ -180,7 +180,7 @@ backend:
           agent: "testing"
           comment: "All CRUD operations working perfectly. Tested CREATE (with realistic Belgian contact data), READ (list and individual), UPDATE, and DELETE operations. Data validation working for required fields. All endpoints properly secured with authentication."
 
-  - task: "Account Management CRUD API"
+  - task: "Account Management CRUD API with Separated Address Fields"
     implemented: true
     working: true
     file: "/app/backend/server.py"
@@ -190,10 +190,10 @@ backend:
     status_history:
         - working: "NA"
           agent: "main"
-          comment: "Implemented full CRUD operations for accounts with VAT number field for Peppol"
+          comment: "Updated Account model with separated address fields (street, street_nr, box, postal_code, city, country) replacing single address field. Maintained backwards compatibility while supporting VIES integration requirements."
         - working: true
           agent: "testing"
-          comment: "All CRUD operations working perfectly. Tested with Belgian company data including VAT number (BE0123456789). CREATE, READ (list and individual), UPDATE, and DELETE all functioning correctly. Proper authentication and data validation in place."
+          comment: "UPDATED ACCOUNT MANAGEMENT TESTING COMPLETED SUCCESSFULLY! ✅ SEPARATED ADDRESS FIELDS: All new address fields (street, street_nr, box, postal_code, city, country) properly stored and retrieved through CRUD operations. ✅ BACKWARDS COMPATIBILITY: Mixed old/new address data handling working correctly. ✅ CRUD OPERATIONS: CREATE, READ (list and individual), UPDATE, and DELETE all functioning perfectly with new address structure. ✅ DATA VALIDATION: Proper validation and storage of separated address components. ✅ VIES INTEGRATION READY: Account model fully compatible with VIES address parsing and company data storage. All existing functionality maintained while adding enhanced address management capabilities for EU compliance."
 
   - task: "Product Management CRUD API"
     implemented: true
