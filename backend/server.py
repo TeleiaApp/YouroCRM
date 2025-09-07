@@ -255,6 +255,26 @@ class VIESResponse(BaseModel):
     country_code: Optional[str] = None
     request_date: Optional[str] = None
 
+# Subscription Plans Models
+class SubscriptionPlan(BaseModel):
+    id: str
+    name: str
+    price: float
+    currency: str = "EUR"
+    billing_cycle: str = "monthly"  # monthly, yearly
+    features: List[str]
+    limits: dict
+    is_popular: bool = False
+
+class UserSubscription(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    plan_id: str
+    status: str = "active"  # active, cancelled, expired
+    started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    expires_at: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 # User Roles and Admin Models
 class UserRole(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
