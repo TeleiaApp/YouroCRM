@@ -1225,6 +1225,7 @@ const ContactsPage = () => {
   // Fetch contacts
   useEffect(() => {
     fetchContacts();
+    fetchUserPlan();
   }, []);
 
   const fetchContacts = async () => {
@@ -1236,6 +1237,15 @@ const ContactsPage = () => {
       console.error('Error fetching contacts:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUserPlan = async () => {
+    try {
+      const response = await axios.get(`${API}/users/plan`, { withCredentials: true });
+      setUserPlan(response.data);
+    } catch (error) {
+      console.error('Error fetching user plan:', error);
     }
   };
 
