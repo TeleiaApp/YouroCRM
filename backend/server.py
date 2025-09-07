@@ -22,6 +22,9 @@ import json
 import base64
 import bcrypt
 import secrets
+from stdnum.eu import vat
+from stdnum import util
+import xml.etree.ElementTree as ET
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
