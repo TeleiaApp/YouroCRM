@@ -4415,13 +4415,42 @@ const AdminPanel = () => {
       {/* Users Tab */}
       {activeTab === 'users' && (
         <div className="space-y-6">
+          {/* Plan Limit Warning */}
+          {userPlan && userPlan.limits?.accounts_limit_reached && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <span className="text-2xl">⚠️</span>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-yellow-800">
+                    Limite du plan {userPlan.plan?.name} atteinte
+                  </h3>
+                  <div className="mt-2 text-sm text-yellow-700">
+                    <p>
+                      Vous avez atteint la limite de {userPlan.plan?.limits?.accounts_max} comptes. 
+                      <Link to="/plans" className="font-medium text-yellow-800 underline hover:text-yellow-900">
+                        Passez au plan Professional
+                      </Link> pour des comptes illimités.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-between items-center">
             <div className="bg-blue-50 p-4 rounded-lg">
-              <p className="text-blue-800 font-semibold">Total Users: {users.length}</p>
+              <p className="text-blue-800 font-semibold">Total Accounts: {accounts.length}</p>
               <p className="text-blue-600 text-sm">
-                Premium Users: {users.filter(u => u.roles?.includes('premium_user')).length} | 
-                Google Users: {users.filter(u => u.auth_type === 'google').length} | 
-                Traditional Users: {users.filter(u => u.auth_type === 'traditional').length}
+                With VAT: {accounts.filter(a => a.vat_number).length} | 
+                With Website: {accounts.filter(a => a.website).length} | 
+                Total Revenue: {accounts.reduce((sum, a) => sum + (a.annual_revenue || 0), 0).toLocaleString()}€
+                {userPlan?.plan?.limits?.accounts_max > 0 && (
+                  <span className="block text-xs text-gray-500 mt-1">
+                    Comptes: {accounts.length}/{userPlan.plan.limits.accounts_max}
+                  </span>
+                )}
               </p>
             </div>
             
