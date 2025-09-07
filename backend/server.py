@@ -726,6 +726,304 @@ async def generate_invoice_pdf_endpoint(invoice_id: str, current_user: User = De
         "filename": f"{invoice['invoice_number']}.pdf"
     }
 
+# Payment packages definition
+PAYMENT_PACKAGES = {
+    "premium": {
+        "amount": 14.99,
+        "currency": "EUR",
+        "name": "YouroCRM Premium",
+        "description": "Full access to all CRM and invoicing features"
+    }
+}
+
+# Initialize Stripe
+stripe_api_key = os.environ.get('STRIPE_API_KEY')
+if not stripe_api_key:
+    logger.warning("STRIPE_API_KEY not found in environment variables")
+
+# Payment routes
+@api_router.post("/payments/checkout/session")
+async def create_checkout_session(request: Request, checkout_req: CheckoutRequest, current_user: User = Depends(get_current_user)):
+    if not stripe_api_key:
+        raise HTTPException(status_code=500, detail="Payment system not configured")
+    
+    # Validate package
+    if checkout_req.package_id not in PAYMENT_PACKAGES:
+        raise HTTPException(status_code=400, detail="Invalid package")
+    
+    package = PAYMENT_PACKAGES[checkout_req.package_id]
+    
+    try:
+        # Initialize Stripe checkout
+        host_url = str(request.base_url).rstrip('/')
+        webhook_url = f"{host_url}/api/webhook/stripe"
+        stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
+        
+        # Create checkout session request
+        checkout_session_req = CheckoutSessionRequest(
+            amount=package["amount"],
+            currency=package["currency"],
+            success_url=checkout_req.success_url,
+            cancel_url=checkout_req.cancel_url,
+            metadata={
+                "user_id": current_user.id,
+                "package_id": checkout_req.package_id,
+                **(checkout_req.metadata or {})
+            }
+        )
+        
+        # Create checkout session
+        session: CheckoutSessionResponse = await stripe_checkout.create_checkout_session(checkout_session_req)
+        
+        # Create payment transaction record
+        payment_transaction = PaymentTransaction(
+            user_id=current_user.id,
+            session_id=session.session_id,
+            amount=package["amount"],
+            currency=package["currency"],
+            package_id=checkout_req.package_id,
+            payment_status="pending",
+            metadata=checkout_req.metadata
+        )
+        
+        await db.payment_transactions.insert_one(payment_transaction.dict())
+        
+        return {"url": session.url, "session_id": session.session_id}
+    
+    except Exception as e:
+        logger.error(f"Error creating checkout session: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create checkout session")
+
+@api_router.get("/payments/checkout/status/{session_id}")
+async def get_checkout_status(session_id: str, current_user: User = Depends(get_current_user)):
+    if not stripe_api_key:
+        raise HTTPException(status_code=500, detail="Payment system not configured")
+    
+    try:
+        # Find payment transaction
+        payment_transaction = await db.payment_transactions.find_one({
+            "session_id": session_id,
+            "user_id": current_user.id
+        })
+        
+        if not payment_transaction:
+            raise HTTPException(status_code=404, detail="Payment transaction not found")
+        
+        # Get status from Stripe
+        stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url="")
+        checkout_status: CheckoutStatusResponse = await stripe_checkout.get_checkout_status(session_id)
+        
+        # Update payment transaction if status changed
+        if checkout_status.payment_status != payment_transaction["payment_status"]:
+            await db.payment_transactions.update_one(
+                {"session_id": session_id},
+                {
+                    "$set": {
+                        "payment_status": checkout_status.payment_status,
+                        "updated_at": datetime.now(timezone.utc)
+                    }
+                }
+            )
+            
+            # If payment successful, upgrade user to premium
+            if checkout_status.payment_status == "paid":
+                # Check if user role already exists to prevent duplicate upgrades
+                existing_role = await db.user_roles.find_one({
+                    "user_id": current_user.id,
+                    "role": "premium_user"
+                })
+                
+                if not existing_role:
+                    user_role = UserRole(
+                        user_id=current_user.id,
+                        role="premium_user",
+                        granted_by="system"
+                    )
+                    await db.user_roles.insert_one(user_role.dict())
+        
+        return {
+            "status": checkout_status.status,
+            "payment_status": checkout_status.payment_status,
+            "amount_total": checkout_status.amount_total,
+            "currency": checkout_status.currency
+        }
+    
+    except Exception as e:
+        logger.error(f"Error getting checkout status: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get checkout status")
+
+@api_router.post("/webhook/stripe")
+async def stripe_webhook(request: Request):
+    if not stripe_api_key:
+        raise HTTPException(status_code=500, detail="Payment system not configured")
+    
+    try:
+        body = await request.body()
+        stripe_signature = request.headers.get("stripe-signature")
+        
+        if not stripe_signature:
+            raise HTTPException(status_code=400, detail="Missing Stripe signature")
+        
+        stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url="")
+        webhook_response = await stripe_checkout.handle_webhook(body, stripe_signature)
+        
+        # Process webhook event
+        if webhook_response.event_type in ["checkout.session.completed", "payment_intent.succeeded"]:
+            # Update payment transaction
+            await db.payment_transactions.update_one(
+                {"session_id": webhook_response.session_id},
+                {
+                    "$set": {
+                        "payment_status": webhook_response.payment_status,
+                        "payment_id": webhook_response.event_id,
+                        "updated_at": datetime.now(timezone.utc)
+                    }
+                }
+            )
+            
+            # If payment successful, ensure user has premium role
+            if webhook_response.payment_status == "paid":
+                payment_transaction = await db.payment_transactions.find_one({
+                    "session_id": webhook_response.session_id
+                })
+                
+                if payment_transaction:
+                    existing_role = await db.user_roles.find_one({
+                        "user_id": payment_transaction["user_id"],
+                        "role": "premium_user"
+                    })
+                    
+                    if not existing_role:
+                        user_role = UserRole(
+                            user_id=payment_transaction["user_id"],
+                            role="premium_user",
+                            granted_by="system"
+                        )
+                        await db.user_roles.insert_one(user_role.dict())
+        
+        return {"status": "success"}
+    
+    except Exception as e:
+        logger.error(f"Error processing webhook: {e}")
+        raise HTTPException(status_code=500, detail="Webhook processing failed")
+
+# Admin routes
+@api_router.get("/admin/users")
+async def get_all_users(current_user: User = Depends(get_current_user)):
+    # Check if user is admin
+    user_role = await db.user_roles.find_one({"user_id": current_user.id, "role": "admin"})
+    if not user_role:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    users = await db.users.find({}).to_list(1000)
+    
+    # Get roles for each user
+    for user in users:
+        roles = await db.user_roles.find({"user_id": user["id"]}).to_list(10)
+        user["roles"] = [role["role"] for role in roles]
+        
+        # Get payment info
+        payments = await db.payment_transactions.find({
+            "user_id": user["id"],
+            "payment_status": "paid"
+        }).to_list(10)
+        user["payments_count"] = len(payments)
+        user["total_paid"] = sum(p["amount"] for p in payments)
+    
+    return users
+
+@api_router.post("/admin/users/{user_id}/role")
+async def assign_user_role(user_id: str, role_data: dict, current_user: User = Depends(get_current_user)):
+    # Check if user is admin
+    user_role = await db.user_roles.find_one({"user_id": current_user.id, "role": "admin"})
+    if not user_role:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Validate user exists
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check if role already exists
+    existing_role = await db.user_roles.find_one({
+        "user_id": user_id,
+        "role": role_data["role"]
+    })
+    
+    if existing_role:
+        raise HTTPException(status_code=400, detail="User already has this role")
+    
+    # Create new role
+    new_role = UserRole(
+        user_id=user_id,
+        role=role_data["role"],
+        granted_by=current_user.id
+    )
+    
+    await db.user_roles.insert_one(new_role.dict())
+    
+    return {"message": "Role assigned successfully"}
+
+@api_router.delete("/admin/users/{user_id}/role/{role}")
+async def remove_user_role(user_id: str, role: str, current_user: User = Depends(get_current_user)):
+    # Check if user is admin
+    user_role = await db.user_roles.find_one({"user_id": current_user.id, "role": "admin"})
+    if not user_role:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    result = await db.user_roles.delete_one({
+        "user_id": user_id,
+        "role": role
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Role not found")
+    
+    return {"message": "Role removed successfully"}
+
+@api_router.get("/admin/custom-fields")
+async def get_custom_fields(current_user: User = Depends(get_current_user)):
+    # Check if user is admin
+    user_role = await db.user_roles.find_one({"user_id": current_user.id, "role": "admin"})
+    if not user_role:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    custom_fields = await db.custom_fields.find({}).to_list(1000)
+    return [CustomField(**field) for field in custom_fields]
+
+@api_router.post("/admin/custom-fields")
+async def create_custom_field(field_data: dict, current_user: User = Depends(get_current_user)):
+    # Check if user is admin
+    user_role = await db.user_roles.find_one({"user_id": current_user.id, "role": "admin"})
+    if not user_role:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    custom_field = CustomField(
+        entity_type=field_data["entity_type"],
+        field_name=field_data["field_name"],
+        field_type=field_data["field_type"],
+        field_options=field_data.get("field_options"),
+        required=field_data.get("required", False),
+        created_by=current_user.id
+    )
+    
+    await db.custom_fields.insert_one(custom_field.dict())
+    return custom_field
+
+@api_router.delete("/admin/custom-fields/{field_id}")
+async def delete_custom_field(field_id: str, current_user: User = Depends(get_current_user)):
+    # Check if user is admin
+    user_role = await db.user_roles.find_one({"user_id": current_user.id, "role": "admin"})
+    if not user_role:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    result = await db.custom_fields.delete_one({"id": field_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Custom field not found")
+    
+    return {"message": "Custom field deleted successfully"}
+
 # Basic dashboard stats
 @api_router.get("/dashboard/stats")
 async def get_dashboard_stats(current_user: User = Depends(get_current_user)):
