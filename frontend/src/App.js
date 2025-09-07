@@ -84,9 +84,9 @@ const ProfilePage = () => {
             withCredentials: true
           });
           
-          // Check auth and redirect
+          // Check auth and redirect to plan selection for new users
           await checkAuth();
-          navigate('/dashboard');
+          navigate('/plans');
         } catch (error) {
           console.error('Authentication error:', error);
           navigate('/');
