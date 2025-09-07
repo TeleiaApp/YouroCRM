@@ -2891,6 +2891,302 @@ const InvoicesPage = () => {
   );
 };
 
+// Pricing Page Component
+const PricingPage = () => {
+  const [loading, setLoading] = useState(false);
+  const [checkingPayment, setCheckingPayment] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Check for successful payment return
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const sessionId = urlParams.get('session_id');
+    
+    if (sessionId) {
+      setCheckingPayment(true);
+      pollPaymentStatus(sessionId);
+    }
+  }, [location]);
+
+  const pollPaymentStatus = async (sessionId, attempts = 0) => {
+    const maxAttempts = 5;
+    const pollInterval = 2000;
+
+    if (attempts >= maxAttempts) {
+      setCheckingPayment(false);
+      alert('Payment status check timed out. Please contact support if payment was successful.');
+      return;
+    }
+
+    try {
+      const response = await axios.get(`${API}/payments/checkout/status/${sessionId}`, { withCredentials: true });
+      
+      if (response.data.payment_status === 'paid') {
+        setCheckingPayment(false);
+        alert('Payment successful! Welcome to YouroCRM Premium! 🎉');
+        navigate('/dashboard');
+        return;
+      } else if (response.data.status === 'expired') {
+        setCheckingPayment(false);
+        alert('Payment session expired. Please try again.');
+        return;
+      }
+
+      // Continue polling if still pending
+      setTimeout(() => pollPaymentStatus(sessionId, attempts + 1), pollInterval);
+    } catch (error) {
+      console.error('Error checking payment status:', error);
+      setCheckingPayment(false);
+      alert('Error checking payment status. Please contact support.');
+    }
+  };
+
+  const handleSubscribe = async () => {
+    setLoading(true);
+    try {
+      const originUrl = window.location.origin;
+      const currentUrl = window.location.href.split('?')[0];
+      
+      const response = await axios.post(`${API}/payments/checkout/session`, {
+        package_id: 'premium',
+        success_url: `${currentUrl}?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: currentUrl,
+        metadata: {
+          source: 'pricing_page',
+          package: 'premium'
+        }
+      }, { withCredentials: true });
+
+      if (response.data.url) {
+        window.location.href = response.data.url;
+      } else {
+        throw new Error('No checkout URL received');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      alert('Error initiating payment. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (checkingPayment) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-500 mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Processing your payment...</h2>
+          <p className="text-gray-600">Please wait while we confirm your subscription.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+      {/* Navigation */}
+      <nav className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex items-center">
+              <Link to="/" className="flex items-center space-x-3">
+                <img 
+                  src="https://customer-assets.emergentagent.com/job_biz-connector-4/artifacts/tgh8glfj_image.png"
+                  alt="YouroCRM Logo"
+                  className="h-8 w-auto"
+                />
+                <span className="text-xl font-bold text-gray-900">yourocrm.com</span>
+              </Link>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Link to="/" className="text-gray-600 hover:text-gray-900 font-medium">
+                Home
+              </Link>
+              <Link to="/pricing" className="text-blue-600 font-medium">
+                Pricing
+              </Link>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Pricing Content */}
+      <div className="py-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="text-center mb-16">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+              Professional CRM & Invoicing
+            </h1>
+            <p className="text-xl text-gray-600 mb-8">
+              Everything you need to manage customers and send Peppol invoices
+            </p>
+            <div className="text-center">
+              <span className="text-5xl font-bold text-green-600">€14.99</span>
+              <span className="text-xl text-gray-600 ml-2">/month</span>
+            </div>
+          </div>
+
+          {/* Features Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            <div className="bg-white rounded-lg shadow-md p-6 text-center">
+              <div className="text-4xl mb-4">👥</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Contact Management</h3>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li>• Unlimited contacts</li>
+                <li>• Company profiles</li>
+                <li>• Search & filtering</li>
+                <li>• Professional tables</li>
+              </ul>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-md p-6 text-center">
+              <div className="text-4xl mb-4">🏢</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Account Tracking</h3>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li>• Company accounts</li>
+                <li>• Belgium VAT compliance</li>
+                <li>• Revenue tracking</li>
+                <li>• Website integration</li>
+              </ul>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-md p-6 text-center">
+              <div className="text-4xl mb-4">📦</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Product Catalog</h3>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li>• Unlimited products</li>
+                <li>• Belgium VAT rates</li>
+                <li>• SKU management</li>
+                <li>• Category organization</li>
+              </ul>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-md p-6 text-center">
+              <div className="text-4xl mb-4">📅</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Calendar & Events</h3>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li>• Calendar & list views</li>
+                <li>• Event types & colors</li>
+                <li>• CRM integration</li>
+                <li>• Reminder system</li>
+              </ul>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-md p-6 text-center">
+              <div className="text-4xl mb-4">🧾</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Invoice Generation</h3>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li>• Professional PDF invoices</li>
+                <li>• Belgium VAT calculations</li>
+                <li>• Credit notes</li>
+                <li>• Payment tracking</li>
+              </ul>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-md p-6 text-center">
+              <div className="text-4xl mb-4">🇪🇺</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Peppol Integration</h3>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li>• Electronic invoicing</li>
+                <li>• Belgium compliance</li>
+                <li>• UBL XML format</li>
+                <li>• EU network ready</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Additional Features */}
+          <div className="bg-white rounded-lg shadow-md p-8 mb-16">
+            <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">Plus Much More!</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <span className="text-green-500 mr-3">✓</span>
+                  <span>Global search across all entities</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-green-500 mr-3">✓</span>
+                  <span>Quick action buttons</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-green-500 mr-3">✓</span>
+                  <span>Professional table views</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-green-500 mr-3">✓</span>
+                  <span>Responsive mobile design</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-green-500 mr-3">✓</span>
+                  <span>Data export capabilities</span>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <span className="text-green-500 mr-3">✓</span>
+                  <span>Google OAuth security</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-green-500 mr-3">✓</span>
+                  <span>Cloud-based storage</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-green-500 mr-3">✓</span>
+                  <span>Automatic backups</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-green-500 mr-3">✓</span>
+                  <span>Regular updates</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-green-500 mr-3">✓</span>
+                  <span>Email support</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* CTA Section */}
+          <div className="text-center">
+            <div className="bg-gradient-to-r from-blue-600 to-green-600 rounded-lg p-8 text-white mb-8">
+              <h3 className="text-2xl font-bold mb-4">Start Your Professional CRM Today!</h3>
+              <p className="text-lg mb-6">Join thousands of businesses using YouroCRM for their customer management and invoicing needs.</p>
+              
+              <button
+                onClick={handleSubscribe}
+                disabled={loading}
+                className="inline-flex items-center px-8 py-4 bg-white text-blue-600 font-bold text-lg rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mr-3"></div>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    🚀 Subscribe Now - €14.99/month
+                  </>
+                )}
+              </button>
+              
+              <p className="text-sm mt-4 opacity-90">
+                Secure payment via Stripe • Valid across all EU countries • Cancel anytime
+              </p>
+            </div>
+
+            <div className="text-center text-gray-600">
+              <p className="mb-2">🔒 Secure European Payment Processing by Stripe</p>
+              <p className="text-sm">We accept all major credit cards and European payment methods</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Calendar Component
 const CalendarPage = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
