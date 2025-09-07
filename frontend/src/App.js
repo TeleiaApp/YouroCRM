@@ -3844,7 +3844,6 @@ const RegisterPage = () => {
           </div>
         </div>
       </div>
-      </div>
     </div>
   );
 };
