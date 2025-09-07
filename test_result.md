@@ -592,13 +592,15 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 6
+  test_sequence: 7
   run_ui: true
   last_tested_by: "testing_agent"
-  backend_tests_passed: 73
+  backend_tests_passed: 106
   backend_tests_failed: 0
   frontend_tests_passed: 18
   frontend_tests_failed: 0
+  vies_integration_complete: true
+  vies_tests_passed: 31
 
 test_plan:
   current_focus: []
