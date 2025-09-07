@@ -5795,6 +5795,7 @@ function App() {
             </Routes>
           </AuthProvider>
         </BrowserRouter>
+      </div>
     </LanguageProvider>
   );
 }
