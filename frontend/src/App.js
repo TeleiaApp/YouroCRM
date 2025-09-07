@@ -2915,6 +2915,7 @@ const PricingPage = () => {
 
     if (attempts >= maxAttempts) {
       setCheckingPayment(false);
+      // eslint-disable-next-line no-undef
       alert('Payment status check timed out. Please contact support if payment was successful.');
       return;
     }
