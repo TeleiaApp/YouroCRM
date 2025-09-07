@@ -1097,6 +1097,119 @@ def get_country_name(country_code: str) -> str:
     }
     return country_map.get(country_code, country_code)
 
+# Subscription Plans Configuration
+SUBSCRIPTION_PLANS = {
+    "starter": SubscriptionPlan(
+        id="starter",
+        name="Starter",
+        price=0.0,
+        features=[
+            "5 contacts maximum",
+            "2 comptes maximum", 
+            "Facturation basique",
+            "Support email"
+        ],
+        limits={
+            "contacts_max": 5,
+            "accounts_max": 2,
+            "invoices_per_month": 10,
+            "custom_fields": False,
+            "api_access": False,
+            "multi_user": False,
+            "vies_integration": False,
+            "peppol_invoicing": False,
+            "advanced_calendar": False,
+            "pdf_export": False,
+            "priority_support": False
+        }
+    ),
+    "professional": SubscriptionPlan(
+        id="professional",
+        name="Professional",
+        price=14.99,
+        features=[
+            "Contacts/comptes illimités",
+            "Intégration VIES complète",
+            "Facturation Peppol",
+            "Calendrier avancé",
+            "Export PDF",
+            "Support prioritaire",
+            "Multi-utilisateur (+5€/utilisateur)"
+        ],
+        limits={
+            "contacts_max": -1,  # -1 = unlimited
+            "accounts_max": -1,
+            "invoices_per_month": -1,
+            "custom_fields": False,
+            "api_access": False,
+            "multi_user": True,
+            "vies_integration": True,
+            "peppol_invoicing": True,
+            "advanced_calendar": True,
+            "pdf_export": True,
+            "priority_support": True
+        },
+        is_popular=True
+    ),
+    "enterprise": SubscriptionPlan(
+        id="enterprise",
+        name="Enterprise",
+        price=39.99,
+        features=[
+            "Tout Professional",
+            "Champs personnalisés",
+            "API Access",
+            "White-label",
+            "Support dédié",
+            "Formation incluse"
+        ],
+        limits={
+            "contacts_max": -1,
+            "accounts_max": -1,
+            "invoices_per_month": -1,
+            "custom_fields": True,
+            "api_access": True,
+            "multi_user": True,
+            "vies_integration": True,
+            "peppol_invoicing": True,
+            "advanced_calendar": True,
+            "pdf_export": True,
+            "priority_support": True,
+            "white_label": True,
+            "dedicated_support": True,
+            "training": True
+        }
+    )
+}
+
+def get_user_plan(user: User) -> SubscriptionPlan:
+    """Get user's current subscription plan"""
+    return SUBSCRIPTION_PLANS.get(user.current_plan, SUBSCRIPTION_PLANS["starter"])
+
+def check_plan_limits(user: User, resource_type: str, current_count: int = 0) -> bool:
+    """Check if user can create more resources based on their plan"""
+    plan = get_user_plan(user)
+    
+    if resource_type == "contacts":
+        max_allowed = plan.limits.get("contacts_max", 0)
+    elif resource_type == "accounts":
+        max_allowed = plan.limits.get("accounts_max", 0)
+    elif resource_type == "invoices":
+        max_allowed = plan.limits.get("invoices_per_month", 0)
+    else:
+        return True  # Unknown resource type, allow by default
+    
+    # -1 means unlimited
+    if max_allowed == -1:
+        return True
+    
+    return current_count < max_allowed
+
+def has_feature_access(user: User, feature: str) -> bool:
+    """Check if user has access to a specific feature"""
+    plan = get_user_plan(user)
+    return plan.limits.get(feature, False)
+
 # Payment routes
 @api_router.post("/payments/checkout/session")
 async def create_checkout_session(request: Request, checkout_req: CheckoutRequest, current_user: User = Depends(get_current_user)):
