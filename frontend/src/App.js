@@ -3535,6 +3535,13 @@ const AdminPanel = () => {
     field_options: [],
     required: false
   });
+  const [showCreateUserModal, setShowCreateUserModal] = useState(false);
+  const [createUserForm, setCreateUserForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    roles: []
+  });
 
   useEffect(() => {
     fetchAdminData();
