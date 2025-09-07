@@ -129,6 +129,296 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+// Home Page (Landing Page)
+const HomePage = () => {
+  const navigate = useNavigate();
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center space-x-3">
+              <img 
+                src="https://customer-assets.emergentagent.com/job_biz-connector-4/artifacts/tgh8glfj_image.png"
+                alt="YouroCRM Logo"
+                className="h-8 w-auto"
+              />
+              <span className="text-2xl font-bold text-gray-900">YouroCRM</span>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Link 
+                to="/login" 
+                className="text-gray-600 hover:text-gray-900 font-medium"
+              >
+                Se connecter
+              </Link>
+              <button
+                onClick={() => navigate('/register')}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              >
+                Essai gratuit
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-5xl font-bold text-gray-900 mb-6">
+            Le CRM Européen avec 
+            <span className="text-blue-600"> Intégration VIES</span>
+          </h1>
+          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            Gérez vos clients européens avec l'auto-complétion des données d'entreprise VIES, 
+            la facturation Peppol conforme, et bien plus encore. Conçu pour les PME européennes.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={() => navigate('/register')}
+              className="bg-green-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-green-700 transition-colors"
+            >
+              🚀 Commencer gratuitement
+            </button>
+            <button
+              onClick={() => navigate('/plans')}
+              className="bg-white text-gray-900 px-8 py-4 rounded-lg text-lg font-semibold border-2 border-gray-300 hover:border-gray-400 transition-colors"
+            >
+              📋 Voir les tarifs
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Pourquoi choisir YouroCRM ?
+            </h2>
+            <p className="text-lg text-gray-600">
+              Le seul CRM avec intégration VIES native pour l'Europe
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Feature 1 */}
+            <div className="text-center p-6 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">🇪🇺</span>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Intégration VIES</h3>
+              <p className="text-gray-600">
+                Auto-complétion des données d'entreprise européennes en temps réel via le numéro de TVA
+              </p>
+            </div>
+
+            {/* Feature 2 */}
+            <div className="text-center p-6 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">📄</span>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Facturation Peppol</h3>
+              <p className="text-gray-600">
+                Facturation électronique conforme aux normes européennes et belges
+              </p>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="text-center p-6 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">👥</span>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Gestion Complète</h3>
+              <p className="text-gray-600">
+                Contacts, comptes, produits, factures et calendrier en une seule plateforme
+              </p>
+            </div>
+
+            {/* Feature 4 */}
+            <div className="text-center p-6 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
+              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">🔒</span>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Sécurité Européenne</h3>
+              <p className="text-gray-600">
+                Conformité RGPD, authentification sécurisée et hébergement européen
+              </p>
+            </div>
+
+            {/* Feature 5 */}
+            <div className="text-center p-6 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">💳</span>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Paiements Flexibles</h3>
+              <p className="text-gray-600">
+                Stripe et PayPal intégrés pour faciliter vos transactions clients
+              </p>
+            </div>
+
+            {/* Feature 6 */}
+            <div className="text-center p-6 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
+              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">📱</span>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Multi-plateforme</h3>
+              <p className="text-gray-600">
+                Interface responsive accessible sur desktop, tablette et mobile
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Preview */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            Tarifs Simples et Transparents
+          </h2>
+          <p className="text-lg text-gray-600 mb-12">
+            Commencez gratuitement, évoluez selon vos besoins
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {/* Starter */}
+            <div className="bg-white p-8 rounded-lg shadow border">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">🆓 Starter</h3>
+              <div className="text-3xl font-bold text-gray-900 mb-4">Gratuit</div>
+              <ul className="text-left space-y-2 text-gray-600 mb-6">
+                <li>✅ 5 contacts maximum</li>
+                <li>✅ 2 comptes maximum</li>
+                <li>✅ Facturation basique</li>
+                <li>✅ Support email</li>
+              </ul>
+              <button
+                onClick={() => navigate('/register')}
+                className="w-full bg-gray-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-gray-700 transition-colors"
+              >
+                Commencer
+              </button>
+            </div>
+
+            {/* Professional */}
+            <div className="bg-blue-600 text-white p-8 rounded-lg shadow relative transform scale-105">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-yellow-400 text-gray-900 px-4 py-1 rounded-full text-sm font-semibold">
+                Plus populaire
+              </div>
+              <h3 className="text-xl font-semibold mb-2">💎 Professional</h3>
+              <div className="text-3xl font-bold mb-4">14.99€<span className="text-lg">/mois</span></div>
+              <ul className="text-left space-y-2 mb-6">
+                <li>✅ Contacts/comptes illimités</li>
+                <li>✅ Intégration VIES complète</li>
+                <li>✅ Facturation Peppol</li>
+                <li>✅ Calendrier avancé</li>
+                <li>✅ Export PDF</li>
+                <li>✅ Support prioritaire</li>
+              </ul>
+              <button
+                onClick={() => navigate('/plans')}
+                className="w-full bg-white text-blue-600 py-2 px-4 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+              >
+                Choisir Professional
+              </button>
+            </div>
+
+            {/* Enterprise */}
+            <div className="bg-white p-8 rounded-lg shadow border">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">🏆 Enterprise</h3>
+              <div className="text-3xl font-bold text-gray-900 mb-4">39.99€<span className="text-lg">/mois</span></div>
+              <ul className="text-left space-y-2 text-gray-600 mb-6">
+                <li>✅ Tout Professional</li>
+                <li>✅ Champs personnalisés</li>
+                <li>✅ API Access</li>
+                <li>✅ White-label</li>
+                <li>✅ Support dédié</li>
+                <li>✅ Formation incluse</li>
+              </ul>
+              <button
+                onClick={() => navigate('/plans')}
+                className="w-full bg-gray-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-gray-700 transition-colors"
+              >
+                Choisir Enterprise
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-blue-600">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold text-white mb-4">
+            Prêt à transformer votre gestion client ?
+          </h2>
+          <p className="text-xl text-blue-100 mb-8">
+            Rejoignez les entreprises européennes qui font confiance à YouroCRM
+          </p>
+          <button
+            onClick={() => navigate('/register')}
+            className="bg-green-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-green-700 transition-colors"
+          >
+            🚀 Démarrer maintenant - C'est gratuit !
+          </button>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center space-x-2 mb-4">
+                <img 
+                  src="https://customer-assets.emergentagent.com/job_biz-connector-4/artifacts/tgh8glfj_image.png"
+                  alt="YouroCRM Logo"
+                  className="h-6 w-auto"
+                />
+                <span className="text-xl font-bold">YouroCRM</span>
+              </div>
+              <p className="text-gray-400">
+                Le CRM européen avec intégration VIES pour les PME modernes.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Produit</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link to="/plans" className="hover:text-white">Tarifs</Link></li>
+                <li><a href="#" className="hover:text-white">Fonctionnalités</a></li>
+                <li><a href="#" className="hover:text-white">Intégrations</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Support</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li><a href="#" className="hover:text-white">Documentation</a></li>
+                <li><a href="#" className="hover:text-white">Centre d'aide</a></li>
+                <li><a href="#" className="hover:text-white">Contact</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Légal</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li><a href="#" className="hover:text-white">Confidentialité</a></li>
+                <li><a href="#" className="hover:text-white">Conditions</a></li>
+                <li><a href="#" className="hover:text-white">RGPD</a></li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-8 pt-8 border-t border-gray-800 text-center text-gray-400">
+            <p>&copy; 2025 YouroCRM. Tous droits réservés. Conçu pour l'Europe 🇪🇺</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
 // Login Page
 const LoginPage = () => {
   const { user, login } = useAuth();
