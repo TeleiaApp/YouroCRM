@@ -2945,7 +2945,6 @@ const PricingPage = () => {
   const handleSubscribe = async () => {
     setLoading(true);
     try {
-      const originUrl = window.location.origin;
       const currentUrl = window.location.href.split('?')[0];
       
       const response = await axios.post(`${API}/payments/checkout/session`, {
