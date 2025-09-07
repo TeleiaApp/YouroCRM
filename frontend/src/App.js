@@ -2968,6 +2968,7 @@ const PricingPage = () => {
       }
     } catch (error) {
       console.error('Payment error:', error);
+      // eslint-disable-next-line no-undef
       alert('Error initiating payment. Please try again.');
     } finally {
       setLoading(false);
