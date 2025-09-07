@@ -3622,6 +3622,175 @@ const RegisterPage = () => {
   );
 };
 
+// Plan Selection Page
+const PlanSelectionPage = () => {
+  const [plans, setPlans] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selecting, setSelecting] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    fetchPlans();
+  }, []);
+
+  const fetchPlans = async () => {
+    try {
+      const response = await axios.get(`${API}/plans`);
+      setPlans(response.data);
+    } catch (error) {
+      console.error('Error fetching plans:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const selectPlan = async (planId) => {
+    if (!user) {
+      navigate('/register');
+      return;
+    }
+
+    setSelecting(true);
+    try {
+      await axios.post(`${API}/users/select-plan`, { plan_id: planId }, { withCredentials: true });
+      
+      if (planId === 'starter') {
+        navigate('/dashboard');
+      } else {
+        // Redirect to payment for paid plans
+        navigate('/pricing');
+      }
+    } catch (error) {
+      console.error('Error selecting plan:', error);
+      alert('Erreur lors de la sélection du plan. Veuillez réessayer.');
+    } finally {
+      setSelecting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Header */}
+      <div className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <img 
+                src="https://customer-assets.emergentagent.com/job_biz-connector-4/artifacts/tgh8glfj_image.png"
+                alt="YouroCRM Logo"
+                className="h-8 w-auto"
+              />
+              <span className="text-2xl font-bold text-gray-900">YouroCRM</span>
+            </div>
+            <Link to="/" className="text-gray-600 hover:text-gray-900">
+              Retour à l'accueil
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <div className="py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+              Choisissez votre plan YouroCRM
+            </h1>
+            <p className="text-xl text-gray-600">
+              Commencez gratuitement et évoluez selon vos besoins
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {plans.map((plan) => (
+              <div 
+                key={plan.id} 
+                className={`bg-white rounded-lg shadow-lg overflow-hidden relative ${
+                  plan.is_popular ? 'ring-4 ring-blue-500 transform scale-105' : ''
+                }`}
+              >
+                {plan.is_popular && (
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                    <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-1 rounded-full text-sm font-semibold shadow-lg">
+                      ⭐ Plus populaire
+                    </span>
+                  </div>
+                )}
+
+                <div className="p-8">
+                  <div className="text-center mb-6">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                      {plan.id === 'starter' && '🆓'} 
+                      {plan.id === 'professional' && '💎'} 
+                      {plan.id === 'enterprise' && '🏆'} 
+                      {plan.name}
+                    </h3>
+                    <div className="text-4xl font-bold text-gray-900">
+                      {plan.price === 0 ? 'Gratuit' : `${plan.price}€`}
+                      {plan.price > 0 && <span className="text-lg text-gray-600">/mois</span>}
+                    </div>
+                  </div>
+
+                  <ul className="space-y-3 mb-8">
+                    {plan.features.map((feature, index) => (
+                      <li key={index} className="flex items-start">
+                        <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                        <span className="text-gray-700">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <button
+                    onClick={() => selectPlan(plan.id)}
+                    disabled={selecting}
+                    className={`w-full py-3 px-6 rounded-lg font-semibold text-lg transition-colors ${
+                      plan.is_popular
+                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
+                        : plan.id === 'starter'
+                        ? 'bg-green-600 text-white hover:bg-green-700'
+                        : 'bg-gray-600 text-white hover:bg-gray-700'
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    {selecting ? (
+                      <span className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Sélection...
+                      </span>
+                    ) : plan.id === 'starter' ? (
+                      'Commencer gratuitement'
+                    ) : (
+                      `Choisir ${plan.name}`
+                    )}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-12 text-center">
+            <p className="text-gray-600 mb-4">
+              🔒 Paiement sécurisé via Stripe et PayPal • ✅ Aucun engagement • 📞 Support client inclus
+            </p>
+            <p className="text-sm text-gray-500">
+              Tous les plans incluent la conformité RGPD et l'hébergement européen sécurisé
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Pricing Page Component
 const PricingPage = () => {
   const [loading, setLoading] = useState(false);
