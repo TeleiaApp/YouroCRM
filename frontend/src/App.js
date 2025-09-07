@@ -220,6 +220,7 @@ const Layout = ({ children }) => {
     { name: 'Accounts', href: '/accounts', icon: '🏢', description: 'Companies & clients' },
     { name: 'Products', href: '/products', icon: '📦', description: 'Services & catalog' },
     { name: 'Invoices', href: '/invoices', icon: '🧾', description: 'Billing & Peppol' },
+    { name: 'Admin', href: '/admin', icon: '🛠️', description: 'System management' },
   ];
 
   return (
