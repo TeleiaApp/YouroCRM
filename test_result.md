@@ -523,8 +523,7 @@ metadata:
   frontend_tests_failed: 0
 
 test_plan:
-  current_focus: 
-    - "Admin Panel Frontend"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -532,6 +531,7 @@ test_plan:
   frontend_testing_complete: true
   paypal_integration_complete: true
   dual_payment_integration_complete: true
+  admin_panel_testing_complete: true
 
 agent_communication:
     - agent: "main"
