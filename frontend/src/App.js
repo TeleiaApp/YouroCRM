@@ -1348,10 +1348,20 @@ const AccountsPage = () => {
     website: '',
     annual_revenue: '',
     employee_count: '',
-    address: '',
+    street: '',
+    street_nr: '',
+    box: '',
+    postal_code: '',
+    city: '',
+    country: '',
     vat_number: '',
     notes: ''
   });
+
+  // VIES integration state
+  const [viesLoading, setViesLoading] = useState(false);
+  const [viesError, setViesError] = useState('');
+  const [viesSuccess, setViesSuccess] = useState('');
 
   // Check for new parameter and open modal
   const location = useLocation();
