@@ -3952,10 +3952,10 @@ const PlanSelectionPage = () => {
 
           <div className="mt-12 text-center">
             <p className="text-gray-600 mb-4">
-              🔒 Paiement sécurisé via Stripe et PayPal • ✅ Aucun engagement • 📞 Support client inclus
+              {t('secure_payment')} • {t('no_commitment')} • {t('support_included')}
             </p>
             <p className="text-sm text-gray-500">
-              Tous les plans incluent la conformité RGPD et l'hébergement européen sécurisé
+              {t('gdpr_compliant')}
             </p>
           </div>
         </div>
