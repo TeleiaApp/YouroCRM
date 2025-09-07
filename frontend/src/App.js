@@ -1,4 +1,4 @@
-/* eslint-disable no-alert */
+ 
 /* eslint-disable no-undef */
 import React, { useState, useEffect, createContext, useContext } from "react";
 import "./App.css";
@@ -2918,7 +2918,7 @@ const PricingPage = () => {
 
     if (attempts >= maxAttempts) {
       setCheckingPayment(false);
-      // eslint-disable-next-line no-undef
+       
       alert('Payment status check timed out. Please contact support if payment was successful.');
       return;
     }
@@ -2928,13 +2928,13 @@ const PricingPage = () => {
       
       if (response.data.payment_status === 'paid') {
         setCheckingPayment(false);
-        // eslint-disable-next-line no-undef
+         
         alert('Payment successful! Welcome to YouroCRM Premium! 🎉');
         navigate('/dashboard');
         return;
       } else if (response.data.status === 'expired') {
         setCheckingPayment(false);
-        // eslint-disable-next-line no-undef
+         
         alert('Payment session expired. Please try again.');
         return;
       }
@@ -2944,7 +2944,7 @@ const PricingPage = () => {
     } catch (error) {
       console.error('Error checking payment status:', error);
       setCheckingPayment(false);
-      // eslint-disable-next-line no-undef
+       
       alert('Error checking payment status. Please contact support.');
     }
   };
@@ -2971,7 +2971,7 @@ const PricingPage = () => {
       }
     } catch (error) {
       console.error('Payment error:', error);
-      // eslint-disable-next-line no-undef
+       
       alert('Error initiating payment. Please try again.');
     } finally {
       setLoading(false);
