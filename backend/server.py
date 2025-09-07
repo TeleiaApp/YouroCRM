@@ -279,6 +279,16 @@ class UserSubscription(BaseModel):
     expires_at: Optional[datetime] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+# Internationalization Models
+class Translation(BaseModel):
+    key: str
+    language: str
+    value: str
+
+class LanguageResponse(BaseModel):
+    language: str
+    translations: dict
+
 # User Roles and Admin Models
 class UserRole(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
