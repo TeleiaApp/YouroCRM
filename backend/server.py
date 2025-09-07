@@ -756,15 +756,31 @@ paypal_environment = os.environ.get('PAYPAL_ENVIRONMENT', 'sandbox')
 
 if not paypal_client_id or not paypal_client_secret:
     logger.warning("PayPal credentials not found in environment variables")
-else:
-    # Initialize PayPal client
-    paypal_client = PaypalServersdkClient(
-        client_credentials_config=OAuth2(
-            o_auth_client_id=paypal_client_id,
-            o_auth_client_secret=paypal_client_secret
-        ),
-        environment='sandbox' if paypal_environment == 'sandbox' else 'production'
-    )
+
+# PayPal API URLs
+PAYPAL_API_BASE = "https://api-m.sandbox.paypal.com" if paypal_environment == "sandbox" else "https://api-m.paypal.com"
+
+async def get_paypal_access_token():
+    """Get PayPal access token"""
+    if not paypal_client_id or not paypal_client_secret:
+        return None
+    
+    auth = base64.b64encode(f"{paypal_client_id}:{paypal_client_secret}".encode()).decode()
+    
+    headers = {
+        "Accept": "application/json",
+        "Accept-Language": "en_US",
+        "Authorization": f"Basic {auth}",
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+    
+    data = "grant_type=client_credentials"
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.post(f"{PAYPAL_API_BASE}/v1/oauth2/token", headers=headers, data=data)
+        if response.status_code == 200:
+            return response.json()["access_token"]
+    return None
 
 # Payment routes
 @api_router.post("/payments/checkout/session")
