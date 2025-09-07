@@ -803,6 +803,20 @@ async def get_paypal_access_token():
             return response.json()["access_token"]
     return None
 
+# Password hashing utilities
+def hash_password(password: str) -> str:
+    """Hash a password using bcrypt"""
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+
+def verify_password(password: str, hashed: str) -> bool:
+    """Verify a password against its hash"""
+    return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+
+def generate_session_token() -> str:
+    """Generate a secure session token"""
+    return secrets.token_urlsafe(32)
+
 # Payment routes
 @api_router.post("/payments/checkout/session")
 async def create_checkout_session(request: Request, checkout_req: CheckoutRequest, current_user: User = Depends(get_current_user)):
