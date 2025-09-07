@@ -582,8 +582,8 @@ metadata:
   last_tested_by: "testing_agent"
   backend_tests_passed: 73
   backend_tests_failed: 0
-  frontend_tests_passed: 17
-  frontend_tests_failed: 1
+  frontend_tests_passed: 18
+  frontend_tests_failed: 0
 
 test_plan:
   current_focus: []
