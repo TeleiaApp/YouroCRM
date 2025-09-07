@@ -2951,7 +2951,7 @@ const PricingPage = () => {
     }
   };
 
-  const handleSubscribe = async () => {
+  const handleStripeSubscribe = async () => {
     setLoading(true);
     try {
       const currentUrl = window.location.href.split('?')[0];
@@ -2962,7 +2962,8 @@ const PricingPage = () => {
         cancel_url: currentUrl,
         metadata: {
           source: 'pricing_page',
-          package: 'premium'
+          package: 'premium',
+          payment_method: 'stripe'
         }
       }, { withCredentials: true });
 
@@ -2972,9 +2973,37 @@ const PricingPage = () => {
         throw new Error('No checkout URL received');
       }
     } catch (error) {
-      console.error('Payment error:', error);
-       
-      alert('Error initiating payment. Please try again.');
+      console.error('Stripe payment error:', error);
+      alert('Error initiating Stripe payment. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePayPalSubscribe = async () => {
+    setLoading(true);
+    try {
+      const currentUrl = window.location.href.split('?')[0];
+      
+      const response = await axios.post(`${API}/payments/paypal/create-order`, {
+        package_id: 'premium',
+        return_url: `${currentUrl}?paypal_success=true&order_id=`,
+        cancel_url: `${currentUrl}?paypal_cancelled=true`,
+        metadata: {
+          source: 'pricing_page',
+          package: 'premium',
+          payment_method: 'paypal'
+        }
+      }, { withCredentials: true });
+
+      if (response.data.approval_url) {
+        window.location.href = response.data.approval_url;
+      } else {
+        throw new Error('No PayPal approval URL received');
+      }
+    } catch (error) {
+      console.error('PayPal payment error:', error);
+      alert('Error initiating PayPal payment. Please try again.');
     } finally {
       setLoading(false);
     }
