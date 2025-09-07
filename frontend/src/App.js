@@ -4820,6 +4820,7 @@ function App() {
         <AuthProvider>
           <Routes>
             <Route path="/" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/dashboard" element={
