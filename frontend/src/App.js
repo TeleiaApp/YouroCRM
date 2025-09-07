@@ -2925,11 +2925,13 @@ const PricingPage = () => {
       
       if (response.data.payment_status === 'paid') {
         setCheckingPayment(false);
+        // eslint-disable-next-line no-undef
         alert('Payment successful! Welcome to YouroCRM Premium! 🎉');
         navigate('/dashboard');
         return;
       } else if (response.data.status === 'expired') {
         setCheckingPayment(false);
+        // eslint-disable-next-line no-undef
         alert('Payment session expired. Please try again.');
         return;
       }
