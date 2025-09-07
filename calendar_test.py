@@ -18,7 +18,7 @@ import sys
 import os
 
 # Backend URL from environment
-BACKEND_URL = "https://yourocrm.preview.emergentagent.com/api"
+BACKEND_URL = "https://vat-smart-crm.preview.emergentagent.com/api"
 
 class CalendarFunctionalityTester:
     def __init__(self):

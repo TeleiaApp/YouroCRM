@@ -12,7 +12,7 @@ import sys
 import os
 
 # Backend URL from environment
-BACKEND_URL = "https://yourocrm.preview.emergentagent.com/api"
+BACKEND_URL = "https://vat-smart-crm.preview.emergentagent.com/api"
 
 class CRMBackendTester:
     def __init__(self):
@@ -1446,8 +1446,8 @@ class CRMBackendTester:
         # Test CREATE checkout session for premium package
         checkout_data = {
             "package_id": "premium",
-            "success_url": "https://yourocrm.preview.emergentagent.com/pricing?success=true",
-            "cancel_url": "https://yourocrm.preview.emergentagent.com/pricing?cancelled=true",
+            "success_url": "https://vat-smart-crm.preview.emergentagent.com/pricing?success=true",
+            "cancel_url": "https://vat-smart-crm.preview.emergentagent.com/pricing?cancelled=true",
             "metadata": {
                 "test_payment": "true",
                 "user_email": "test@example.com"
@@ -1479,8 +1479,8 @@ class CRMBackendTester:
         # Test invalid package ID
         invalid_checkout_data = {
             "package_id": "invalid_package",
-            "success_url": "https://yourocrm.preview.emergentagent.com/pricing?success=true",
-            "cancel_url": "https://yourocrm.preview.emergentagent.com/pricing?cancelled=true"
+            "success_url": "https://vat-smart-crm.preview.emergentagent.com/pricing?success=true",
+            "cancel_url": "https://vat-smart-crm.preview.emergentagent.com/pricing?cancelled=true"
         }
         
         success, response = self.make_request("POST", "/payments/checkout/session", data=invalid_checkout_data)
@@ -1540,8 +1540,8 @@ class CRMBackendTester:
         for package in valid_packages:
             test_checkout = {
                 "package_id": package,
-                "success_url": "https://yourocrm.preview.emergentagent.com/pricing?success=true",
-                "cancel_url": "https://yourocrm.preview.emergentagent.com/pricing?cancelled=true"
+                "success_url": "https://vat-smart-crm.preview.emergentagent.com/pricing?success=true",
+                "cancel_url": "https://vat-smart-crm.preview.emergentagent.com/pricing?cancelled=true"
             }
             success, response = self.make_request("POST", "/payments/checkout/session", data=test_checkout)
             if success and response.status_code == 200:
@@ -1559,8 +1559,8 @@ class CRMBackendTester:
         # Test CREATE PayPal order for premium package
         paypal_order_data = {
             "package_id": "premium",
-            "return_url": "https://yourocrm.preview.emergentagent.com/pricing?paypal_success=true",
-            "cancel_url": "https://yourocrm.preview.emergentagent.com/pricing?paypal_cancelled=true",
+            "return_url": "https://vat-smart-crm.preview.emergentagent.com/pricing?paypal_success=true",
+            "cancel_url": "https://vat-smart-crm.preview.emergentagent.com/pricing?paypal_cancelled=true",
             "metadata": {
                 "test_payment": "true",
                 "payment_method": "paypal",
@@ -1617,8 +1617,8 @@ class CRMBackendTester:
         # Test invalid package ID for PayPal
         invalid_paypal_data = {
             "package_id": "invalid_package",
-            "return_url": "https://yourocrm.preview.emergentagent.com/pricing?paypal_success=true",
-            "cancel_url": "https://yourocrm.preview.emergentagent.com/pricing?paypal_cancelled=true"
+            "return_url": "https://vat-smart-crm.preview.emergentagent.com/pricing?paypal_success=true",
+            "cancel_url": "https://vat-smart-crm.preview.emergentagent.com/pricing?paypal_cancelled=true"
         }
         
         success, response = self.make_request("POST", "/payments/paypal/create-order", data=invalid_paypal_data)
@@ -1710,8 +1710,8 @@ class CRMBackendTester:
         for package in valid_packages:
             test_paypal_order = {
                 "package_id": package,
-                "return_url": "https://yourocrm.preview.emergentagent.com/pricing?paypal_success=true",
-                "cancel_url": "https://yourocrm.preview.emergentagent.com/pricing?paypal_cancelled=true"
+                "return_url": "https://vat-smart-crm.preview.emergentagent.com/pricing?paypal_success=true",
+                "cancel_url": "https://vat-smart-crm.preview.emergentagent.com/pricing?paypal_cancelled=true"
             }
             success, response = self.make_request("POST", "/payments/paypal/create-order", data=test_paypal_order)
             if success and response.status_code == 200:
