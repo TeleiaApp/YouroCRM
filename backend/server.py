@@ -1124,13 +1124,25 @@ async def get_paypal_order_status(order_id: str, current_user: User = Depends(ge
             raise HTTPException(status_code=404, detail="Payment transaction not found")
         
         # Get status from PayPal
-        orders_controller = OrdersController(paypal_client)
-        response = await orders_controller.orders_get_async(id=order_id)
+        access_token = await get_paypal_access_token()
+        if not access_token:
+            raise HTTPException(status_code=500, detail="Failed to authenticate with PayPal")
+        
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Accept": "application/json"
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{PAYPAL_API_BASE}/v2/checkout/orders/{order_id}",
+                headers=headers
+            )
         
         if response.status_code == 200:
-            order_data = response.body
+            order_data = response.json()
             
-            payment_status = "paid" if order_data.status == "COMPLETED" else "pending"
+            payment_status = "paid" if order_data["status"] == "COMPLETED" else "pending"
             
             # Update our database if status changed
             if payment_status != payment_transaction["payment_status"]:
@@ -1145,13 +1157,14 @@ async def get_paypal_order_status(order_id: str, current_user: User = Depends(ge
                 )
             
             return {
-                "order_id": order_data.id,
-                "status": order_data.status,
+                "order_id": order_data["id"],
+                "status": order_data["status"],
                 "payment_status": payment_status,
                 "amount": payment_transaction["amount"],
                 "currency": payment_transaction["currency"]
             }
         else:
+            logger.error(f"PayPal status check failed: {response.status_code} - {response.text}")
             raise HTTPException(status_code=500, detail="Failed to get PayPal order status")
     
     except Exception as e:
