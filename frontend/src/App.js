@@ -3019,7 +3019,7 @@ const RegisterPage = () => {
     setLoading(true);
     
     try {
-      const response = await axios.post('/api/auth/register', registerForm);
+      const response = await axios.post(`${API}/auth/register`, registerForm);
       alert('Account created successfully! You can now sign in.');
       navigate('/');
     } catch (error) {
