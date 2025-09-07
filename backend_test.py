@@ -470,14 +470,19 @@ class CRMBackendTester:
             self.log_result("accounts", "GET /accounts/{id} - Get account", False,
                           f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
 
-        # Test UPDATE account
+        # Test UPDATE account with separated address fields
         update_data = {
             "name": "Belgian Tech Corporation",
             "industry": "Information Technology",
             "website": "https://belgiantech.be",
             "annual_revenue": 3000000.0,
             "employee_count": 65,
-            "address": "Avenue Louise 250, 1050 Brussels, Belgium",
+            "street": "Avenue Louise",
+            "street_nr": "250",
+            "box": "15",
+            "postal_code": "1050",
+            "city": "Brussels",
+            "country": "Belgium",
             "vat_number": "BE0123456789",
             "notes": "Expanded operations - now 65 employees"
         }
