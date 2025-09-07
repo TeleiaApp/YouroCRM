@@ -423,17 +423,22 @@ class CRMBackendTester:
         # Test DELETE contact (will be done in cleanup)
 
     def test_accounts_crud(self):
-        """Test Account CRUD operations"""
+        """Test Account CRUD operations with separated address fields"""
         print("\n🏢 Testing Account Management...")
         
-        # Test CREATE account
+        # Test CREATE account with new separated address fields
         account_data = {
             "name": "Belgian Tech Corp",
             "industry": "Technology",
             "website": "https://belgiantech.be",
             "annual_revenue": 2500000.0,
             "employee_count": 50,
-            "address": "Avenue Louise 250, 1050 Brussels, Belgium",
+            "street": "Avenue Louise",
+            "street_nr": "250",
+            "box": "12",
+            "postal_code": "1050",
+            "city": "Brussels",
+            "country": "Belgium",
             "vat_number": "BE0123456789",
             "notes": "Major client in Brussels area"
         }
