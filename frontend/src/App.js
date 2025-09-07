@@ -3509,8 +3509,8 @@ const RegisterPage = () => {
     
     try {
       const response = await axios.post(`${API}/auth/register`, registerForm);
-      alert('Account created successfully! You can now sign in.');
-      navigate('/');
+      alert('Compte créé avec succès ! Choisissez maintenant votre plan.');
+      navigate('/plans');
     } catch (error) {
       console.error('Registration error:', error);
       alert(error.response?.data?.detail || 'Registration failed. Please try again.');
