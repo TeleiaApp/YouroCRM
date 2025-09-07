@@ -522,6 +522,15 @@ async def get_user_plan(current_user: User = Depends(get_current_user)):
 # Contact routes
 @api_router.post("/contacts", response_model=Contact)
 async def create_contact(contact_data: ContactCreate, current_user: User = Depends(get_current_user)):
+    # Check plan limits
+    current_contacts = await db.contacts.count_documents({"user_id": current_user.id})
+    if not check_plan_limits(current_user, "contacts", current_contacts):
+        plan = get_user_plan(current_user)
+        raise HTTPException(
+            status_code=403, 
+            detail=f"Plan limit reached. {plan.name} plan allows maximum {plan.limits['contacts_max']} contacts. Upgrade to Professional for unlimited contacts."
+        )
+    
     contact_dict = contact_data.dict()
     contact_dict["user_id"] = current_user.id
     contact = Contact(**contact_dict)
