@@ -43,6 +43,9 @@ class User(BaseModel):
     email: EmailStr
     name: str
     picture: Optional[str] = None
+    password_hash: Optional[str] = None  # For traditional auth
+    auth_type: str = "google"  # "google" or "traditional"
+    is_active: bool = True
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class Session(BaseModel):
