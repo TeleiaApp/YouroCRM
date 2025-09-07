@@ -18,6 +18,12 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.units import inch
 from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
+from paypalserversdk.paypalserversdk_client import PaypalserversdkClient
+from paypalserversdk.models.order_request import OrderRequest
+from paypalserversdk.models.purchase_unit_request import PurchaseUnitRequest
+from paypalserversdk.models.amount_with_breakdown import AmountWithBreakdown
+from paypalserversdk.http.auth.o_auth_2 import OAuth2
+from paypalserversdk.controllers.orders_controller import OrdersController
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
