@@ -961,46 +961,59 @@ async def create_paypal_order(request: Request, order_req: PayPalOrderRequest, c
     package = PAYMENT_PACKAGES[order_req.package_id]
     
     try:
-        # Create PayPal order
-        orders_controller = OrdersController(paypal_client)
+        # Get PayPal access token
+        access_token = await get_paypal_access_token()
+        if not access_token:
+            raise HTTPException(status_code=500, detail="Failed to authenticate with PayPal")
         
-        order_request = OrderRequest(
-            intent="CAPTURE",
-            purchase_units=[
-                PurchaseUnitRequest(
-                    reference_id=f"yourocrm_{current_user.id}_{order_req.package_id}",
-                    amount=AmountWithBreakdown(
-                        currency_code="EUR",
-                        value=str(package["amount"])
-                    ),
-                    description=package["description"]
-                )
-            ],
-            application_context={
+        # Create PayPal order
+        order_data = {
+            "intent": "CAPTURE",
+            "purchase_units": [{
+                "reference_id": f"yourocrm_{current_user.id}_{order_req.package_id}",
+                "amount": {
+                    "currency_code": "EUR",
+                    "value": str(package["amount"])
+                },
+                "description": package["description"]
+            }],
+            "application_context": {
                 "return_url": order_req.return_url,
                 "cancel_url": order_req.cancel_url,
                 "brand_name": "YouroCRM",
                 "landing_page": "BILLING",
                 "user_action": "PAY_NOW"
             }
-        )
+        }
         
-        response = await orders_controller.orders_create_async(body=order_request)
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {access_token}",
+            "Accept": "application/json",
+            "Prefer": "return=representation"
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{PAYPAL_API_BASE}/v2/checkout/orders",
+                headers=headers,
+                json=order_data
+            )
         
         if response.status_code == 201:
-            order_data = response.body
+            order_response = response.json()
             
             # Create payment transaction record
             payment_transaction = PaymentTransaction(
                 user_id=current_user.id,
-                session_id=order_data.id,
+                session_id=order_response["id"],
                 amount=package["amount"],
                 currency=package["currency"],
                 package_id=order_req.package_id,
                 payment_status="pending",
                 metadata={
                     "payment_method": "paypal",
-                    "paypal_order_id": order_data.id,
+                    "paypal_order_id": order_response["id"],
                     **(order_req.metadata or {})
                 }
             )
@@ -1009,17 +1022,18 @@ async def create_paypal_order(request: Request, order_req: PayPalOrderRequest, c
             
             # Find approval URL
             approval_url = None
-            for link in order_data.links:
-                if link.rel == "approve":
-                    approval_url = link.href
+            for link in order_response.get("links", []):
+                if link.get("rel") == "approve":
+                    approval_url = link.get("href")
                     break
             
             return {
-                "order_id": order_data.id,
+                "order_id": order_response["id"],
                 "approval_url": approval_url,
-                "status": order_data.status
+                "status": order_response["status"]
             }
         else:
+            logger.error(f"PayPal order creation failed: {response.status_code} - {response.text}")
             raise HTTPException(status_code=500, detail="Failed to create PayPal order")
     
     except Exception as e:
