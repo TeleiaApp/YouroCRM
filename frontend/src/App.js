@@ -172,6 +172,15 @@ const LoginPage = () => {
         </div>
 
         <div className="mt-8 pt-6 border-t border-gray-200">
+          <div className="text-center mb-6">
+            <Link 
+              to="/pricing" 
+              className="inline-flex items-center px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors text-lg"
+            >
+              💰 View Pricing & Features
+            </Link>
+          </div>
+          
           <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
             <div className="space-y-2">
               <h3 className="font-semibold text-gray-900">CRM Features</h3>
