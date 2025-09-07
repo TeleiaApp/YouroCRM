@@ -43,6 +43,8 @@ class CRMBackendTester:
         }
         self.admin_user_id = None
         self.test_user_id = None
+        self.traditional_user_session = None
+        self.traditional_user_id = None
 
     def log_result(self, category, test_name, success, error_msg=None):
         """Log test result"""
