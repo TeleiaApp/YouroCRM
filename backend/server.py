@@ -747,6 +747,23 @@ stripe_api_key = os.environ.get('STRIPE_API_KEY')
 if not stripe_api_key:
     logger.warning("STRIPE_API_KEY not found in environment variables")
 
+# PayPal configuration
+paypal_client_id = os.environ.get('PAYPAL_CLIENT_ID')
+paypal_client_secret = os.environ.get('PAYPAL_CLIENT_SECRET')
+paypal_environment = os.environ.get('PAYPAL_ENVIRONMENT', 'sandbox')
+
+if not paypal_client_id or not paypal_client_secret:
+    logger.warning("PayPal credentials not found in environment variables")
+else:
+    # Initialize PayPal client
+    paypal_client = PaypalserversdkClient(
+        client_credentials_config=OAuth2(
+            o_auth_client_id=paypal_client_id,
+            o_auth_client_secret=paypal_client_secret
+        ),
+        environment='sandbox' if paypal_environment == 'sandbox' else 'production'
+    )
+
 # Payment routes
 @api_router.post("/payments/checkout/session")
 async def create_checkout_session(request: Request, checkout_req: CheckoutRequest, current_user: User = Depends(get_current_user)):
