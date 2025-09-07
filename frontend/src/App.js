@@ -2907,10 +2907,15 @@ const PricingPage = () => {
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const sessionId = urlParams.get('session_id');
+    const paypalSuccess = urlParams.get('paypal_success');
+    const paypalOrderId = urlParams.get('token'); // PayPal returns token parameter
     
     if (sessionId) {
       setCheckingPayment(true);
       pollPaymentStatus(sessionId);
+    } else if (paypalSuccess && paypalOrderId) {
+      setCheckingPayment(true);
+      handlePayPalReturn(paypalOrderId);
     }
   }, [location]);
 
