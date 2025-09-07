@@ -285,6 +285,21 @@ backend:
           agent: "testing"
           comment: "Traditional authentication system working perfectly! Tested: ✅ POST /api/auth/register (user registration with email/password, bcrypt hashing, duplicate email validation), ✅ POST /api/auth/login (secure login with credential validation, session management, auth_type verification), ✅ Password security (bcrypt hashing, no plain text storage, secure API responses), ✅ Session management for traditional users, ✅ User validation and comprehensive error handling, ✅ Enhanced admin APIs (POST /api/admin/users, PUT /api/admin/users/{user_id}/status), ✅ Extended user model (auth_type, password_hash, is_active fields), ✅ Backward compatibility with Google OAuth users, ✅ Integration testing (traditional users can access all CRM features), ✅ Security requirements (proper access control, admin role enforcement). Fixed critical security issue: removed password_hash from login response. All 10 traditional auth tests passed. Dual authentication system is production-ready with no regression in existing functionality."
 
+  - task: "Subscription Plans System with Plan Limits and User Plan Management"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented comprehensive freemium subscription plans system with 3 tiers (Starter, Professional, Enterprise). Added GET /api/plans, POST /api/users/select-plan, GET /api/users/plan endpoints. Integrated plan-based resource limitations for contacts (5 max for Starter) and accounts (2 max for Starter). Added VIES integration access control (Professional+ only). Enhanced User model with current_plan field and UserSubscription tracking. Implemented plan limits checking functions and feature access control throughout CRUD operations."
+        - working: true
+          agent: "testing"
+          comment: "SUBSCRIPTION PLANS SYSTEM TESTING COMPLETED SUCCESSFULLY! ✅ PLANS API: GET /api/plans returns all 3 subscription plans (Starter, Professional, Enterprise) with correct structure, pricing, features, and limits. ✅ PLAN STRUCTURE: All plans have proper id, name, price, features, and limits fields with correct values (Starter: 5 contacts max, 2 accounts max, no VIES; Professional: unlimited contacts/accounts, VIES enabled; Enterprise: all features + custom fields + API access). ✅ USER PLAN MANAGEMENT: GET /api/users/plan returns current plan with usage statistics and limits checking, POST /api/users/select-plan successfully changes user plans with validation. ✅ RESOURCE LIMITATIONS: Starter plan properly enforces 5 contacts maximum and 2 accounts maximum with HTTP 403 responses and upgrade messaging when limits exceeded. ✅ FEATURE ACCESS CONTROL: VIES integration correctly blocked for Starter plan users (403 with upgrade message) and granted for Professional/Enterprise users. ✅ PLAN SWITCHING: Users can successfully switch between plans with immediate effect on resource limits and feature access. ✅ UNLIMITED ACCESS: Professional and Enterprise plans allow unlimited contacts and accounts creation without restrictions. ✅ ERROR MESSAGING: High-quality upgrade prompts with specific plan recommendations when limits reached. ✅ USAGE STATISTICS: Real-time contact and account counts properly calculated and returned in user plan endpoint. ✅ PLAN VALIDATION: Invalid plan selections properly rejected with appropriate error messages. All 18 subscription plans tests passed. The freemium system is production-ready with proper plan enforcement and seamless user experience."
+
 frontend:
   - task: "Google OAuth Authentication Flow"
     implemented: true
