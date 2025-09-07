@@ -1833,31 +1833,133 @@ const AccountsPage = () => {
                   </div>
                 </div>
 
+                {/* VAT Number with VIES Integration */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    VAT Number (Peppol)
+                    VAT Number (EU VIES) 🇪🇺
                   </label>
-                  <input
-                    type="text"
-                    value={accountForm.vat_number}
-                    onChange={(e) => setAccountForm({...accountForm, vat_number: e.target.value})}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="BE0123456789"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Required for Peppol invoicing</p>
+                  <div className="flex space-x-2">
+                    <input
+                      type="text"
+                      value={accountForm.vat_number}
+                      onChange={(e) => setAccountForm({...accountForm, vat_number: e.target.value.toUpperCase()})}
+                      className="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="BE0123456789, FR12345678901, DE123456789..."
+                    />
+                    <button
+                      type="button"
+                      onClick={handleVATLookup}
+                      disabled={viesLoading || !accountForm.vat_number}
+                      className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                    >
+                      {viesLoading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          <span>Checking...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>🔍</span>
+                          <span>VIES Lookup</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  
+                  {/* VIES Status Messages */}
+                  {viesError && (
+                    <p className="text-xs text-red-600 mt-1">{viesError}</p>
+                  )}
+                  {viesSuccess && (
+                    <p className="text-xs text-green-600 mt-1">{viesSuccess}</p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">
+                    Enter EU VAT number and click VIES Lookup to auto-fill company details
+                  </p>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Address
-                  </label>
-                  <input
-                    type="text"
-                    value={accountForm.address}
-                    onChange={(e) => setAccountForm({...accountForm, address: e.target.value})}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Street, City, Country"
-                  />
+                {/* Detailed Address Section */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">📍 Company Address</h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Street
+                      </label>
+                      <input
+                        type="text"
+                        value={accountForm.street}
+                        onChange={(e) => setAccountForm({...accountForm, street: e.target.value})}
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Rue de la Loi"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Street Nr
+                      </label>
+                      <input
+                        type="text"
+                        value={accountForm.street_nr}
+                        onChange={(e) => setAccountForm({...accountForm, street_nr: e.target.value})}
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="16"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Box (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={accountForm.box}
+                        onChange={(e) => setAccountForm({...accountForm, box: e.target.value})}
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="12"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Postal Code
+                      </label>
+                      <input
+                        type="text"
+                        value={accountForm.postal_code}
+                        onChange={(e) => setAccountForm({...accountForm, postal_code: e.target.value})}
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="1000"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        City
+                      </label>
+                      <input
+                        type="text"
+                        value={accountForm.city}
+                        onChange={(e) => setAccountForm({...accountForm, city: e.target.value})}
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Brussels"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Country
+                    </label>
+                    <input
+                      type="text"
+                      value={accountForm.country}
+                      onChange={(e) => setAccountForm({...accountForm, country: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Belgium"
+                    />
+                  </div>
                 </div>
 
                 <div>
