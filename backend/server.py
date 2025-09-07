@@ -348,6 +348,72 @@ async def get_me(current_user: User = Depends(get_current_user)):
     """Get current user"""
     return current_user
 
+# Traditional Authentication Routes
+@api_router.post("/auth/register")
+async def register_user(user_data: UserRegister):
+    """Register a new user with email and password"""
+    # Check if user already exists
+    existing_user = await db.users.find_one({"email": user_data.email})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="User with this email already exists")
+    
+    # Create new user
+    user = User(
+        email=user_data.email,
+        name=user_data.name,
+        password_hash=hash_password(user_data.password),
+        auth_type="traditional"
+    )
+    
+    await db.users.insert_one(user.dict())
+    
+    return {"message": "User registered successfully", "user_id": user.id}
+
+@api_router.post("/auth/login")
+async def login_user(response: Response, login_data: UserLogin):
+    """Login user with email and password"""
+    # Find user
+    user_doc = await db.users.find_one({"email": login_data.email})
+    if not user_doc:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    user = User(**user_doc)
+    
+    # Check if user is active
+    if not user.is_active:
+        raise HTTPException(status_code=401, detail="Account is disabled")
+    
+    # Verify password for traditional auth users
+    if user.auth_type == "traditional":
+        if not user.password_hash or not verify_password(login_data.password, user.password_hash):
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+    else:
+        raise HTTPException(status_code=401, detail="This account uses Google authentication")
+    
+    # Create session
+    session_token = generate_session_token()
+    expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+    
+    session = Session(
+        user_id=user.id,
+        session_token=session_token,
+        expires_at=expires_at
+    )
+    await db.sessions.insert_one(session.dict())
+    
+    # Set session cookie
+    response.set_cookie(
+        key="session_token",
+        value=session_token,
+        max_age=7 * 24 * 60 * 60,  # 7 days
+        httponly=True,
+        secure=True,
+        samesite="none",
+        path="/"
+    )
+    
+    return {"message": "Login successful", "user": user.dict(), "session_token": session_token}
+
 # Contact routes
 @api_router.post("/contacts", response_model=Contact)
 async def create_contact(contact_data: ContactCreate, current_user: User = Depends(get_current_user)):
