@@ -412,7 +412,11 @@ async def login_user(response: Response, login_data: UserLogin):
         path="/"
     )
     
-    return {"message": "Login successful", "user": user.dict(), "session_token": session_token}
+    # Return user data without sensitive fields
+    user_data = user.dict()
+    user_data.pop("password_hash", None)  # Remove password_hash for security
+    
+    return {"message": "Login successful", "user": user_data, "session_token": session_token}
 
 # Contact routes
 @api_router.post("/contacts", response_model=Contact)
