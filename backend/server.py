@@ -210,6 +210,22 @@ class PayPalOrderRequest(BaseModel):
     cancel_url: str
     metadata: Optional[dict] = None
 
+# Traditional Authentication Models
+class UserRegister(BaseModel):
+    name: str
+    email: EmailStr
+    password: str
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class UserCreate(BaseModel):
+    name: str
+    email: EmailStr
+    password: str
+    roles: Optional[List[str]] = []
+
 # User Roles and Admin Models
 class UserRole(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
