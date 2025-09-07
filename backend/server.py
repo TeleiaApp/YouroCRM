@@ -77,8 +77,14 @@ class Account(BaseModel):
     website: Optional[str] = None
     annual_revenue: Optional[float] = None
     employee_count: Optional[int] = None
-    address: Optional[str] = None
-    vat_number: Optional[str] = None  # Important for Peppol
+    # Separated address fields for VIES integration
+    street: Optional[str] = None
+    street_nr: Optional[str] = None
+    box: Optional[str] = None
+    postal_code: Optional[str] = None
+    city: Optional[str] = None
+    country: Optional[str] = None
+    vat_number: Optional[str] = None  # Important for Peppol and VIES
     notes: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
