@@ -2992,7 +2992,7 @@ const PricingPage = () => {
       
       const response = await axios.post(`${API}/payments/paypal/create-order`, {
         package_id: 'premium',
-        return_url: `${currentUrl}?paypal_success=true&order_id=`,
+        return_url: `${currentUrl}?paypal_success=true`,
         cancel_url: `${currentUrl}?paypal_cancelled=true`,
         metadata: {
           source: 'pricing_page',
@@ -3011,6 +3011,26 @@ const PricingPage = () => {
       alert('Error initiating PayPal payment. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePayPalReturn = async (orderId) => {
+    try {
+      // Capture the PayPal payment
+      const response = await axios.post(`${API}/payments/paypal/capture-order/${orderId}`, {}, { withCredentials: true });
+      
+      if (response.data.payment_status === 'paid') {
+        setCheckingPayment(false);
+        alert('PayPal payment successful! Welcome to YouroCRM Premium! 🎉');
+        navigate('/dashboard');
+      } else {
+        setCheckingPayment(false);
+        alert('Payment processing failed. Please contact support.');
+      }
+    } catch (error) {
+      console.error('Error processing PayPal return:', error);
+      setCheckingPayment(false);
+      alert('Error processing PayPal payment. Please contact support.');
     }
   };
 
