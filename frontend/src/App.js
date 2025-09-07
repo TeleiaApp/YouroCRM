@@ -4355,6 +4355,13 @@ function App() {
                 </Layout>
               </ProtectedRoute>
             } />
+            <Route path="/admin" element={
+              <ProtectedRoute>
+                <Layout>
+                  <AdminPanel />
+                </Layout>
+              </ProtectedRoute>
+            } />
             <Route path="/pricing" element={<PricingPage />} />
           </Routes>
         </AuthProvider>
