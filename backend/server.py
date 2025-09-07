@@ -1294,6 +1294,385 @@ def has_feature_access(user: User, feature: str) -> bool:
     plan = get_user_plan(user)
     return plan.limits.get(feature, False)
 
+# Internationalization Configuration
+TRANSLATIONS = {
+    "en": {
+        # Navigation & Common
+        "app_name": "YouroCRM",
+        "dashboard": "Dashboard",
+        "contacts": "Contacts",
+        "accounts": "Accounts",
+        "products": "Products",
+        "invoices": "Invoices",
+        "calendar": "Calendar",
+        "admin": "Admin",
+        "pricing": "Pricing",
+        "logout": "Logout",
+        "login": "Login",
+        "register": "Register",
+        "back_to_home": "Back to home",
+        
+        # Homepage
+        "hero_title": "The European CRM with VIES Integration",
+        "hero_subtitle": "Manage your European clients with VIES company data auto-completion, Peppol compliant invoicing, and much more. Designed for European SMBs.",
+        "start_free": "🚀 Start for free",
+        "view_pricing": "📋 View pricing",
+        "why_choose_title": "Why choose YouroCRM?",
+        "why_choose_subtitle": "The only CRM with native VIES integration for Europe",
+        
+        # Features
+        "feature_vies_title": "VIES Integration",
+        "feature_vies_desc": "Real-time auto-completion of European company data via VAT number",
+        "feature_peppol_title": "Peppol Invoicing",
+        "feature_peppol_desc": "Electronic invoicing compliant with European and Belgian standards",
+        "feature_management_title": "Complete Management",
+        "feature_management_desc": "Contacts, accounts, products, invoices and calendar in one platform",
+        "feature_security_title": "European Security",
+        "feature_security_desc": "GDPR compliance, secure authentication and European hosting",
+        "feature_payments_title": "Flexible Payments",
+        "feature_payments_desc": "Integrated Stripe and PayPal to facilitate your client transactions",
+        "feature_multiplatform_title": "Multi-platform",
+        "feature_multiplatform_desc": "Responsive interface accessible on desktop, tablet and mobile",
+        
+        # Plans
+        "pricing_title": "Simple and Transparent Pricing",
+        "pricing_subtitle": "Start free, scale as you grow",
+        "starter_plan": "🆓 Starter",
+        "professional_plan": "💎 Professional",
+        "enterprise_plan": "🏆 Enterprise",
+        "most_popular": "⭐ Most popular",
+        "per_month": "/month",
+        "free": "Free",
+        "choose_plan": "Choose",
+        "start_free_btn": "Start free",
+        
+        # Plan Features
+        "contacts_max": "contacts maximum",
+        "accounts_max": "accounts maximum",
+        "basic_invoicing": "Basic invoicing",
+        "email_support": "Email support",
+        "unlimited_contacts_accounts": "Unlimited contacts/accounts",
+        "vies_integration_complete": "Complete VIES integration",
+        "peppol_invoicing": "Peppol invoicing",
+        "advanced_calendar": "Advanced calendar",
+        "pdf_export": "PDF export",
+        "priority_support": "Priority support",
+        "multi_user": "Multi-user (+5€/user)",
+        "everything_professional": "Everything Professional",
+        "custom_fields": "Custom fields",
+        "api_access": "API Access",
+        "white_label": "White-label",
+        "dedicated_support": "Dedicated support",
+        "training_included": "Training included",
+        
+        # Authentication
+        "continue_with_google": "Continue with Google",
+        "sign_in_with_email": "Sign in with Email",
+        "create_account_here": "Don't have an account? Create one here",
+        "email_address": "Email Address",
+        "password": "Password",
+        "sign_in": "Sign In",
+        "signing_in": "Signing in...",
+        "back_to_login_options": "Back to login options",
+        "create_your_account": "Create Your Account",
+        "full_name": "Full Name",
+        "create_account": "Create Account",
+        "creating_account": "Creating Account...",
+        "already_have_account": "Already have an account? Sign in here",
+        "minimum_6_characters": "Minimum 6 characters",
+        
+        # Plan Selection
+        "choose_your_plan": "Choose your YouroCRM plan",
+        "start_free_scale": "Start free and scale as you grow",
+        "start_free_now": "Start free now",
+        "secure_payment": "🔒 Secure payment via Stripe and PayPal",
+        "no_commitment": "✅ No commitment",
+        "support_included": "📞 Customer support included",
+        "gdpr_compliant": "All plans include GDPR compliance and secure European hosting",
+        
+        # Messages
+        "account_created_success": "Account created successfully! Now choose your plan.",
+        "ready_to_transform": "Ready to transform your client management?",
+        "join_european_companies": "Join European companies that trust YouroCRM",
+        "start_now_free": "🚀 Start now - It's free!",
+        
+        # Limits & Upgrades
+        "plan_limit_reached": "plan limit reached",
+        "upgrade_to_professional": "Upgrade to Professional",
+        "unlimited_contacts": "for unlimited contacts",
+        "unlimited_accounts": "for unlimited accounts",
+        "vies_not_available": "VIES integration not available in",
+        "upgrade_for_vies": "Upgrade to Professional to access EU company data auto-completion",
+        
+        # Footer
+        "european_crm_tagline": "The European CRM with VIES integration for modern SMBs.",
+        "product": "Product",
+        "features": "Features",
+        "integrations": "Integrations",
+        "support": "Support",
+        "documentation": "Documentation",
+        "help_center": "Help Center",
+        "contact": "Contact",
+        "legal": "Legal",
+        "privacy": "Privacy",
+        "terms": "Terms",
+        "gdpr": "GDPR",
+        "all_rights_reserved": "All rights reserved. Designed for Europe 🇪🇺"
+    },
+    
+    "fr": {
+        # Navigation & Common
+        "app_name": "YouroCRM",
+        "dashboard": "Tableau de bord",
+        "contacts": "Contacts",
+        "accounts": "Comptes",
+        "products": "Produits",
+        "invoices": "Factures",
+        "calendar": "Calendrier",
+        "admin": "Admin",
+        "pricing": "Tarifs",
+        "logout": "Déconnexion",
+        "login": "Connexion",
+        "register": "S'inscrire",
+        "back_to_home": "Retour à l'accueil",
+        
+        # Homepage
+        "hero_title": "Le CRM Européen avec Intégration VIES",
+        "hero_subtitle": "Gérez vos clients européens avec l'auto-complétion des données d'entreprise VIES, la facturation Peppol conforme, et bien plus encore. Conçu pour les PME européennes.",
+        "start_free": "🚀 Commencer gratuitement",
+        "view_pricing": "📋 Voir les tarifs",
+        "why_choose_title": "Pourquoi choisir YouroCRM ?",
+        "why_choose_subtitle": "Le seul CRM avec intégration VIES native pour l'Europe",
+        
+        # Features
+        "feature_vies_title": "Intégration VIES",
+        "feature_vies_desc": "Auto-complétion des données d'entreprise européennes en temps réel via le numéro de TVA",
+        "feature_peppol_title": "Facturation Peppol",
+        "feature_peppol_desc": "Facturation électronique conforme aux normes européennes et belges",
+        "feature_management_title": "Gestion Complète",
+        "feature_management_desc": "Contacts, comptes, produits, factures et calendrier en une seule plateforme",
+        "feature_security_title": "Sécurité Européenne",
+        "feature_security_desc": "Conformité RGPD, authentification sécurisée et hébergement européen",
+        "feature_payments_title": "Paiements Flexibles",
+        "feature_payments_desc": "Stripe et PayPal intégrés pour faciliter vos transactions clients",
+        "feature_multiplatform_title": "Multi-plateforme",
+        "feature_multiplatform_desc": "Interface responsive accessible sur desktop, tablette et mobile",
+        
+        # Plans
+        "pricing_title": "Tarifs Simples et Transparents",
+        "pricing_subtitle": "Commencez gratuitement, évoluez selon vos besoins",
+        "starter_plan": "🆓 Starter",
+        "professional_plan": "💎 Professional",
+        "enterprise_plan": "🏆 Enterprise",
+        "most_popular": "⭐ Plus populaire",
+        "per_month": "/mois",
+        "free": "Gratuit",
+        "choose_plan": "Choisir",
+        "start_free_btn": "Commencer",
+        
+        # Plan Features
+        "contacts_max": "contacts maximum",
+        "accounts_max": "comptes maximum",
+        "basic_invoicing": "Facturation basique",
+        "email_support": "Support email",
+        "unlimited_contacts_accounts": "Contacts/comptes illimités",
+        "vies_integration_complete": "Intégration VIES complète",
+        "peppol_invoicing": "Facturation Peppol",
+        "advanced_calendar": "Calendrier avancé",
+        "pdf_export": "Export PDF",
+        "priority_support": "Support prioritaire",
+        "multi_user": "Multi-utilisateur (+5€/utilisateur)",
+        "everything_professional": "Tout Professional",
+        "custom_fields": "Champs personnalisés",
+        "api_access": "Accès API",
+        "white_label": "White-label",
+        "dedicated_support": "Support dédié",
+        "training_included": "Formation incluse",
+        
+        # Authentication
+        "continue_with_google": "Continuer avec Google",
+        "sign_in_with_email": "Se connecter par Email",
+        "create_account_here": "Pas de compte ? Créez-en un ici",
+        "email_address": "Adresse Email",
+        "password": "Mot de passe",
+        "sign_in": "Se connecter",
+        "signing_in": "Connexion...",
+        "back_to_login_options": "Retour aux options de connexion",
+        "create_your_account": "Créer votre compte",
+        "full_name": "Nom complet",
+        "create_account": "Créer le compte",
+        "creating_account": "Création du compte...",
+        "already_have_account": "Déjà un compte ? Connectez-vous ici",
+        "minimum_6_characters": "Minimum 6 caractères",
+        
+        # Plan Selection
+        "choose_your_plan": "Choisissez votre plan YouroCRM",
+        "start_free_scale": "Commencez gratuitement et évoluez selon vos besoins",
+        "start_free_now": "Commencer gratuitement",
+        "secure_payment": "🔒 Paiement sécurisé via Stripe et PayPal",
+        "no_commitment": "✅ Aucun engagement",
+        "support_included": "📞 Support client inclus",
+        "gdpr_compliant": "Tous les plans incluent la conformité RGPD et l'hébergement européen sécurisé",
+        
+        # Messages
+        "account_created_success": "Compte créé avec succès ! Choisissez maintenant votre plan.",
+        "ready_to_transform": "Prêt à transformer votre gestion client ?",
+        "join_european_companies": "Rejoignez les entreprises européennes qui font confiance à YouroCRM",
+        "start_now_free": "🚀 Démarrer maintenant - C'est gratuit !",
+        
+        # Limits & Upgrades
+        "plan_limit_reached": "limite du plan atteinte",
+        "upgrade_to_professional": "Passez au plan Professional",
+        "unlimited_contacts": "pour des contacts illimités",
+        "unlimited_accounts": "pour des comptes illimités",
+        "vies_not_available": "Intégration VIES non disponible dans le plan",
+        "upgrade_for_vies": "Passez au plan Professional pour accéder à l'auto-complétion des données d'entreprise EU",
+        
+        # Footer
+        "european_crm_tagline": "Le CRM européen avec intégration VIES pour les PME modernes.",
+        "product": "Produit",
+        "features": "Fonctionnalités", 
+        "integrations": "Intégrations",
+        "support": "Support",
+        "documentation": "Documentation",
+        "help_center": "Centre d'aide",
+        "contact": "Contact",
+        "legal": "Légal",
+        "privacy": "Confidentialité",
+        "terms": "Conditions",
+        "gdpr": "RGPD",
+        "all_rights_reserved": "Tous droits réservés. Conçu pour l'Europe 🇪🇺"
+    },
+    
+    "nl": {
+        # Navigation & Common
+        "app_name": "YouroCRM",
+        "dashboard": "Dashboard",
+        "contacts": "Contacten",
+        "accounts": "Accounts",
+        "products": "Producten",
+        "invoices": "Facturen",
+        "calendar": "Kalender",
+        "admin": "Admin",
+        "pricing": "Prijzen",
+        "logout": "Uitloggen",
+        "login": "Inloggen",
+        "register": "Registreren",
+        "back_to_home": "Terug naar home",
+        
+        # Homepage
+        "hero_title": "De Europese CRM met VIES Integratie",
+        "hero_subtitle": "Beheer uw Europese klanten met VIES bedrijfsgegevens auto-aanvulling, Peppol conforme facturering, en veel meer. Ontworpen voor Europese KMO's.",
+        "start_free": "🚀 Gratis beginnen",
+        "view_pricing": "📋 Prijzen bekijken",
+        "why_choose_title": "Waarom kiezen voor YouroCRM?",
+        "why_choose_subtitle": "De enige CRM met native VIES integratie voor Europa",
+        
+        # Features
+        "feature_vies_title": "VIES Integratie",
+        "feature_vies_desc": "Real-time auto-aanvulling van Europese bedrijfsgegevens via BTW-nummer",
+        "feature_peppol_title": "Peppol Facturering",
+        "feature_peppol_desc": "Elektronische facturering conform Europese en Belgische normen",
+        "feature_management_title": "Volledig Beheer",
+        "feature_management_desc": "Contacten, accounts, producten, facturen en kalender in één platform",
+        "feature_security_title": "Europese Beveiliging",
+        "feature_security_desc": "AVG naleving, veilige authenticatie en Europese hosting",
+        "feature_payments_title": "Flexibele Betalingen",
+        "feature_payments_desc": "Geïntegreerde Stripe en PayPal om uw klanttransacties te vergemakkelijken",
+        "feature_multiplatform_title": "Multi-platform",
+        "feature_multiplatform_desc": "Responsieve interface toegankelijk op desktop, tablet en mobiel",
+        
+        # Plans
+        "pricing_title": "Eenvoudige en Transparante Prijzen",
+        "pricing_subtitle": "Begin gratis, schaal naar behoefte",
+        "starter_plan": "🆓 Starter",
+        "professional_plan": "💎 Professional",
+        "enterprise_plan": "🏆 Enterprise",
+        "most_popular": "⭐ Meest populair",
+        "per_month": "/maand",
+        "free": "Gratis",
+        "choose_plan": "Kiezen",
+        "start_free_btn": "Gratis starten",
+        
+        # Plan Features
+        "contacts_max": "contacten maximum",
+        "accounts_max": "accounts maximum",
+        "basic_invoicing": "Basis facturering",
+        "email_support": "Email ondersteuning",
+        "unlimited_contacts_accounts": "Onbeperkte contacten/accounts",
+        "vies_integration_complete": "Volledige VIES integratie",
+        "peppol_invoicing": "Peppol facturering",
+        "advanced_calendar": "Geavanceerde kalender",
+        "pdf_export": "PDF export",
+        "priority_support": "Prioriteit ondersteuning",
+        "multi_user": "Multi-gebruiker (+5€/gebruiker)",
+        "everything_professional": "Alles Professional",
+        "custom_fields": "Aangepaste velden",
+        "api_access": "API Toegang",
+        "white_label": "White-label",
+        "dedicated_support": "Toegewijde ondersteuning",
+        "training_included": "Training inbegrepen",
+        
+        # Authentication
+        "continue_with_google": "Doorgaan met Google",
+        "sign_in_with_email": "Inloggen met Email",
+        "create_account_here": "Geen account? Maak er hier een aan",
+        "email_address": "Email Adres",
+        "password": "Wachtwoord",
+        "sign_in": "Inloggen",
+        "signing_in": "Inloggen...",
+        "back_to_login_options": "Terug naar login opties",
+        "create_your_account": "Maak uw account aan",
+        "full_name": "Volledige naam",
+        "create_account": "Account aanmaken",
+        "creating_account": "Account aanmaken...",
+        "already_have_account": "Al een account? Log hier in",
+        "minimum_6_characters": "Minimum 6 karakters",
+        
+        # Plan Selection
+        "choose_your_plan": "Kies uw YouroCRM plan",
+        "start_free_scale": "Begin gratis en schaal naar uw behoeften",
+        "start_free_now": "Nu gratis starten",
+        "secure_payment": "🔒 Veilige betaling via Stripe en PayPal",
+        "no_commitment": "✅ Geen verplichtingen",
+        "support_included": "📞 Klantondersteuning inbegrepen",
+        "gdpr_compliant": "Alle plannen omvatten AVG naleving en veilige Europese hosting",
+        
+        # Messages
+        "account_created_success": "Account succesvol aangemaakt! Kies nu uw plan.",
+        "ready_to_transform": "Klaar om uw klantenbeheer te transformeren?",
+        "join_european_companies": "Sluit je aan bij Europese bedrijven die vertrouwen op YouroCRM",
+        "start_now_free": "🚀 Nu starten - Het is gratis!",
+        
+        # Limits & Upgrades
+        "plan_limit_reached": "plan limiet bereikt",
+        "upgrade_to_professional": "Upgrade naar Professional",
+        "unlimited_contacts": "voor onbeperkte contacten",
+        "unlimited_accounts": "voor onbeperkte accounts",
+        "vies_not_available": "VIES integratie niet beschikbaar in",
+        "upgrade_for_vies": "Upgrade naar Professional voor toegang tot EU bedrijfsgegevens auto-aanvulling",
+        
+        # Footer
+        "european_crm_tagline": "De Europese CRM met VIES integratie voor moderne KMO's.",
+        "product": "Product",
+        "features": "Functies",
+        "integrations": "Integraties",
+        "support": "Ondersteuning",
+        "documentation": "Documentatie",
+        "help_center": "Helpcentrum",
+        "contact": "Contact",
+        "legal": "Juridisch",
+        "privacy": "Privacy",
+        "terms": "Voorwaarden",
+        "gdpr": "AVG",
+        "all_rights_reserved": "Alle rechten voorbehouden. Ontworpen voor Europa 🇪🇺"
+    }
+}
+
+def get_translations(language: str = "en") -> dict:
+    """Get translations for specified language"""
+    return TRANSLATIONS.get(language, TRANSLATIONS["en"])
+
 # Payment routes
 @api_router.post("/payments/checkout/session")
 async def create_checkout_session(request: Request, checkout_req: CheckoutRequest, current_user: User = Depends(get_current_user)):
