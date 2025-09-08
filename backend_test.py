@@ -32,7 +32,8 @@ class CRMBackendTester:
             "dashboard": {"passed": 0, "failed": 0, "errors": []},
             "payments": {"passed": 0, "failed": 0, "errors": []},
             "admin": {"passed": 0, "failed": 0, "errors": []},
-            "admin_enhanced": {"passed": 0, "failed": 0, "errors": []}
+            "admin_enhanced": {"passed": 0, "failed": 0, "errors": []},
+            "greek_language": {"passed": 0, "failed": 0, "errors": []}
         }
         self.created_entities = {
             "contacts": [],
