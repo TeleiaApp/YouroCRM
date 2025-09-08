@@ -4420,9 +4420,10 @@ const AdminPanel = () => {
   const [showUserRoleModal, setShowUserRoleModal] = useState(false);
   const [showFieldModal, setShowFieldModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [showUserDetailsModal, setShowUserDetailsModal] = useState(false);
 
   // Role and field form states
-  const [roleForm, setRoleForm] = useState({ role: 'premium_user' });
+  const [roleForm, setRoleForm] = useState({ role: 'basic_user' });
   const [fieldForm, setFieldForm] = useState({
     entity_type: 'contacts',
     field_name: '',
@@ -4437,6 +4438,15 @@ const AdminPanel = () => {
     password: '',
     roles: []
   });
+
+  // Plan-based role definitions
+  const planRoles = {
+    'admin': { name: 'Administrator', color: 'bg-red-100 text-red-800', plan: 'System Admin' },
+    'enterprise_user': { name: 'Enterprise User', color: 'bg-purple-100 text-purple-800', plan: 'Enterprise Plan' },
+    'professional_user': { name: 'Professional User', color: 'bg-blue-100 text-blue-800', plan: 'Professional Plan' },
+    'basic_user': { name: 'Basic User', color: 'bg-green-100 text-green-800', plan: 'Free Plan' },
+    'premium_user': { name: 'Premium User', color: 'bg-yellow-100 text-yellow-800', plan: 'Legacy Premium' }
+  };
 
   useEffect(() => {
     fetchAdminData();
