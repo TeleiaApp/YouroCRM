@@ -637,10 +637,10 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 9
+  test_sequence: 10
   run_ui: true
   last_tested_by: "testing_agent"
-  backend_tests_passed: 97
+  backend_tests_passed: 108
   backend_tests_failed: 24
   frontend_tests_passed: 18
   frontend_tests_failed: 0
@@ -652,6 +652,9 @@ metadata:
   admin_functionality_complete: true
   admin_functionality_tests_passed: 10
   admin_functionality_tests_failed: 2
+  greek_language_support_complete: true
+  greek_language_tests_passed: 11
+  greek_language_tests_failed: 0
 
 test_plan:
   current_focus: []
