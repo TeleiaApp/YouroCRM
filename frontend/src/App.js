@@ -4693,7 +4693,14 @@ const AdminPanel = () => {
                           {user.picture && (
                             <img src={user.picture} alt="Profile" className="w-8 h-8 rounded-full" />
                           )}
-                          <div className="font-medium text-gray-900">{user.name}</div>
+                          <div className="font-medium text-gray-900 flex items-center space-x-2">
+                            <span>{user.name}</span>
+                            {user.email === 'dkatsidonis@gmail.com' && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800" title="System Administrator">
+                                👑 ADMIN
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
