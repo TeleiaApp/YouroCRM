@@ -1696,6 +1696,132 @@ TRANSLATIONS = {
         "terms": "Voorwaarden",
         "gdpr": "AVG",
         "all_rights_reserved": "Alle rechten voorbehouden. Ontworpen voor Europa 🇪🇺"
+    },
+    
+    "el": {
+        # Navigation & Common
+        "app_name": "YouroCRM",
+        "dashboard": "Πίνακας Ελέγχου",
+        "contacts": "Επαφές",
+        "accounts": "Λογαριασμοί",
+        "products": "Προϊόντα",
+        "invoices": "Τιμολόγια",
+        "calendar": "Ημερολόγιο",
+        "admin": "Διαχειριστής",
+        "pricing": "Τιμολόγηση",
+        "logout": "Αποσύνδεση",
+        "login": "Σύνδεση",
+        "register": "Εγγραφή",
+        "back_to_home": "Επιστροφή στην αρχική",
+        
+        # Homepage
+        "hero_title": "Το Ευρωπαϊκό CRM με Ενσωμάτωση VIES",
+        "hero_subtitle": "Διαχειριστείτε τους ευρωπαίους πελάτες σας με αυτόματη συμπλήρωση εταιρικών δεδομένων VIES, τιμολόγηση συμβατή με Peppol, και πολλά άλλα. Σχεδιασμένο για ευρωπαϊκές ΜμΕ.",
+        "start_free": "🚀 Ξεκινήστε δωρεάν",
+        "view_pricing": "📋 Δείτε τιμές",
+        "why_choose_title": "Γιατί να επιλέξετε το YouroCRM;",
+        "why_choose_subtitle": "Το μοναδικό CRM με εγγενή ενσωμάτωση VIES για την Ευρώπη",
+        
+        # Features
+        "feature_vies_title": "Ενσωμάτωση VIES",
+        "feature_vies_desc": "Αυτόματη συμπλήρωση ευρωπαϊκών εταιρικών δεδομένων σε πραγματικό χρόνο μέσω ΑΦΜ",
+        "feature_peppol_title": "Τιμολόγηση Peppol",
+        "feature_peppol_desc": "Ηλεκτρονική τιμολόγηση συμβατή με ευρωπαϊκά και βελγικά πρότυπα",
+        "feature_management_title": "Ολοκληρωμένη Διαχείριση",
+        "feature_management_desc": "Επαφές, λογαριασμοί, προϊόντα, τιμολόγια και ημερολόγιο σε μία πλατφόρμα",
+        "feature_security_title": "Ευρωπαϊκή Ασφάλεια",
+        "feature_security_desc": "Συμμόρφωση GDPR, ασφαλής πιστοποίηση και ευρωπαϊκή φιλοξενία",
+        "feature_payments_title": "Ευέλικτες Πληρωμές",
+        "feature_payments_desc": "Ενσωματωμένα Stripe και PayPal για να διευκολύνουν τις συναλλαγές με πελάτες",
+        "feature_multiplatform_title": "Πολυ-πλατφόρμα",
+        "feature_multiplatform_desc": "Responsive διεπαφή προσβάσιμη σε desktop, tablet και κινητό",
+        
+        # Plans
+        "pricing_title": "Απλή και Διαφανής Τιμολόγηση",
+        "pricing_subtitle": "Ξεκινήστε δωρεάν, κλιμακώστε καθώς μεγαλώνετε",
+        "starter_plan": "🆓 Αρχάριος",
+        "professional_plan": "💎 Επαγγελματικό",
+        "enterprise_plan": "🏆 Επιχειρηματικό",
+        "most_popular": "⭐ Πιο δημοφιλές",
+        "per_month": "/μήνα",
+        "free": "Δωρεάν",
+        "choose_plan": "Επιλέξτε",
+        "start_free_btn": "Ξεκινήστε δωρεάν",
+        
+        # Plan Features
+        "contacts_max": "μέγιστες επαφές",
+        "accounts_max": "μέγιστοι λογαριασμοί",
+        "basic_invoicing": "Βασική τιμολόγηση",
+        "email_support": "Υποστήριξη email",
+        "unlimited_contacts_accounts": "Απεριόριστες επαφές/λογαριασμοί",
+        "vies_integration_complete": "Πλήρης ενσωμάτωση VIES",
+        "peppol_invoicing": "Τιμολόγηση Peppol",
+        "advanced_calendar": "Προηγμένο ημερολόγιο",
+        "pdf_export": "Εξαγωγή PDF",
+        "priority_support": "Προτεραιότητα υποστήριξης",
+        "multi_user": "Πολλαπλοί χρήστες (+5€/χρήστη)",
+        "everything_professional": "Όλα τα Επαγγελματικά",
+        "custom_fields": "Προσαρμοσμένα πεδία",
+        "api_access": "Πρόσβαση API",
+        "white_label": "White-label",
+        "dedicated_support": "Αφοσιωμένη υποστήριξη",
+        "training_included": "Εκπαίδευση περιλαμβάνεται",
+        
+        # Authentication
+        "continue_with_google": "Συνέχεια με Google",
+        "sign_in_with_email": "Σύνδεση με Email",
+        "create_account_here": "Δεν έχετε λογαριασμό; Δημιουργήστε έναν εδώ",
+        "email_address": "Διεύθυνση Email",
+        "password": "Κωδικός Πρόσβασης",
+        "sign_in": "Σύνδεση",
+        "signing_in": "Συνδέεται...",
+        "back_to_login_options": "Επιστροφή στις επιλογές σύνδεσης",
+        "create_your_account": "Δημιουργήστε τον λογαριασμό σας",
+        "join_yourocrm": "Ελάτε στο YouroCRM - Επαγγελματική Πλατφόρμα CRM",
+        "full_name": "Πλήρες Όνομα",
+        "create_account": "Δημιουργία Λογαριασμού",
+        "creating_account": "Δημιουργία Λογαριασμού...",
+        "already_have_account": "Έχετε ήδη λογαριασμό; Συνδεθείτε εδώ",
+        "minimum_6_characters": "Ελάχιστα 6 χαρακτήρες",
+        "view_pricing_features": "💰 Δείτε Τιμές & Χαρακτηριστικά",
+        
+        # Plan Selection
+        "choose_your_plan": "Επιλέξτε το πλάνο YouroCRM σας",
+        "start_free_scale": "Ξεκινήστε δωρεάν και κλιμακώστε καθώς μεγαλώνετε",
+        "start_free_now": "Ξεκινήστε δωρεάν τώρα",
+        "secure_payment": "🔒 Ασφαλής πληρωμή μέσω Stripe και PayPal",
+        "no_commitment": "✅ Χωρίς δεσμεύσεις",
+        "support_included": "📞 Υποστήριξη πελατών περιλαμβάνεται",
+        "gdpr_compliant": "Όλα τα πλάνα περιλαμβάνουν συμμόρφωση GDPR και ασφαλή ευρωπαϊκή φιλοξενία",
+        
+        # Messages
+        "account_created_success": "Ο λογαριασμός δημιουργήθηκε επιτυχώς! Τώρα επιλέξτε το πλάνο σας.",
+        "ready_to_transform": "Έτοιμοι να μεταμορφώσετε τη διαχείριση πελατών σας;",
+        "join_european_companies": "Ελάτε στις ευρωπαϊκές εταιρείες που εμπιστεύονται το YouroCRM",
+        "start_now_free": "🚀 Ξεκινήστε τώρα - Είναι δωρεάν!",
+        
+        # Limits & Upgrades
+        "plan_limit_reached": "όριο πλάνου έφτασε",
+        "upgrade_to_professional": "Αναβαθμίστε στο Επαγγελματικό",
+        "unlimited_contacts": "για απεριόριστες επαφές",
+        "unlimited_accounts": "για απεριόριστους λογαριασμούς",
+        "vies_not_available": "Η ενσωμάτωση VIES δεν είναι διαθέσιμη στο πλάνο",
+        "upgrade_for_vies": "Αναβαθμίστε στο Επαγγελματικό για πρόσβαση στην αυτόματη συμπλήρωση εταιρικών δεδομένων ΕΕ",
+        
+        # Footer
+        "european_crm_tagline": "Το ευρωπαϊκό CRM με ενσωμάτωση VIES για σύγχρονες ΜμΕ.",
+        "product": "Προϊόν",
+        "features": "Χαρακτηριστικά",
+        "integrations": "Ενσωματώσεις",
+        "support": "Υποστήριξη",
+        "documentation": "Τεκμηρίωση",
+        "help_center": "Κέντρο Βοήθειας",
+        "contact": "Επικοινωνία",
+        "legal": "Νομικά",
+        "privacy": "Απόρρητο",
+        "terms": "Όροι",
+        "gdpr": "GDPR",
+        "all_rights_reserved": "Όλα τα δικαιώματα διατηρούνται. Σχεδιασμένο για την Ευρώπη 🇪🇺"
     }
 }
 
