@@ -548,7 +548,8 @@ async def get_supported_languages():
         "languages": [
             {"code": "en", "name": "English", "flag": "🇬🇧"},
             {"code": "fr", "name": "Français", "flag": "🇫🇷"},
-            {"code": "nl", "name": "Nederlands", "flag": "🇳🇱"}
+            {"code": "nl", "name": "Nederlands", "flag": "🇳🇱"},
+            {"code": "el", "name": "Ελληνικά", "flag": "🇬🇷"}
         ],
         "default": "en"
     }
