@@ -5194,6 +5194,153 @@ const AdminPanel = () => {
           </div>
         </div>
       )}
+
+      {/* User Details Modal */}
+      {showUserDetailsModal && selectedUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-semibold text-gray-900 flex items-center space-x-2">
+                  <span>User Details</span>
+                  {selectedUser.roles?.includes('admin') && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                      👑 ADMIN
+                    </span>
+                  )}
+                </h3>
+                <button
+                  onClick={() => setShowUserDetailsModal(false)}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* User Info */}
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-4">
+                    {selectedUser.picture && (
+                      <img src={selectedUser.picture} alt="Profile" className="w-16 h-16 rounded-full" />
+                    )}
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900">{selectedUser.name}</h4>
+                      <p className="text-gray-600">{selectedUser.email}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Authentication Method</label>
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1 ${getUserAuthMethod(selectedUser).color}`}>
+                        {getUserAuthMethod(selectedUser).icon} {getUserAuthMethod(selectedUser).text}
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Current Role/Plan</label>
+                      <div className="mt-1">
+                        {(() => {
+                          const primaryRole = getUserPrimaryRole(selectedUser);
+                          const roleInfo = planRoles[primaryRole];
+                          return (
+                            <div className="flex flex-col space-y-1">
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium w-fit ${roleInfo.color}`}>
+                                {roleInfo.name}
+                              </span>
+                              <span className="text-xs text-gray-500">{roleInfo.plan}</span>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Status</label>
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1 ${
+                        selectedUser.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {selectedUser.is_active ? '✅ Active' : '❌ Inactive'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Payment & Activity Info */}
+                <div className="space-y-4">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h5 className="font-medium text-gray-900 mb-3">Payment Information</h5>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Total Payments:</span>
+                        <span className="text-sm font-medium">{selectedUser.payments_count || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Total Paid:</span>
+                        <span className="text-sm font-medium">€{(selectedUser.total_paid || 0).toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h5 className="font-medium text-gray-900 mb-3">Account Information</h5>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">User ID:</span>
+                        <span className="text-xs font-mono bg-gray-200 px-2 py-1 rounded">{selectedUser.id}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Joined:</span>
+                        <span className="text-sm">{new Date(selectedUser.created_at).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">All Roles:</span>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedUser.roles?.map(role => (
+                            <span key={role} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                              {role}
+                            </span>
+                          )) || <span className="text-xs text-gray-500">No roles assigned</span>}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end space-x-3 pt-6 border-t mt-6">
+                <button
+                  onClick={() => {
+                    setShowUserDetailsModal(false);
+                    setShowUserRoleModal(true);
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  Change Role/Plan
+                </button>
+                <button
+                  onClick={() => handleToggleUserStatus(selectedUser.id, selectedUser.is_active)}
+                  className={`px-4 py-2 rounded-md transition-colors ${
+                    selectedUser.is_active 
+                      ? 'bg-red-600 text-white hover:bg-red-700' 
+                      : 'bg-green-600 text-white hover:bg-green-700'
+                  }`}
+                >
+                  {selectedUser.is_active ? 'Deactivate User' : 'Activate User'}
+                </button>
+                <button
+                  onClick={() => setShowUserDetailsModal(false)}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
