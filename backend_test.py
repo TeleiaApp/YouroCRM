@@ -2397,6 +2397,9 @@ class CRMBackendTester:
             # NEW: Test Admin Functionality with Specific User
             self.test_admin_functionality_with_specific_user()
             
+            # NEW: Test Greek Language Support
+            self.test_greek_language_support()
+            
             self.cleanup_test_data()
             
             return self.print_summary()
