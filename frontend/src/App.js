@@ -4599,43 +4599,44 @@ const AdminPanel = () => {
       {/* Users Tab */}
       {activeTab === 'users' && (
         <div className="space-y-6">
-          {/* Plan Limit Warning */}
-          {userPlan && userPlan.limits?.accounts_limit_reached && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+          {/* User Statistics */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-blue-50 p-4 rounded-lg text-center">
+              <p className="text-blue-800 font-semibold text-2xl">{users.length}</p>
+              <p className="text-blue-600 text-sm">Total Users</p>
+            </div>
+            <div className="bg-green-50 p-4 rounded-lg text-center">
+              <p className="text-green-800 font-semibold text-2xl">
+                {users.filter(u => u.auth_type === 'google' || (!u.auth_type && !u.password_hash)).length}
+              </p>
+              <p className="text-green-600 text-sm">Google OAuth</p>
+            </div>
+            <div className="bg-purple-50 p-4 rounded-lg text-center">
+              <p className="text-purple-800 font-semibold text-2xl">
+                {users.filter(u => u.auth_type === 'traditional' || u.password_hash).length}
+              </p>
+              <p className="text-purple-600 text-sm">Email/Password</p>
+            </div>
+            <div className="bg-red-50 p-4 rounded-lg text-center">
+              <p className="text-red-800 font-semibold text-2xl">
+                {users.filter(u => u.roles?.includes('admin')).length}
+              </p>
+              <p className="text-red-600 text-sm">Administrators</p>
+            </div>
+          </div>
+
+          {/* Admin Info and Create User Button */}
+          <div className="flex justify-between items-center">
+            <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
               <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <span className="text-2xl">⚠️</span>
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-yellow-800">
-                    Limite du plan {userPlan.plan?.name} atteinte
-                  </h3>
-                  <div className="mt-2 text-sm text-yellow-700">
-                    <p>
-                      Vous avez atteint la limite de {userPlan.plan?.limits?.accounts_max} comptes. 
-                      <Link to="/plans" className="font-medium text-yellow-800 underline hover:text-yellow-900">
-                        Passez au plan Professional
-                      </Link> pour des comptes illimités.
-                    </p>
-                  </div>
+                <span className="text-2xl mr-3">👑</span>
+                <div>
+                  <h3 className="text-sm font-medium text-yellow-800">Admin User</h3>
+                  <p className="text-xs text-yellow-700">
+                    Only <strong>dkatsidonis@gmail.com</strong> has admin privileges
+                  </p>
                 </div>
               </div>
-            </div>
-          )}
-
-          <div className="flex justify-between items-center">
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <p className="text-blue-800 font-semibold">Total Accounts: {accounts.length}</p>
-              <p className="text-blue-600 text-sm">
-                With VAT: {accounts.filter(a => a.vat_number).length} | 
-                With Website: {accounts.filter(a => a.website).length} | 
-                Total Revenue: {accounts.reduce((sum, a) => sum + (a.annual_revenue || 0), 0).toLocaleString()}€
-                {userPlan?.plan?.limits?.accounts_max > 0 && (
-                  <span className="block text-xs text-gray-500 mt-1">
-                    Comptes: {accounts.length}/{userPlan.plan.limits.accounts_max}
-                  </span>
-                )}
-              </p>
             </div>
             
             <button
