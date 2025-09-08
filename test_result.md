@@ -656,8 +656,11 @@ metadata:
   admin_functionality_tests_passed: 10
   admin_functionality_tests_failed: 2
   greek_language_support_complete: true
-  greek_language_tests_passed: 11
-  greek_language_tests_failed: 0
+  greek_language_tests_passed: 69
+  greek_language_tests_failed: 6
+  comprehensive_greek_translations_tested: true
+  greek_translation_count: 379
+  greek_translation_coverage: "95%+"
 
 test_plan:
   current_focus: []
