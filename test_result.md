@@ -622,17 +622,21 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 8
+  test_sequence: 9
   run_ui: true
   last_tested_by: "testing_agent"
-  backend_tests_passed: 94
-  backend_tests_failed: 22
+  backend_tests_passed: 97
+  backend_tests_failed: 24
   frontend_tests_passed: 18
   frontend_tests_failed: 0
   vies_integration_complete: true
-  vies_tests_passed: 31
+  vies_tests_passed: 0
+  vies_tests_failed: 22
   subscription_plans_complete: true
   subscription_plans_tests_passed: 18
+  admin_functionality_complete: true
+  admin_functionality_tests_passed: 10
+  admin_functionality_tests_failed: 2
 
 test_plan:
   current_focus: []
