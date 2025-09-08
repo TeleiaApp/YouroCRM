@@ -4732,22 +4732,16 @@ const AdminPanel = () => {
                       Email
                     </th>
                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Auth Type
+                      Auth Method
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Role/Plan
                     </th>
                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Roles
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Payments
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Total Paid
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Joined
                     </th>
                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
@@ -4755,93 +4749,106 @@ const AdminPanel = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {users.map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <div className="flex items-center justify-center space-x-3">
-                          {user.picture && (
-                            <img src={user.picture} alt="Profile" className="w-8 h-8 rounded-full" />
-                          )}
-                          <div className="font-medium text-gray-900 flex items-center space-x-2">
-                            <span>{user.name}</span>
-                            {user.email === 'dkatsidonis@gmail.com' && (
-                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800" title="System Administrator">
-                                👑 ADMIN
-                              </span>
+                  {users.map((user) => {
+                    const authMethod = getUserAuthMethod(user);
+                    const primaryRole = getUserPrimaryRole(user);
+                    const roleInfo = planRoles[primaryRole];
+                    
+                    return (
+                      <tr key={user.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleViewUserDetails(user)}>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <div className="flex items-center justify-center space-x-3">
+                            {user.picture && (
+                              <img src={user.picture} alt="Profile" className="w-8 h-8 rounded-full" />
                             )}
+                            <div className="font-medium text-gray-900 flex items-center space-x-2">
+                              <span>{user.name}</span>
+                              {user.roles?.includes('admin') && (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800" title="System Administrator">
+                                  👑 ADMIN
+                                </span>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
-                        {user.email}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                          user.auth_type === 'google' || (!user.auth_type && !user.password_hash)
-                            ? 'bg-red-100 text-red-800' 
-                            : 'bg-green-100 text-green-800'
-                        }`}>
-                          {user.auth_type === 'google' || (!user.auth_type && !user.password_hash) ? '🔑 Google OAuth' : '🔐 Email/Password'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <button
-                          onClick={() => handleToggleUserStatus(user.id, user.is_active)}
-                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                            user.is_active 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}
-                        >
-                          {user.is_active ? '✅ Active' : '❌ Inactive'}
-                        </button>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <div className="flex flex-wrap justify-center gap-1">
-                          {user.roles?.map(role => (
-                            <span
-                              key={role}
-                              className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                            >
-                              {role}
-                              <button
-                                onClick={() => handleRemoveRole(user.id, role)}
-                                className="ml-1 text-red-500 hover:text-red-700"
-                                title="Remove role"
-                              >
-                                ×
-                              </button>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                          {user.email}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${authMethod.color}`}>
+                            {authMethod.icon} {authMethod.text}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <div className="flex flex-col items-center space-y-1">
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${roleInfo.color}`}>
+                              {roleInfo.name}
                             </span>
-                          )) || '-'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
-                        {user.payments_count || 0}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
-                        €{(user.total_paid || 0).toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                        {new Date(user.created_at).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                        <button
-                          onClick={() => {
-                            setSelectedUser(user);
-                            setShowUserRoleModal(true);
-                          }}
-                          className="text-blue-600 hover:text-blue-900 mr-3"
-                          title="Assign Role"
-                        >
-                          👑 Add Role
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                            <span className="text-xs text-gray-500">{roleInfo.plan}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleUserStatus(user.id, user.is_active);
+                            }}
+                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                              user.is_active 
+                                ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                                : 'bg-red-100 text-red-800 hover:bg-red-200'
+                            } transition-colors`}
+                          >
+                            {user.is_active ? '✅ Active' : '❌ Inactive'}
+                          </button>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <div className="flex flex-col items-center space-y-1">
+                            <span className="text-sm font-medium text-gray-900">{user.payments_count || 0}</span>
+                            <span className="text-xs text-gray-500">€{(user.total_paid || 0).toFixed(2)}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                          <div className="flex items-center justify-center space-x-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedUser(user);
+                                setShowUserRoleModal(true);
+                              }}
+                              className="text-blue-600 hover:text-blue-900 px-2 py-1 rounded text-xs"
+                              title="Change Role/Plan"
+                            >
+                              ⚡ Change Role
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewUserDetails(user);
+                              }}
+                              className="text-green-600 hover:text-green-900 px-2 py-1 rounded text-xs"
+                              title="View Details"
+                            >
+                              👁️ Details
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
           </div>
+
+          {/* No users message */}
+          {users.length === 0 && (
+            <div className="text-center py-12">
+              <div className="text-4xl mb-4">👥</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Users Found</h3>
+              <p className="text-gray-600 mb-4">Please log in as an administrator to view user management</p>
+            </div>
+          )}
         </div>
       )}
 
