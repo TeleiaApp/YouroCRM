@@ -2141,6 +2141,221 @@ class CRMBackendTester:
             print(f"⚠️  {total_failed} tests failed")
             return False
 
+    def test_greek_language_support(self):
+        """Test Greek (el) Language Support Implementation"""
+        print("\n🇬🇷 Testing Greek Language Support...")
+        
+        # Test 1: GET /api/languages - Verify Greek is included in supported languages
+        success, response = self.make_request("GET", "/languages", headers={})
+        if success and response.status_code == 200:
+            languages_response = response.json()
+            if "languages" in languages_response:
+                languages = languages_response["languages"]
+                
+                # Find Greek language entry
+                greek_lang = None
+                for lang in languages:
+                    if lang.get("code") == "el":
+                        greek_lang = lang
+                        break
+                
+                if greek_lang:
+                    # Verify Greek language structure
+                    if (greek_lang.get("code") == "el" and 
+                        greek_lang.get("name") == "Ελληνικά" and 
+                        greek_lang.get("flag") == "🇬🇷"):
+                        self.log_result("greek_language", "GET /api/languages - Greek language included with correct details", True)
+                    else:
+                        self.log_result("greek_language", "GET /api/languages - Greek language structure", False,
+                                      f"Incorrect Greek language data: code={greek_lang.get('code')}, name={greek_lang.get('name')}, flag={greek_lang.get('flag')}")
+                else:
+                    self.log_result("greek_language", "GET /api/languages - Greek language included", False,
+                                  "Greek language (el) not found in supported languages")
+                
+                # Verify all expected languages are present
+                expected_languages = ["en", "fr", "nl", "el"]
+                found_codes = [lang.get("code") for lang in languages]
+                if all(code in found_codes for code in expected_languages):
+                    self.log_result("greek_language", "GET /api/languages - All expected languages present", True)
+                else:
+                    missing = set(expected_languages) - set(found_codes)
+                    self.log_result("greek_language", "GET /api/languages - All expected languages present", False,
+                                  f"Missing language codes: {missing}")
+            else:
+                self.log_result("greek_language", "GET /api/languages - Response structure", False,
+                              "Missing 'languages' field in response")
+        else:
+            self.log_result("greek_language", "GET /api/languages - Get supported languages", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+            return
+        
+        # Test 2: GET /api/translations/el - Verify Greek translations are available
+        success, response = self.make_request("GET", "/translations/el", headers={})
+        if success and response.status_code == 200:
+            greek_translations_response = response.json()
+            if ("language" in greek_translations_response and 
+                "translations" in greek_translations_response):
+                
+                # Verify response structure
+                if greek_translations_response["language"] == "el":
+                    self.log_result("greek_language", "GET /api/translations/el - Response structure correct", True)
+                else:
+                    self.log_result("greek_language", "GET /api/translations/el - Response language code", False,
+                                  f"Expected language 'el', got '{greek_translations_response['language']}'")
+                
+                greek_translations = greek_translations_response["translations"]
+                
+                # Test 3: Verify Greek translations contain proper Greek text
+                # Check key translations for Greek characters and content
+                key_translations_to_check = {
+                    "app_name": "YouroCRM",
+                    "dashboard": "Πίνακας Ελέγχου",
+                    "contacts": "Επαφές", 
+                    "accounts": "Λογαριασμοί",
+                    "products": "Προϊόντα",
+                    "invoices": "Τιμολόγια",
+                    "calendar": "Ημερολόγιο",
+                    "hero_title": "Το Ευρωπαϊκό CRM με Ενσωμάτωση VIES",
+                    "feature_vies_title": "Ενσωμάτωση VIES",
+                    "pricing_title": "Απλή και Διαφανής Τιμολόγηση"
+                }
+                
+                greek_text_verified = True
+                missing_translations = []
+                incorrect_translations = []
+                
+                for key, expected_value in key_translations_to_check.items():
+                    if key in greek_translations:
+                        actual_value = greek_translations[key]
+                        if actual_value == expected_value:
+                            continue
+                        else:
+                            # Check if it contains Greek characters (basic check)
+                            if any(ord(char) >= 0x0370 and ord(char) <= 0x03FF for char in actual_value):
+                                continue  # Contains Greek characters, likely correct
+                            else:
+                                incorrect_translations.append(f"{key}: expected Greek text, got '{actual_value}'")
+                                greek_text_verified = False
+                    else:
+                        missing_translations.append(key)
+                        greek_text_verified = False
+                
+                if greek_text_verified and not missing_translations and not incorrect_translations:
+                    self.log_result("greek_language", "GET /api/translations/el - Greek text content verification", True)
+                else:
+                    error_msg = ""
+                    if missing_translations:
+                        error_msg += f"Missing translations: {missing_translations}. "
+                    if incorrect_translations:
+                        error_msg += f"Incorrect translations: {incorrect_translations}. "
+                    self.log_result("greek_language", "GET /api/translations/el - Greek text content verification", False, error_msg.strip())
+                
+                # Test 4: Compare with other languages - verify similar structure
+                # Get English translations for comparison
+                success_en, response_en = self.make_request("GET", "/translations/en", headers={})
+                if success_en and response_en.status_code == 200:
+                    english_translations = response_en.json()["translations"]
+                    
+                    # Check if Greek has similar number of translation keys as English
+                    greek_keys = set(greek_translations.keys())
+                    english_keys = set(english_translations.keys())
+                    
+                    # Allow some variance but should be mostly similar
+                    key_coverage = len(greek_keys.intersection(english_keys)) / len(english_keys)
+                    if key_coverage >= 0.90:  # At least 90% coverage
+                        self.log_result("greek_language", "GET /api/translations/el - Translation key coverage vs English", True)
+                    else:
+                        missing_in_greek = english_keys - greek_keys
+                        self.log_result("greek_language", "GET /api/translations/el - Translation key coverage vs English", False,
+                                      f"Coverage: {key_coverage:.2%}, Missing keys: {list(missing_in_greek)[:10]}...")  # Show first 10
+                    
+                    # Verify Greek translations are not just English text
+                    english_like_count = 0
+                    total_checked = 0
+                    for key in ["dashboard", "contacts", "accounts", "products", "invoices"]:
+                        if key in greek_translations and key in english_translations:
+                            total_checked += 1
+                            if greek_translations[key] == english_translations[key]:
+                                english_like_count += 1
+                    
+                    if total_checked > 0 and english_like_count / total_checked < 0.5:  # Less than 50% should be identical
+                        self.log_result("greek_language", "GET /api/translations/el - Greek translations not just English", True)
+                    else:
+                        self.log_result("greek_language", "GET /api/translations/el - Greek translations not just English", False,
+                                      f"Too many identical translations with English: {english_like_count}/{total_checked}")
+                else:
+                    self.log_result("greek_language", "GET /api/translations/en - English translations for comparison", False,
+                                  "Could not fetch English translations for comparison")
+                
+                # Test 5: Verify specific Greek business terms are properly translated
+                business_terms_check = {
+                    "vies_integration_complete": "Πλήρης ενσωμάτωση VIES",
+                    "peppol_invoicing": "Τιμολόγηση Peppol", 
+                    "professional_plan": "💎 Επαγγελματικό",
+                    "enterprise_plan": "🏆 Επιχειρηματικό",
+                    "gdpr": "GDPR"  # Should remain as GDPR
+                }
+                
+                business_terms_correct = True
+                for key, expected in business_terms_check.items():
+                    if key in greek_translations:
+                        if key == "gdpr" and greek_translations[key] == "GDPR":
+                            continue  # GDPR should remain as is
+                        elif key != "gdpr" and any(ord(char) >= 0x0370 and ord(char) <= 0x03FF for char in greek_translations[key]):
+                            continue  # Contains Greek characters
+                        else:
+                            business_terms_correct = False
+                            break
+                    else:
+                        business_terms_correct = False
+                        break
+                
+                if business_terms_correct:
+                    self.log_result("greek_language", "GET /api/translations/el - Business terms properly translated", True)
+                else:
+                    self.log_result("greek_language", "GET /api/translations/el - Business terms properly translated", False,
+                                  "Some business terms not properly translated to Greek")
+                
+                # Test 6: Verify translation count and completeness
+                total_translations = len(greek_translations)
+                if total_translations >= 100:  # Should have substantial number of translations
+                    self.log_result("greek_language", f"GET /api/translations/el - Translation completeness ({total_translations} translations)", True)
+                else:
+                    self.log_result("greek_language", f"GET /api/translations/el - Translation completeness ({total_translations} translations)", False,
+                                  f"Expected at least 100 translations, got {total_translations}")
+                
+            else:
+                self.log_result("greek_language", "GET /api/translations/el - Response structure", False,
+                              "Missing 'language' or 'translations' field in response")
+        else:
+            self.log_result("greek_language", "GET /api/translations/el - Get Greek translations", False,
+                          f"Status: {response.status_code if hasattr(response, 'status_code') else response}")
+        
+        # Test 7: Test invalid language code (should return 404)
+        success, response = self.make_request("GET", "/translations/invalid", headers={})
+        if not success or response.status_code == 404:
+            self.log_result("greek_language", "GET /api/translations/invalid - Invalid language handling", True)
+        else:
+            self.log_result("greek_language", "GET /api/translations/invalid - Invalid language handling", False,
+                          f"Should return 404 for invalid language, got: {response.status_code}")
+        
+        # Test 8: Verify Greek language endpoint is publicly accessible (no auth required)
+        success, response = self.make_request("GET", "/languages", headers={})
+        if success and response.status_code == 200:
+            self.log_result("greek_language", "GET /api/languages - Public accessibility", True)
+        else:
+            self.log_result("greek_language", "GET /api/languages - Public accessibility", False,
+                          "Languages endpoint should be publicly accessible")
+        
+        success, response = self.make_request("GET", "/translations/el", headers={})
+        if success and response.status_code == 200:
+            self.log_result("greek_language", "GET /api/translations/el - Public accessibility", True)
+        else:
+            self.log_result("greek_language", "GET /api/translations/el - Public accessibility", False,
+                          "Greek translations endpoint should be publicly accessible")
+        
+        print("ℹ️  Greek language support tests completed")
+
     def run_all_tests(self):
         """Run all backend tests"""
         print("🚀 Starting CRM Backend API Tests...")
