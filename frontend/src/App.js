@@ -4706,20 +4706,8 @@ const AdminPanel = () => {
             </div>
           </div>
 
-          {/* Admin Info and Create User Button */}
-          <div className="flex justify-between items-center">
-            <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
-              <div className="flex items-center">
-                <span className="text-2xl mr-3">👑</span>
-                <div>
-                  <h3 className="text-sm font-medium text-yellow-800">Admin User</h3>
-                  <p className="text-xs text-yellow-700">
-                    Only <strong>dkatsidonis@gmail.com</strong> has admin privileges
-                  </p>
-                </div>
-              </div>
-            </div>
-            
+          {/* Create User Button */}
+          <div className="flex justify-end">
             <button
               onClick={() => setShowCreateUserModal(true)}
               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
