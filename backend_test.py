@@ -2178,6 +2178,9 @@ class CRMBackendTester:
             # Test Admin Panel APIs
             self.test_admin_panel_apis()
             
+            # NEW: Test Admin Functionality with Specific User
+            self.test_admin_functionality_with_specific_user()
+            
             self.cleanup_test_data()
             
             return self.print_summary()
