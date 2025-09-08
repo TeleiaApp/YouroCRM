@@ -4606,6 +4606,31 @@ const AdminPanel = () => {
     }
   };
 
+  // New function to handle user details modal
+  const handleViewUserDetails = (user) => {
+    setSelectedUser(user);
+    setShowUserDetailsModal(true);
+  };
+
+  // Get user's primary role for display
+  const getUserPrimaryRole = (user) => {
+    if (!user.roles || user.roles.length === 0) return 'basic_user';
+    if (user.roles.includes('admin')) return 'admin';
+    if (user.roles.includes('enterprise_user')) return 'enterprise_user';
+    if (user.roles.includes('professional_user')) return 'professional_user';
+    if (user.roles.includes('premium_user')) return 'premium_user';
+    return 'basic_user';
+  };
+
+  // Get user's auth method display
+  const getUserAuthMethod = (user) => {
+    if (user.auth_type === 'google' || (!user.auth_type && !user.password_hash)) {
+      return { icon: '🔑', text: 'Google OAuth', color: 'bg-red-100 text-red-800' };
+    } else {
+      return { icon: '🔐', text: 'Email/Password', color: 'bg-green-100 text-green-800' };
+    }
+  };
+
   if (loading) {
     return (
       <div className="animate-pulse space-y-6">
