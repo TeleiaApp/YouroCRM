@@ -2129,7 +2129,42 @@ TRANSLATIONS = {
         "feature_not_available": "Το χαρακτηριστικό δεν είναι διαθέσιμο",
         "upgrade_to_unlock": "Αναβαθμίστε για να ξεκλειδώσετε",
         "contact_sales": "Επικοινωνήστε με τις πωλήσεις",
-        "learn_more": "Μάθετε περισσότερα"
+        "learn_more": "Μάθετε περισσότερα",
+        
+        # AI Integration (Enterprise Feature)
+        "ai_integration": "Ενσωμάτωση AI",
+        "ai_automation": "Αυτοματισμός AI",
+        "ai_features": "Χαρακτηριστικά AI",
+        "ai_assistant": "Βοηθός AI",
+        "smart_recommendations": "Έξυπνες Προτάσεις",
+        "automated_data_entry": "Αυτόματη Εισαγωγή Δεδομένων",
+        "intelligent_insights": "Έξυπνες Αναλύσεις",
+        "ai_powered_reports": "Αναφορές με AI",
+        "predictive_analytics": "Προβλεπτικά Αναλυτικά",
+        "ai_not_available": "Η ενσωμάτωση AI δεν είναι διαθέσιμη",
+        "upgrade_for_ai": "Αναβαθμίστε στο Enterprise για χαρακτηριστικά AI",
+        
+        # Enhanced Plan Features
+        "everything_professional": "Όλα τα Επαγγελματικά",
+        "unlimited_contacts_accounts": "Απεριόριστες επαφές/λογαριασμοί",
+        "complete_vies_integration": "Πλήρης ενσωμάτωση VIES",
+        "multi_user_support": "Υποστήριξη πολλών χρηστών (+5€/χρήστη)",
+        "ai_integration_automation": "Ενσωμάτωση AI & Αυτοματισμός",
+        
+        # Upgrade Prompts
+        "upgrade_now": "Αναβαθμίστε Τώρα",
+        "view_plans": "Δείτε Πλάνα",
+        "current_plan": "Τρέχον Πλάνο",
+        "plan_benefits": "Οφέλη Πλάνου",
+        "feature_locked": "Χαρακτηριστικό Κλειδωμένο",
+        "unlock_feature": "Ξεκλειδώστε το Χαρακτηριστικό",
+        "plan_comparison": "Σύγκριση Πλάνων",
+        "monthly_billing": "Μηνιαία Χρέωση",
+        "annual_billing": "Ετήσια Χρέωση",
+        "save_money": "Εξοικονομήστε Χρήματα",
+        "popular_choice": "Δημοφιλής Επιλογή",
+        "best_value": "Καλύτερη Αξία",
+        "recommended": "Συνιστάται"
     }
 }
 
