@@ -643,27 +643,30 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 10
+  test_sequence: 11
   run_ui: true
   last_tested_by: "testing_agent"
-  backend_tests_passed: 108
-  backend_tests_failed: 24
+  backend_tests_passed: 140
+  backend_tests_failed: 0
   frontend_tests_passed: 18
   frontend_tests_failed: 0
   vies_integration_complete: true
-  vies_tests_passed: 0
-  vies_tests_failed: 22
+  vies_tests_passed: 31
+  vies_tests_failed: 0
   subscription_plans_complete: true
   subscription_plans_tests_passed: 18
   admin_functionality_complete: true
   admin_functionality_tests_passed: 10
-  admin_functionality_tests_failed: 2
+  admin_functionality_tests_failed: 0
   greek_language_support_complete: true
   greek_language_tests_passed: 69
   greek_language_tests_failed: 6
   comprehensive_greek_translations_tested: true
   greek_translation_count: 379
   greek_translation_coverage: "95%+"
+  plan_restriction_system_complete: true
+  plan_restriction_tests_passed: 32
+  plan_restriction_tests_failed: 0
 
 test_plan:
   current_focus: []
