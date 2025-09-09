@@ -6152,6 +6152,7 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/payment" element={<PaymentPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/plans" element={<PlanSelectionPage />} />
               <Route path="/pricing" element={<PricingPage />} />
