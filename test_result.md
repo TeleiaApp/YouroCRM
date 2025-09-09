@@ -683,6 +683,7 @@ test_plan:
   vies_frontend_integration_testing_complete: true
   subscription_plans_testing_complete: true
   greek_language_support_testing_complete: true
+  plan_restriction_system_testing_complete: true
 
 agent_communication:
     - agent: "main"
