@@ -9,6 +9,125 @@ import axios from "axios";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+
+// Plan management hook
+const usePlan = () => {
+  const [userPlan, setUserPlan] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      fetchUserPlan();
+    } else {
+      setLoading(false);
+    }
+  }, [user]);
+
+  const fetchUserPlan = async () => {
+    try {
+      const response = await axios.get(`${API}/users/current-plan`, { withCredentials: true });
+      setUserPlan(response.data);
+    } catch (error) {
+      console.error('Error fetching user plan:', error);
+      // Default to starter plan if error
+      setUserPlan({
+        plan: { id: 'starter', name: 'Starter' },
+        limits: {
+          contacts_max: 5,
+          accounts_max: 2,
+          ai_integration: false,
+          vies_integration: false,
+          peppol_invoicing: false,
+          custom_fields: false
+        }
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const hasFeature = (feature) => {
+    if (!userPlan) return false;
+    return userPlan.limits?.[feature] === true;
+  };
+
+  const canCreateMore = (resourceType, currentCount) => {
+    if (!userPlan) return false;
+    const limit = userPlan.limits?.[`${resourceType}_max`];
+    if (limit === -1) return true; // Unlimited
+    return currentCount < limit;
+  };
+
+  const getLimit = (resourceType) => {
+    if (!userPlan) return 0;
+    const limit = userPlan.limits?.[`${resourceType}_max`];
+    return limit === -1 ? '∞' : limit;
+  };
+
+  return {
+    userPlan,
+    loading: loading,
+    hasFeature,
+    canCreateMore,
+    getLimit,
+    refreshPlan: fetchUserPlan
+  };
+};
+
+// Upgrade prompt component
+const UpgradePrompt = ({ feature, className = "" }) => {
+  const navigate = useNavigate();
+  const { t } = useLanguage();
+
+  return (
+    <div className={`bg-yellow-50 border border-yellow-200 rounded-lg p-4 ${className}`}>
+      <div className="flex items-center">
+        <div className="flex-shrink-0">
+          <span className="text-2xl">🔒</span>
+        </div>
+        <div className="ml-3 flex-1">
+          <h3 className="text-sm font-medium text-yellow-800">
+            {feature} Not Available
+          </h3>
+          <div className="mt-2">
+            <p className="text-sm text-yellow-700">
+              This feature is not included in your current plan. 
+              <button
+                onClick={() => navigate('/pricing')}
+                className="font-medium text-yellow-800 underline hover:text-yellow-900 ml-1"
+              >
+                Upgrade now
+              </button>
+              to unlock it.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Feature wrapper component
+const FeatureGate = ({ feature, fallback, children, requiresPlan = null }) => {
+  const { userPlan, hasFeature } = usePlan();
+  
+  if (!userPlan) {
+    return <div className="animate-pulse bg-gray-200 h-8 rounded"></div>;
+  }
+
+  // Check specific plan requirement
+  if (requiresPlan && userPlan.plan?.id !== requiresPlan) {
+    return fallback || <UpgradePrompt feature={feature} />;
+  }
+
+  // Check feature availability
+  if (feature && !hasFeature(feature)) {
+    return fallback || <UpgradePrompt feature={feature} />;
+  }
+
+  return children;
+};
 // Language Context
 const LanguageContext = createContext();
 
