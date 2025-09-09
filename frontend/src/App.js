@@ -3693,21 +3693,63 @@ const InvoicesPage = () => {
   );
 };
 
-// Registration Page
+// Registration Page with Integrated Plan Selection
 const RegisterPage = () => {
   const [registerForm, setRegisterForm] = useState({ name: '', email: '', password: '' });
+  const [selectedPlan, setSelectedPlan] = useState('starter');
+  const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(1); // 1: Registration Form, 2: Plan Selection
   const navigate = useNavigate();
   const { t } = useLanguage();
 
+  useEffect(() => {
+    fetchPlans();
+  }, []);
+
+  const fetchPlans = async () => {
+    try {
+      const response = await axios.get(`${API}/plans`);
+      setPlans(response.data);
+    } catch (error) {
+      console.error('Error fetching plans:', error);
+    }
+  };
+
   const handleRegister = async (e) => {
     e.preventDefault();
+    if (step === 1) {
+      // Move to plan selection step
+      setStep(2);
+      return;
+    }
+
+    // Step 2: Register user and handle plan selection
     setLoading(true);
     
     try {
-      const response = await axios.post(`${API}/auth/register`, registerForm);
-      alert('Compte créé avec succès ! Choisissez maintenant votre plan.');
-      navigate('/plans');
+      // 1. Register the user
+      const registerResponse = await axios.post(`${API}/auth/register`, registerForm);
+      
+      // 2. Login automatically
+      const loginResponse = await axios.post(`${API}/auth/login`, {
+        email: registerForm.email,
+        password: registerForm.password
+      }, { withCredentials: true });
+
+      // 3. Select the plan
+      await axios.post(`${API}/users/select-plan`, { plan_id: selectedPlan }, { withCredentials: true });
+      
+      if (selectedPlan === 'starter') {
+        // Free plan - go directly to CRM
+        window.location.href = '/dashboard';
+      } else {
+        // Paid plan - go to payment
+        const plan = plans.find(p => p.id === selectedPlan);
+        if (plan) {
+          window.location.href = `/payment?plan=${selectedPlan}&price=${plan.price}`;
+        }
+      }
     } catch (error) {
       console.error('Registration error:', error);
       alert(error.response?.data?.detail || 'Registration failed. Please try again.');
@@ -3716,20 +3758,38 @@ const RegisterPage = () => {
     }
   };
 
+  const getPlanIcon = (planId) => {
+    switch(planId) {
+      case 'starter': return '🆓';
+      case 'professional': return '💎';
+      case 'enterprise': return '🏆';
+      default: return '📦';
+    }
+  };
+
+  const getPlanColor = (planId) => {
+    switch(planId) {
+      case 'starter': return 'border-green-200 bg-green-50';
+      case 'professional': return 'border-blue-200 bg-blue-50';
+      case 'enterprise': return 'border-purple-200 bg-purple-50';
+      default: return 'border-gray-200 bg-gray-50';
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Header */}
-      <div className="bg-white shadow-sm">
+      <div className="bg-white/80 backdrop-blur-sm shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <button
-              onClick={() => navigate('/')}
+              onClick={() => step === 1 ? navigate('/') : setStep(1)}
               className="flex items-center space-x-3 text-gray-600 hover:text-gray-900 transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              <span className="font-medium">{t('back_to_home')}</span>
+              <span className="font-medium">{step === 1 ? t('back_to_home') : 'Back'}</span>
             </button>
             <div className="flex items-center space-x-3">
               <img 
@@ -3744,104 +3804,216 @@ const RegisterPage = () => {
         </div>
       </div>
 
-      {/* Registration Form */}
-      <div className="flex items-center justify-center py-12">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-          <div className="text-center mb-8">
-            <div className="flex flex-col items-center mb-6">
-              <img 
-                src="https://customer-assets.emergentagent.com/job_biz-connector-4/artifacts/tgh8glfj_image.png"
-                alt="YouroCRM Logo"
-                className="yourocrm-logo-main h-24 w-auto mb-4 transform hover:scale-105 transition-transform shadow-lg rounded-lg"
-              />
-              <h1 className="text-2xl font-bold text-gray-900">{t('create_your_account')}</h1>
-              <p className="text-gray-600">{t('join_yourocrm')}</p>
-            </div>
+      {/* Progress Bar */}
+      <div className="max-w-2xl mx-auto px-4 py-6">
+        <div className="flex items-center justify-center space-x-4">
+          <div className={`flex items-center justify-center w-8 h-8 rounded-full ${step >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'}`}>
+            1
           </div>
-        
-          <form onSubmit={handleRegister} className="space-y-6">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                {t('full_name')}
-              </label>
-              <input
-                id="name"
-                type="text"
-                value={registerForm.name}
-                onChange={(e) => setRegisterForm({...registerForm, name: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="John Doe"
-                required
-              />
-            </div>
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                {t('email_address')}
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={registerForm.email}
-                onChange={(e) => setRegisterForm({...registerForm, email: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="your@email.com"
-                required
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                {t('password')}
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={registerForm.password}
-                onChange={(e) => setRegisterForm({...registerForm, password: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Create a secure password"
-                required
-                minLength="6"
-              />
-              <p className="text-xs text-gray-500 mt-1">{t('minimum_6_characters')}</p>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-            >
-              {loading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  {t('creating_account')}
-                </>
-              ) : (
-                t('create_account')
-              )}
-            </button>
-
-            <div className="text-center">
-              <Link 
-                to="/login" 
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-              >
-                {t('already_have_account')}
-              </Link>
-            </div>
-          </form>
-
-          <div className="mt-8 pt-6 border-t border-gray-200">
-            <div className="text-center">
-              <Link 
-                to="/pricing" 
-                className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm"
-              >
-                {t('view_pricing_features')}
-              </Link>
-            </div>
+          <div className={`h-1 w-20 ${step >= 2 ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
+          <div className={`flex items-center justify-center w-8 h-8 rounded-full ${step >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'}`}>
+            2
           </div>
+        </div>
+        <div className="flex justify-between text-sm text-gray-600 mt-2">
+          <span>Account Info</span>
+          <span>Choose Plan</span>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-center py-8">
+        <div className="max-w-2xl w-full bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border p-8">
+          
+          {/* Step 1: Registration Form */}
+          {step === 1 && (
+            <>
+              <div className="text-center mb-8">
+                <div className="flex flex-col items-center mb-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-4">
+                    <span className="text-2xl">🚀</span>
+                  </div>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('create_your_account')}</h1>
+                  <p className="text-gray-600">{t('join_yourocrm')}</p>
+                </div>
+              </div>
+            
+              <form onSubmit={handleRegister} className="space-y-6">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                    {t('full_name')}
+                  </label>
+                  <input
+                    id="name"
+                    type="text"
+                    value={registerForm.name}
+                    onChange={(e) => setRegisterForm({...registerForm, name: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder="John Doe"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                    {t('email_address')}
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    value={registerForm.email}
+                    onChange={(e) => setRegisterForm({...registerForm, email: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder="your@email.com"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                    {t('password')}
+                  </label>
+                  <input
+                    id="password"
+                    type="password"
+                    value={registerForm.password}
+                    onChange={(e) => setRegisterForm({...registerForm, password: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder="Create a secure password"
+                    required
+                    minLength="6"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">{t('minimum_6_characters')}</p>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg"
+                >
+                  Continue to Plan Selection →
+                </button>
+
+                <div className="text-center">
+                  <Link 
+                    to="/login" 
+                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  >
+                    {t('already_have_account')}
+                  </Link>
+                </div>
+              </form>
+            </>
+          )}
+
+          {/* Step 2: Plan Selection */}
+          {step === 2 && (
+            <>
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">📋</span>
+                </div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Choose Your Plan</h1>
+                <p className="text-gray-600">Select the plan that fits your business needs</p>
+              </div>
+
+              <form onSubmit={handleRegister}>
+                <div className="grid gap-6 mb-8">
+                  {plans.map((plan) => (
+                    <div 
+                      key={plan.id}
+                      className={`relative border-2 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg ${
+                        selectedPlan === plan.id 
+                          ? 'border-blue-500 bg-blue-50 shadow-lg' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                      onClick={() => setSelectedPlan(plan.id)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="text-3xl">{getPlanIcon(plan.id)}</div>
+                          <div>
+                            <h3 className="text-xl font-bold text-gray-900 flex items-center space-x-2">
+                              <span>{plan.name}</span>
+                              {plan.is_popular && (
+                                <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
+                                  ⭐ Popular
+                                </span>
+                              )}
+                            </h3>
+                            <div className="text-2xl font-bold text-gray-900 mt-1">
+                              {plan.price === 0 ? (
+                                <span className="text-green-600">Free</span>
+                              ) : (
+                                <span>€{plan.price}<span className="text-sm text-gray-500">/month</span></span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                          selectedPlan === plan.id 
+                            ? 'border-blue-500 bg-blue-500' 
+                            : 'border-gray-300'
+                        }`}>
+                          {selectedPlan === plan.id && (
+                            <div className="w-2 h-2 bg-white rounded-full"></div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4 space-y-2">
+                        {plan.features.slice(0, 3).map((feature, index) => (
+                          <div key={index} className="flex items-center space-x-2 text-sm text-gray-600">
+                            <span className="text-green-500">✓</span>
+                            <span>{feature}</span>
+                          </div>
+                        ))}
+                        {plan.features.length > 3 && (
+                          <div className="text-sm text-gray-500">
+                            +{plan.features.length - 3} more features
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  {loading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      Creating Account...
+                    </>
+                  ) : (
+                    selectedPlan === 'starter' ? (
+                      '🚀 Start Free Now'
+                    ) : (
+                      `Continue to Payment - €${plans.find(p => p.id === selectedPlan)?.price || 0}/month`
+                    )
+                  )}
+                </button>
+
+                <div className="text-center mt-6">
+                  <div className="flex items-center justify-center space-x-4 text-sm text-gray-500">
+                    <span className="flex items-center space-x-1">
+                      <span>🔒</span>
+                      <span>Secure Payment</span>
+                    </span>
+                    <span className="flex items-center space-x-1">
+                      <span>✅</span>
+                      <span>No Commitment</span>
+                    </span>
+                    <span className="flex items-center space-x-1">
+                      <span>📞</span>
+                      <span>Support Included</span>
+                    </span>
+                  </div>
+                </div>
+              </form>
+            </>
+          )}
         </div>
       </div>
     </div>
