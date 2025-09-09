@@ -6142,6 +6142,260 @@ const CalendarPage = () => {
   );
 };
 
+// Payment Page
+const PaymentPage = () => {
+  const [plan, setPlan] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('stripe');
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { t } = useLanguage();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/register');
+      return;
+    }
+
+    // Get plan from URL params
+    const urlParams = new URLSearchParams(location.search);
+    const planId = urlParams.get('plan');
+    const price = urlParams.get('price');
+    
+    if (planId && price) {
+      setPlan({ id: planId, price: parseFloat(price) });
+    } else {
+      navigate('/register');
+    }
+  }, [user, location, navigate]);
+
+  const handleStripePayment = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.post(`${API}/stripe/create-checkout-session`, {
+        plan_id: plan.id,
+        success_url: `${window.location.origin}/dashboard`,
+        cancel_url: `${window.location.origin}/payment?plan=${plan.id}&price=${plan.price}`
+      }, { withCredentials: true });
+
+      if (response.data.url) {
+        window.location.href = response.data.url;
+      }
+    } catch (error) {
+      console.error('Stripe payment error:', error);
+      alert('Payment setup failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePayPalPayment = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.post(`${API}/paypal/create-order`, {
+        plan_id: plan.id,
+        return_url: `${window.location.origin}/dashboard`,
+        cancel_url: `${window.location.origin}/payment?plan=${plan.id}&price=${plan.price}`
+      }, { withCredentials: true });
+
+      if (response.data.approval_url) {
+        window.location.href = response.data.approval_url;
+      }
+    } catch (error) {
+      console.error('PayPal payment error:', error);
+      alert('Payment setup failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePayment = () => {
+    if (paymentMethod === 'stripe') {
+      handleStripePayment();
+    } else {
+      handlePayPalPayment();
+    }
+  };
+
+  if (!plan) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      {/* Header */}
+      <div className="bg-white/80 backdrop-blur-sm shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => navigate('/register')}
+              className="flex items-center space-x-3 text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              <span className="font-medium">Back to Registration</span>
+            </button>
+            <div className="flex items-center space-x-3">
+              <img 
+                src="https://customer-assets.emergentagent.com/job_biz-connector-4/artifacts/tgh8glfj_image.png"
+                alt="YouroCRM Logo"
+                className="h-8 w-auto"
+              />
+              <span className="text-2xl font-bold text-gray-900">{t('app_name')}</span>
+            </div>
+            <LanguageSelector />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-center py-12">
+        <div className="max-w-md w-full bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border p-8">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl">💳</span>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Complete Your Purchase</h1>
+            <p className="text-gray-600">You're almost ready to start with YouroCRM!</p>
+          </div>
+
+          {/* Plan Summary */}
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              {plan.id.charAt(0).toUpperCase() + plan.id.slice(1)} Plan
+            </h3>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Monthly subscription</span>
+              <span className="text-2xl font-bold text-gray-900">€{plan.price}/month</span>
+            </div>
+            <div className="mt-4 pt-4 border-t border-blue-200">
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <span className="text-green-500">✓</span>
+                <span>Cancel anytime</span>
+              </div>
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <span className="text-green-500">✓</span>
+                <span>14-day money-back guarantee</span>
+              </div>
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <span className="text-green-500">✓</span>
+                <span>Secure payment processing</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Payment Method Selection */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Choose Payment Method</h3>
+            <div className="space-y-3">
+              <div 
+                className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${
+                  paymentMethod === 'stripe' 
+                    ? 'border-blue-500 bg-blue-50' 
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+                onClick={() => setPaymentMethod('stripe')}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
+                      <span className="text-white font-bold text-sm">S</span>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Stripe</h4>
+                      <p className="text-sm text-gray-600">Credit card, debit card</p>
+                    </div>
+                  </div>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                    paymentMethod === 'stripe' 
+                      ? 'border-blue-500 bg-blue-500' 
+                      : 'border-gray-300'
+                  }`}>
+                    {paymentMethod === 'stripe' && (
+                      <div className="w-2 h-2 bg-white rounded-full"></div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div 
+                className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${
+                  paymentMethod === 'paypal' 
+                    ? 'border-blue-500 bg-blue-50' 
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+                onClick={() => setPaymentMethod('paypal')}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center">
+                      <span className="text-white font-bold text-sm">P</span>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">PayPal</h4>
+                      <p className="text-sm text-gray-600">PayPal account, bank account</p>
+                    </div>
+                  </div>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                    paymentMethod === 'paypal' 
+                      ? 'border-blue-500 bg-blue-500' 
+                      : 'border-gray-300'
+                  }`}>
+                    {paymentMethod === 'paypal' && (
+                      <div className="w-2 h-2 bg-white rounded-full"></div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Payment Button */}
+          <button
+            onClick={handlePayment}
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+          >
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                Processing...
+              </>
+            ) : (
+              <>
+                <span className="mr-2">🔒</span>
+                Complete Payment - €{plan.price}/month
+              </>
+            )}
+          </button>
+
+          <div className="text-center mt-6">
+            <div className="flex items-center justify-center space-x-4 text-sm text-gray-500">
+              <span className="flex items-center space-x-1">
+                <span>🔒</span>
+                <span>SSL Secured</span>
+              </span>
+              <span className="flex items-center space-x-1">
+                <span>🛡️</span>
+                <span>PCI Compliant</span>
+              </span>
+              <span className="flex items-center space-x-1">
+                <span>🇪🇺</span>
+                <span>GDPR Safe</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 function App() {
   return (
     <LanguageProvider>
