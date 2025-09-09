@@ -1214,9 +1214,9 @@ SUBSCRIPTION_PLANS = {
         price=0.0,
         features=[
             "5 contacts maximum",
-            "2 comptes maximum", 
-            "Facturation basique",
-            "Support email"
+            "2 accounts maximum", 
+            "Basic invoicing",
+            "Email support"
         ],
         limits={
             "contacts_max": 5,
@@ -1229,7 +1229,8 @@ SUBSCRIPTION_PLANS = {
             "peppol_invoicing": False,
             "advanced_calendar": False,
             "pdf_export": False,
-            "priority_support": False
+            "priority_support": False,
+            "ai_integration": False
         }
     ),
     "professional": SubscriptionPlan(
@@ -1237,13 +1238,13 @@ SUBSCRIPTION_PLANS = {
         name="Professional",
         price=14.99,
         features=[
-            "Contacts/comptes illimités",
-            "Intégration VIES complète",
-            "Facturation Peppol",
-            "Calendrier avancé",
-            "Export PDF",
-            "Support prioritaire",
-            "Multi-utilisateur (+5€/utilisateur)"
+            "Unlimited contacts/accounts",
+            "Complete VIES integration",
+            "Peppol invoicing",
+            "Advanced calendar",
+            "PDF export",
+            "Priority support",
+            "Multi-user (+5€/user)"
         ],
         limits={
             "contacts_max": -1,  # -1 = unlimited
@@ -1256,7 +1257,8 @@ SUBSCRIPTION_PLANS = {
             "peppol_invoicing": True,
             "advanced_calendar": True,
             "pdf_export": True,
-            "priority_support": True
+            "priority_support": True,
+            "ai_integration": False
         },
         is_popular=True
     ),
@@ -1265,12 +1267,13 @@ SUBSCRIPTION_PLANS = {
         name="Enterprise",
         price=39.99,
         features=[
-            "Tout Professional",
-            "Champs personnalisés",
+            "Everything Professional",
+            "AI Integration & Automation",
+            "Custom fields",
             "API Access",
             "White-label",
-            "Support dédié",
-            "Formation incluse"
+            "Dedicated support",
+            "Training included"
         ],
         limits={
             "contacts_max": -1,
@@ -1286,7 +1289,8 @@ SUBSCRIPTION_PLANS = {
             "priority_support": True,
             "white_label": True,
             "dedicated_support": True,
-            "training": True
+            "training": True,
+            "ai_integration": True
         }
     )
 }
