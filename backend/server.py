@@ -508,6 +508,31 @@ async def select_plan(plan_selection: PlanSelection, current_user: User = Depend
     
     return {"message": "Plan selected successfully", "plan": SUBSCRIPTION_PLANS[plan_selection.plan_id]}
 
+@api_router.get("/users/current-plan")
+async def get_current_user_plan(current_user: User = Depends(get_current_user)):
+    """Get current user's plan details"""
+    plan = get_user_plan(current_user)
+    
+    # Get current usage counts
+    contacts_count = await db.contacts.count_documents({"user_id": current_user.id})
+    accounts_count = await db.accounts.count_documents({"user_id": current_user.id})
+    
+    return {
+        "plan": {
+            "id": plan.id,
+            "name": plan.name,
+            "price": plan.price,
+            "features": plan.features
+        },
+        "limits": plan.limits,
+        "usage": {
+            "contacts": contacts_count,
+            "accounts": accounts_count,
+            "contacts_limit_reached": not check_plan_limits(current_user, "contacts", contacts_count),
+            "accounts_limit_reached": not check_plan_limits(current_user, "accounts", accounts_count)
+        }
+    }
+
 @api_router.get("/users/plan")
 async def get_user_plan(current_user: User = Depends(get_current_user)):
     """Get current user's subscription plan"""
