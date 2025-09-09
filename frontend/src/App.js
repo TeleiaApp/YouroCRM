@@ -1264,6 +1264,9 @@ const GlobalSearch = () => {
 const Dashboard = () => {
   const [stats, setStats] = useState({ contacts: 0, accounts: 0, products: 0, events: 0, invoices: 0 });
   const [loading, setLoading] = useState(true);
+  const { userPlan, hasFeature, canCreateMore, getLimit } = usePlan();
+  const navigate = useNavigate();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -1281,14 +1284,28 @@ const Dashboard = () => {
   }, []);
 
   const statCards = [
-    { name: 'Contacts', value: stats.contacts, icon: '👥', color: 'blue' },
-    { name: 'Accounts', value: stats.accounts, icon: '🏢', color: 'green' },
-    { name: 'Products', value: stats.products, icon: '📦', color: 'purple' },
-    { name: 'Invoices', value: stats.invoices || 0, icon: '🧾', color: 'red' },
-    { name: 'Events', value: stats.events, icon: '📅', color: 'orange' },
+    { 
+      name: 'Contacts', 
+      value: stats.contacts, 
+      icon: '👥', 
+      color: 'blue',
+      limit: getLimit('contacts'),
+      canCreate: canCreateMore('contacts', stats.contacts)
+    },
+    { 
+      name: 'Accounts', 
+      value: stats.accounts, 
+      icon: '🏢', 
+      color: 'green',
+      limit: getLimit('accounts'),  
+      canCreate: canCreateMore('accounts', stats.accounts)
+    },
+    { name: 'Products', value: stats.products, icon: '📦', color: 'purple', limit: '∞', canCreate: true },
+    { name: 'Invoices', value: stats.invoices || 0, icon: '🧾', color: 'red', limit: '∞', canCreate: true },
+    { name: 'Events', value: stats.events, icon: '📅', color: 'orange', limit: '∞', canCreate: true },
   ];
 
-  if (loading) {
+  if (loading || !userPlan) {
     return (
       <div className="animate-pulse space-y-6">
         <div className="h-8 bg-gray-200 rounded w-48"></div>
@@ -1303,9 +1320,39 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
+      {/* Plan Status Banner */}
+      <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-bold">
+              {userPlan.plan?.name} Plan
+            </h2>
+            <p className="text-blue-100 mt-1">
+              {userPlan.plan?.price === 0 ? 'Free forever' : `€${userPlan.plan?.price}/month`}
+            </p>
+          </div>
+          <div className="flex items-center space-x-4">
+            {userPlan.plan?.id === 'starter' && (
+              <button
+                onClick={() => navigate('/pricing')}
+                className="bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+              >
+                🚀 Upgrade Now
+              </button>
+            )}
+            <div className="text-right">
+              <div className="text-sm text-blue-100">Current Usage</div>
+              <div className="text-lg font-semibold">
+                {stats.contacts + stats.accounts} / {getLimit('contacts') === '∞' ? '∞' : getLimit('contacts') + getLimit('accounts')}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="flex flex-col items-center gap-4">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('dashboard')}</h1>
           <p className="text-gray-600">Welcome to yourocrm.com</p>
         </div>
         
@@ -1315,34 +1362,88 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Quick Create Actions */}
+      {/* Stats Cards with Plan Limits */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        {statCards.map((stat) => (
+          <div
+            key={stat.name}
+            className={`bg-white rounded-lg shadow p-6 ${
+              !stat.canCreate ? 'border-2 border-yellow-300 bg-yellow-50' : ''
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">
+                  {stat.name}
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {stat.value}
+                  {stat.limit !== '∞' && (
+                    <span className="text-sm text-gray-500 ml-1">/ {stat.limit}</span>
+                  )}
+                </p>
+                {!stat.canCreate && stat.limit !== '∞' && (
+                  <p className="text-xs text-yellow-600 mt-1">
+                    Limit reached
+                  </p>
+                )}
+              </div>
+              <div className={`text-3xl opacity-80`}>
+                {stat.icon}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Quick Create Actions with Plan Restrictions */}
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
           <span className="text-2xl mr-2">⚡</span>
-          Quick Actions
+          {t('quick_actions')}
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-          <Link
-            to="/contacts?new=true"
-            className="flex flex-col items-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors group"
-          >
-            <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-              <span className="text-white text-xl font-bold">+</span>
+          {canCreateMore('contacts', stats.contacts) ? (
+            <Link
+              to="/contacts?new=true"
+              className="flex flex-col items-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors group"
+            >
+              <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                <span className="text-white text-xl font-bold">+</span>
+              </div>
+              <span className="text-sm font-medium text-gray-900">{t('add_contact')}</span>
+              <span className="text-xs text-gray-600">{t('new_customer')}</span>
+            </Link>
+          ) : (
+            <div className="flex flex-col items-center p-4 bg-gray-100 rounded-lg opacity-50 cursor-not-allowed">
+              <div className="w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center mb-2">
+                <span className="text-white text-xl">🔒</span>
+              </div>
+              <span className="text-sm font-medium text-gray-600">{t('add_contact')}</span>
+              <span className="text-xs text-red-600">Limit reached</span>
             </div>
-            <span className="text-sm font-medium text-gray-900">Add Contact</span>
-            <span className="text-xs text-gray-600">New customer</span>
-          </Link>
+          )}
 
-          <Link
-            to="/accounts?new=true"
-            className="flex flex-col items-center p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors group"
-          >
-            <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-              <span className="text-white text-xl font-bold">+</span>
+          {canCreateMore('accounts', stats.accounts) ? (
+            <Link
+              to="/accounts?new=true"
+              className="flex flex-col items-center p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors group"
+            >
+              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                <span className="text-white text-xl font-bold">+</span>
+              </div>
+              <span className="text-sm font-medium text-gray-900">{t('add_account')}</span>
+              <span className="text-xs text-gray-600">{t('new_company')}</span>
+            </Link>
+          ) : (
+            <div className="flex flex-col items-center p-4 bg-gray-100 rounded-lg opacity-50 cursor-not-allowed">
+              <div className="w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center mb-2">
+                <span className="text-white text-xl">🔒</span>
+              </div>
+              <span className="text-sm font-medium text-gray-600">{t('add_account')}</span>
+              <span className="text-xs text-red-600">Limit reached</span>
             </div>
-            <span className="text-sm font-medium text-gray-900">Add Account</span>
-            <span className="text-xs text-gray-600">New company</span>
-          </Link>
+          )}
 
           <Link
             to="/products?new=true"
@@ -1351,22 +1452,167 @@ const Dashboard = () => {
             <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
               <span className="text-white text-xl font-bold">+</span>
             </div>
-            <span className="text-sm font-medium text-gray-900">Add Product</span>
-            <span className="text-xs text-gray-600">New service</span>
+            <span className="text-sm font-medium text-gray-900">{t('add_product')}</span>
+            <span className="text-xs text-gray-600">{t('new_service')}</span>
           </Link>
 
-          <Link
-            to="/invoices?new=true"
-            className="flex flex-col items-center p-4 bg-red-50 hover:bg-red-100 rounded-lg transition-colors group"
+          <FeatureGate
+            feature="peppol_invoicing"
+            fallback={
+              <div className="flex flex-col items-center p-4 bg-gray-100 rounded-lg opacity-50 cursor-not-allowed">
+                <div className="w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center mb-2">
+                  <span className="text-white text-xl">🔒</span>
+                </div>
+                <span className="text-sm font-medium text-gray-600">{t('create_invoice')}</span>
+                <span className="text-xs text-yellow-600">Pro+ feature</span>
+              </div>
+            }
           >
-            <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-              <span className="text-white text-xl font-bold">+</span>
-            </div>
-            <span className="text-sm font-medium text-gray-900">Create Invoice</span>
-            <span className="text-xs text-gray-600">Bill customer</span>
-          </Link>
+            <Link
+              to="/invoices?new=true"
+              className="flex flex-col items-center p-4 bg-red-50 hover:bg-red-100 rounded-lg transition-colors group"
+            >
+              <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                <span className="text-white text-xl font-bold">+</span>
+              </div>
+              <span className="text-sm font-medium text-gray-900">{t('create_invoice')}</span>
+              <span className="text-xs text-gray-600">{t('bill_customer')}</span>
+            </Link>
+          </FeatureGate>
 
-          <Link
+          <FeatureGate
+            feature="ai_integration"
+            fallback={
+              <div className="flex flex-col items-center p-4 bg-gray-100 rounded-lg opacity-50 cursor-not-allowed">
+                <div className="w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center mb-2">
+                  <span className="text-white text-xl">🔒</span>
+                </div>
+                <span className="text-sm font-medium text-gray-600">AI Assistant</span>
+                <span className="text-xs text-purple-600">Enterprise only</span>
+              </div>
+            }
+          >
+            <button
+              onClick={() => alert('AI features coming soon!')}
+              className="flex flex-col items-center p-4 bg-gradient-to-br from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-lg transition-colors group"
+            >
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                <span className="text-white text-xl">🤖</span>
+              </div>
+              <span className="text-sm font-medium text-gray-900">AI Assistant</span>
+              <span className="text-xs text-gray-600">Smart insights</span>
+            </button>
+          </FeatureGate>
+        </div>
+      </div>
+
+      {/* Feature Highlights based on plan */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <span className="text-2xl mr-2">🎯</span>
+          Available Features
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* VIES Integration */}
+          <FeatureGate
+            feature="vies_integration"
+            fallback={
+              <div className="p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium text-gray-900">VIES Integration</h3>
+                    <p className="text-sm text-gray-500">Auto-complete company data</p>
+                  </div>
+                  <div className="text-gray-400">🔒</div>
+                </div>
+                <button
+                  onClick={() => navigate('/pricing')}
+                  className="mt-2 text-xs text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  Upgrade for VIES →
+                </button>
+              </div>
+            }
+          >
+            <div className="p-4 bg-green-50 rounded-lg border-2 border-green-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium text-gray-900">VIES Integration</h3>
+                  <p className="text-sm text-gray-500">Auto-complete company data</p>
+                </div>
+                <div className="text-green-500">✓</div>
+              </div>
+            </div>
+          </FeatureGate>
+
+          {/* AI Integration */}
+          <FeatureGate
+            feature="ai_integration"
+            fallback={
+              <div className="p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium text-gray-900">AI Integration</h3>
+                    <p className="text-sm text-gray-500">Intelligent insights & automation</p>
+                  </div>
+                  <div className="text-gray-400">🔒</div>
+                </div>
+                <button
+                  onClick={() => navigate('/pricing')}
+                  className="mt-2 text-xs text-purple-600 hover:text-purple-800 font-medium"
+                >
+                  Upgrade to Enterprise →
+                </button>
+              </div>
+            }
+          >
+            <div className="p-4 bg-purple-50 rounded-lg border-2 border-purple-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium text-gray-900">AI Integration</h3>
+                  <p className="text-sm text-gray-500">Intelligent insights & automation</p>
+                </div>
+                <div className="text-purple-500">🤖</div>
+              </div>
+            </div>
+          </FeatureGate>
+
+          {/* Custom Fields */}
+          <FeatureGate
+            feature="custom_fields"
+            fallback={
+              <div className="p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium text-gray-900">Custom Fields</h3>
+                    <p className="text-sm text-gray-500">Customize your CRM data</p>
+                  </div>
+                  <div className="text-gray-400">🔒</div>
+                </div>
+                <button
+                  onClick={() => navigate('/pricing')}
+                  className="mt-2 text-xs text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  Upgrade to Enterprise →
+                </button>
+              </div>
+            }
+          >
+            <div className="p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium text-gray-900">Custom Fields</h3>
+                  <p className="text-sm text-gray-500">Customize your CRM data</p>
+                </div>
+                <div className="text-blue-500">⚙️</div>
+              </div>
+            </div>
+          </FeatureGate>
+        </div>
+      </div>
+    </div>
+  );
+};
             to="/calendar?new=true"
             className="flex flex-col items-center p-4 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors group"
           >
